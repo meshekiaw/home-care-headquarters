@@ -417,6 +417,50 @@ export type Database = {
           },
         ]
       }
+      client_required_skills: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          minimum_proficiency: string | null
+          notes: string | null
+          priority: string
+          requires_certification: boolean | null
+          skill_name: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          minimum_proficiency?: string | null
+          notes?: string | null
+          priority?: string
+          requires_certification?: boolean | null
+          skill_name: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          minimum_proficiency?: string | null
+          notes?: string | null
+          priority?: string
+          requires_certification?: boolean | null
+          skill_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_required_skills_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null

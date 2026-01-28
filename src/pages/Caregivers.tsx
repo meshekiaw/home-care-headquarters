@@ -6,16 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCaregivers } from "@/hooks/useCaregivers";
-
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import AddCaregiverDialog from "@/components/caregivers/AddCaregiverDialog";
-import { UserCheck, Plus, Search, Phone, Mail } from "lucide-react";
+import BulkImportDialog from "@/components/caregivers/BulkImportDialog";
+import { UserCheck, Plus, Search, Phone, Mail, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
+import type { ParsedCaregiver } from "@/utils/csvParser";
 
 export default function Caregivers() {
   const { caregivers, loading, createCaregiver, refetch } = useCaregivers();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const filteredCaregivers = caregivers.filter((caregiver) => {
@@ -50,10 +57,16 @@ export default function Caregivers() {
               Manage your caregiver team, credentials, and availability
             </p>
           </div>
-          <Button onClick={() => setAddDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Caregiver
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import CSV
+            </Button>
+            <Button onClick={() => setAddDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Caregiver
+            </Button>
+          </div>
         </div>
 
         <div className="relative max-w-md">
@@ -179,6 +192,44 @@ export default function Caregivers() {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={createCaregiver}
+      />
+
+      <BulkImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={async (caregivers: ParsedCaregiver[]) => {
+          if (!user) return { success: 0, failed: caregivers.length };
+
+          let success = 0;
+          let failed = 0;
+
+          for (const caregiver of caregivers) {
+            try {
+              const { error } = await supabase.from("caregivers").insert({
+                ...caregiver,
+                user_id: user.id,
+              });
+
+              if (error) {
+                failed++;
+              } else {
+                success++;
+              }
+            } catch {
+              failed++;
+            }
+          }
+
+          if (success > 0) {
+            toast({
+              title: "Import complete",
+              description: `Successfully imported ${success} caregivers`,
+            });
+            refetch();
+          }
+
+          return { success, failed };
+        }}
       />
     </DashboardLayout>
   );

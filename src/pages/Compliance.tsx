@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Shield,
   AlertTriangle, 
@@ -21,16 +29,23 @@ import {
   Clock,
   Search,
   AlertCircle,
-  Users,
   FileCheck,
   XCircle,
   Calendar,
   RefreshCw,
   TrendingUp,
-  GraduationCap
+  GraduationCap,
+  Download,
+  FileText
 } from "lucide-react";
 import { useComplianceDashboard } from "@/hooks/useCompliance";
 import { format } from "date-fns";
+import {
+  generateFullComplianceReport,
+  generateExpiredCredentialsReport,
+  generateExpiringCredentialsReport,
+  generateCaregiverComplianceReport,
+} from "@/utils/complianceReportPdf";
 
 export default function Compliance() {
   const {
@@ -141,6 +156,63 @@ export default function Compliance() {
                 <SelectItem value="90">Next 90 days</SelectItem>
               </SelectContent>
             </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Export Reports</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => generateFullComplianceReport({
+                  credentials,
+                  stats,
+                  expiringDaysFilter,
+                  requiredTrainings,
+                  getCredentialStatus,
+                  getDaysUntilExpiry,
+                })}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Full Compliance Report
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => generateCaregiverComplianceReport({
+                  credentials,
+                  stats,
+                  expiringDaysFilter,
+                  requiredTrainings,
+                  getCredentialStatus,
+                  getDaysUntilExpiry,
+                })}>
+                  <FileCheck className="w-4 h-4 mr-2" />
+                  Caregiver Summary
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => generateExpiredCredentialsReport({
+                  credentials,
+                  stats,
+                  expiringDaysFilter,
+                  requiredTrainings,
+                  getCredentialStatus,
+                  getDaysUntilExpiry,
+                })}>
+                  <XCircle className="w-4 h-4 mr-2 text-destructive" />
+                  Expired Credentials
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => generateExpiringCredentialsReport({
+                  credentials,
+                  stats,
+                  expiringDaysFilter,
+                  requiredTrainings,
+                  getCredentialStatus,
+                  getDaysUntilExpiry,
+                })}>
+                  <AlertTriangle className="w-4 h-4 mr-2 text-warning" />
+                  Expiring Credentials
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" onClick={refetch}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh

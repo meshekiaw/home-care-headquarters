@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
+import { Trash2, GripHorizontal } from "lucide-react";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 interface AvailabilityCalendarProps {
@@ -20,6 +20,7 @@ const DAYS = [
 ];
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 AM to 10 PM
+const HOUR_HEIGHT = 32; // pixels per hour
 
 function formatTime(hour: number): string {
   const period = hour >= 12 ? "PM" : "AM";
@@ -36,14 +37,24 @@ function hourToTimeString(hour: number): string {
   return `${hour.toString().padStart(2, "0")}:00`;
 }
 
+type ResizeEdge = "top" | "bottom" | null;
+
 export default function AvailabilityCalendar({
   availability,
   onSetSlot,
   onDeleteSlot,
 }: AvailabilityCalendarProps) {
+  // Create new slot state
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ day: number; hour: number } | null>(null);
   const [dragEnd, setDragEnd] = useState<{ day: number; hour: number } | null>(null);
+  
+  // Resize state
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeSlot, setResizeSlot] = useState<Tables<"caregiver_availability"> | null>(null);
+  const [resizeEdge, setResizeEdge] = useState<ResizeEdge>(null);
+  const [resizeHour, setResizeHour] = useState<number | null>(null);
+  
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -58,24 +69,65 @@ export default function AvailabilityCalendar({
     return grouped;
   }, [availability]);
 
+  // Create new slot handlers
   const handleMouseDown = useCallback((day: number, hour: number, e: React.MouseEvent) => {
-    // Don't start drag if clicking on an existing slot
     if ((e.target as HTMLElement).closest("[data-slot-id]")) return;
+    if (isResizing) return;
     
     setIsDragging(true);
     setDragStart({ day, hour });
     setDragEnd({ day, hour });
-  }, []);
+  }, [isResizing]);
 
   const handleMouseMove = useCallback((day: number, hour: number) => {
+    if (isResizing && resizeSlot && resizeEdge) {
+      setResizeHour(hour);
+      return;
+    }
+    
     if (!isDragging || !dragStart) return;
-    // Only allow dragging within same day
     if (day === dragStart.day) {
       setDragEnd({ day, hour });
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragStart, isResizing, resizeSlot, resizeEdge]);
 
   const handleMouseUp = useCallback(async () => {
+    // Handle resize completion
+    if (isResizing && resizeSlot && resizeEdge && resizeHour !== null) {
+      const originalStart = parseTimeToHour(resizeSlot.start_time);
+      const originalEnd = parseTimeToHour(resizeSlot.end_time);
+      
+      let newStart = originalStart;
+      let newEnd = originalEnd;
+      
+      if (resizeEdge === "top") {
+        newStart = Math.min(resizeHour, originalEnd - 1);
+        newStart = Math.max(6, newStart); // Clamp to 6 AM
+      } else {
+        newEnd = Math.max(resizeHour + 1, originalStart + 1);
+        newEnd = Math.min(23, newEnd); // Clamp to 11 PM
+      }
+      
+      if (newStart !== originalStart || newEnd !== originalEnd) {
+        // Delete old slot and create new one
+        await onDeleteSlot(resizeSlot.id);
+        await onSetSlot({
+          day_of_week: resizeSlot.day_of_week,
+          start_time: hourToTimeString(newStart),
+          end_time: hourToTimeString(newEnd),
+          is_available: resizeSlot.is_available,
+          notes: resizeSlot.notes,
+        });
+      }
+      
+      setIsResizing(false);
+      setResizeSlot(null);
+      setResizeEdge(null);
+      setResizeHour(null);
+      return;
+    }
+    
+    // Handle create new slot
     if (!isDragging || !dragStart || !dragEnd) {
       setIsDragging(false);
       setDragStart(null);
@@ -99,13 +151,40 @@ export default function AvailabilityCalendar({
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, dragStart, dragEnd, onSetSlot]);
+  }, [isDragging, dragStart, dragEnd, isResizing, resizeSlot, resizeEdge, resizeHour, onSetSlot, onDeleteSlot]);
+
+  // Resize handlers
+  const handleResizeStart = useCallback((slot: Tables<"caregiver_availability">, edge: ResizeEdge, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsResizing(true);
+    setResizeSlot(slot);
+    setResizeEdge(edge);
+    const startHour = parseTimeToHour(slot.start_time);
+    const endHour = parseTimeToHour(slot.end_time);
+    setResizeHour(edge === "top" ? startHour : endHour - 1);
+  }, []);
 
   const getSlotStyle = (slot: Tables<"caregiver_availability">) => {
     const startHour = parseTimeToHour(slot.start_time);
     const endHour = parseTimeToHour(slot.end_time);
-    const top = (startHour - 6) * 32; // 32px per hour
-    const height = (endHour - startHour) * 32;
+    
+    // Apply resize preview if this slot is being resized
+    let displayStart = startHour;
+    let displayEnd = endHour;
+    
+    if (isResizing && resizeSlot?.id === slot.id && resizeHour !== null) {
+      if (resizeEdge === "top") {
+        displayStart = Math.min(resizeHour, endHour - 1);
+        displayStart = Math.max(6, displayStart);
+      } else {
+        displayEnd = Math.max(resizeHour + 1, startHour + 1);
+        displayEnd = Math.min(23, displayEnd);
+      }
+    }
+    
+    const top = (displayStart - 6) * HOUR_HEIGHT;
+    const height = (displayEnd - displayStart) * HOUR_HEIGHT;
     return { top: `${top}px`, height: `${Math.max(height, 24)}px` };
   };
 
@@ -113,20 +192,29 @@ export default function AvailabilityCalendar({
     if (!dragStart || !dragEnd) return null;
     const startHour = Math.min(dragStart.hour, dragEnd.hour);
     const endHour = Math.max(dragStart.hour, dragEnd.hour) + 1;
-    const top = (startHour - 6) * 32;
-    const height = (endHour - startHour) * 32;
+    const top = (startHour - 6) * HOUR_HEIGHT;
+    const height = (endHour - startHour) * HOUR_HEIGHT;
     return { top: `${top}px`, height: `${height}px` };
   };
 
   return (
     <div 
-      className="border rounded-lg overflow-hidden select-none"
+      className={cn(
+        "border rounded-lg overflow-hidden select-none",
+        isResizing && "cursor-ns-resize"
+      )}
       onMouseUp={handleMouseUp}
       onMouseLeave={() => {
         if (isDragging) {
           setIsDragging(false);
           setDragStart(null);
           setDragEnd(null);
+        }
+        if (isResizing) {
+          setIsResizing(false);
+          setResizeSlot(null);
+          setResizeEdge(null);
+          setResizeHour(null);
         }
       }}
     >
@@ -190,20 +278,29 @@ export default function AvailabilityCalendar({
                 key={slot.id}
                 data-slot-id={slot.id}
                 className={cn(
-                  "absolute left-1 right-1 rounded px-1.5 py-0.5 cursor-pointer transition-all text-xs overflow-hidden",
+                  "absolute left-1 right-1 rounded px-1.5 cursor-pointer transition-all text-xs overflow-hidden group",
                   slot.is_available
                     ? "bg-success/20 border border-success text-success-foreground hover:bg-success/30"
-                    : "bg-muted border border-border text-muted-foreground hover:bg-muted/80"
+                    : "bg-muted border border-border text-muted-foreground hover:bg-muted/80",
+                  isResizing && resizeSlot?.id === slot.id && "ring-2 ring-primary"
                 )}
                 style={getSlotStyle(slot)}
                 onMouseEnter={() => setHoveredSlot(slot.id)}
                 onMouseLeave={() => setHoveredSlot(null)}
               >
-                <div className="flex items-center justify-between h-full">
+                {/* Top resize handle */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-b from-primary/20 to-transparent"
+                  onMouseDown={(e) => handleResizeStart(slot, "top", e)}
+                >
+                  <GripHorizontal className="w-3 h-3 text-primary" />
+                </div>
+                
+                <div className="flex items-center justify-between h-full py-2">
                   <span className="truncate font-medium">
                     {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                   </span>
-                  {hoveredSlot === slot.id && (
+                  {hoveredSlot === slot.id && !isResizing && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -218,6 +315,14 @@ export default function AvailabilityCalendar({
                 {slot.notes && (
                   <div className="truncate text-[10px] opacity-70">{slot.notes}</div>
                 )}
+                
+                {/* Bottom resize handle */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-primary/20 to-transparent"
+                  onMouseDown={(e) => handleResizeStart(slot, "bottom", e)}
+                >
+                  <GripHorizontal className="w-3 h-3 text-primary" />
+                </div>
               </div>
             ))}
           </div>
@@ -231,7 +336,7 @@ export default function AvailabilityCalendar({
           <span>Available</span>
         </div>
         <span className="text-muted-foreground/60">•</span>
-        <span>Click and drag to add availability</span>
+        <span>Drag to add • Drag edges to resize</span>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Plus, AlertTriangle, PanelRightClose, PanelRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, AlertTriangle, PanelRightClose, PanelRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeekView } from "@/components/scheduling/WeekView";
 import { MonthView } from "@/components/scheduling/MonthView";
@@ -12,6 +12,8 @@ import { ConflictDashboard } from "@/components/scheduling/ConflictDashboard";
 import { useAppointments, type Appointment } from "@/hooks/useAppointments";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWeeklyConflicts } from "@/hooks/useWeeklyConflicts";
+import { downloadCSV, formatAppointmentForExport } from "@/utils/csvExport";
+import { useToast } from "@/hooks/use-toast";
 
 type ViewType = "day" | "week" | "month";
 
@@ -32,6 +34,19 @@ export default function Scheduling() {
   } = useAppointments(selectedDate);
 
   const { errorCount, warningCount } = useWeeklyConflicts(selectedDate);
+  const { toast } = useToast();
+
+  const handleExportAppointments = () => {
+    const exportData = appointments.map(apt => 
+      formatAppointmentForExport(
+        apt,
+        apt.client ? `${apt.client.first_name} ${apt.client.last_name}` : 'Unknown',
+        apt.caregiver ? `${apt.caregiver.first_name} ${apt.caregiver.last_name}` : 'Unknown'
+      )
+    );
+    downloadCSV(exportData, `appointments-${format(selectedDate, 'yyyy-MM')}`);
+    toast({ title: "Export complete", description: `Exported ${appointments.length} appointments` });
+  };
 
   const navigatePrevious = () => {
     switch (viewType) {
@@ -109,6 +124,14 @@ export default function Scheduling() {
             <p className="text-muted-foreground">Manage caregiver schedules and client visits</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportAppointments}
+              disabled={appointments.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
             <Button
               variant={showConflicts ? "secondary" : "outline"}
               onClick={() => setShowConflicts(!showConflicts)}

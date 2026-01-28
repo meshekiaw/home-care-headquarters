@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Appointment, ConflictInfo } from "@/hooks/useAppointments";
+import type { Appointment } from "@/hooks/useAppointments";
+import { checkSchedulingConflicts, type ConflictResult } from "@/hooks/useSchedulingConflicts";
+import { ConflictAlert } from "./ConflictAlert";
 
 interface Client {
   id: string;
@@ -32,7 +33,6 @@ interface AppointmentDialogProps {
   onSave: (appointment: Omit<Appointment, "id" | "created_at" | "updated_at" | "client" | "caregiver">) => Promise<unknown>;
   onUpdate?: (id: string, updates: Partial<Appointment>) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
-  checkConflicts: (caregiverId: string, startTime: Date, endTime: Date, excludeId?: string) => Promise<ConflictInfo>;
 }
 
 export function AppointmentDialog({
@@ -44,13 +44,13 @@ export function AppointmentDialog({
   onSave,
   onUpdate,
   onDelete,
-  checkConflicts,
 }: AppointmentDialogProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [conflict, setConflict] = useState<ConflictInfo | null>(null);
+  const [checkingConflicts, setCheckingConflicts] = useState(false);
+  const [conflict, setConflict] = useState<ConflictResult | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -111,53 +111,44 @@ export function AppointmentDialog({
     }
   };
 
-  const handleCaregiverChange = async (caregiverId: string) => {
-    setFormData((prev) => ({ ...prev, caregiver_id: caregiverId }));
-    
-    if (caregiverId && formData.start_time && formData.end_time) {
+  const runConflictCheck = async (caregiverId: string, startTime: string, endTime: string) => {
+    if (!caregiverId || !startTime || !endTime) return;
+
+    setCheckingConflicts(true);
+    try {
       const startDateTime = new Date(selectedDate);
-      const [startHour, startMin] = formData.start_time.split(":").map(Number);
+      const [startHour, startMin] = startTime.split(":").map(Number);
       startDateTime.setHours(startHour, startMin, 0, 0);
 
       const endDateTime = new Date(selectedDate);
-      const [endHour, endMin] = formData.end_time.split(":").map(Number);
+      const [endHour, endMin] = endTime.split(":").map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 
-      const conflictInfo = await checkConflicts(
+      const conflictInfo = await checkSchedulingConflicts(
         caregiverId,
         startDateTime,
         endDateTime,
         appointment?.id
       );
       setConflict(conflictInfo);
+    } finally {
+      setCheckingConflicts(false);
     }
   };
 
+  const handleCaregiverChange = async (caregiverId: string) => {
+    setFormData((prev) => ({ ...prev, caregiver_id: caregiverId }));
+    await runConflictCheck(caregiverId, formData.start_time, formData.end_time);
+  };
+
   const handleTimeChange = async (field: "start_time" | "end_time", value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    if (formData.caregiver_id) {
-      const startTime = field === "start_time" ? value : formData.start_time;
-      const endTime = field === "end_time" ? value : formData.end_time;
-
-      if (startTime && endTime) {
-        const startDateTime = new Date(selectedDate);
-        const [startHour, startMin] = startTime.split(":").map(Number);
-        startDateTime.setHours(startHour, startMin, 0, 0);
-
-        const endDateTime = new Date(selectedDate);
-        const [endHour, endMin] = endTime.split(":").map(Number);
-        endDateTime.setHours(endHour, endMin, 0, 0);
-
-        const conflictInfo = await checkConflicts(
-          formData.caregiver_id,
-          startDateTime,
-          endDateTime,
-          appointment?.id
-        );
-        setConflict(conflictInfo);
-      }
-    }
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    await runConflictCheck(
+      formData.caregiver_id,
+      field === "start_time" ? value : formData.start_time,
+      field === "end_time" ? value : formData.end_time
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -277,21 +268,14 @@ export function AppointmentDialog({
             </div>
           </div>
 
-          {conflict?.hasConflict && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Scheduling Conflict!</strong> This caregiver has {conflict.conflictingAppointments.length} overlapping appointment(s):
-                <ul className="mt-1 text-sm">
-                  {conflict.conflictingAppointments.map((apt) => (
-                    <li key={apt.id}>
-                      {format(new Date(apt.start_time), "h:mm a")} - {format(new Date(apt.end_time), "h:mm a")}: {apt.title}
-                    </li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
+          {checkingConflicts && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Checking for conflicts...
+            </div>
           )}
+
+          {conflict && <ConflictAlert conflict={conflict} />}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

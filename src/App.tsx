@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientNew from "./pages/ClientNew";
+import ClientProfile from "./pages/ClientProfile";
 import Scheduling from "./pages/Scheduling";
 import Caregivers from "./pages/Caregivers";
 import Communications from "./pages/Communications";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/new" element={<ClientNew />} />
+          <Route path="/clients/:id" element={<ClientProfile />} />
           <Route path="/scheduling" element={<Scheduling />} />
           <Route path="/caregivers" element={<Caregivers />} />
           <Route path="/communications" element={<Communications />} />

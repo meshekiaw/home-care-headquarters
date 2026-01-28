@@ -127,6 +127,153 @@ export type Database = {
           },
         ]
       }
+      caregiver_availability: {
+        Row: {
+          caregiver_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean
+          notes: string | null
+          start_time: string
+          user_id: string
+        }
+        Insert: {
+          caregiver_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean
+          notes?: string | null
+          start_time: string
+          user_id: string
+        }
+        Update: {
+          caregiver_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean
+          notes?: string | null
+          start_time?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_availability_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_credentials: {
+        Row: {
+          caregiver_id: string
+          created_at: string
+          credential_name: string
+          credential_number: string | null
+          credential_type: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string | null
+          issuing_organization: string | null
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caregiver_id: string
+          created_at?: string
+          credential_name: string
+          credential_number?: string | null
+          credential_type: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caregiver_id?: string
+          created_at?: string
+          credential_name?: string
+          credential_number?: string | null
+          credential_type?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_credentials_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_skills: {
+        Row: {
+          caregiver_id: string
+          created_at: string
+          id: string
+          is_certified: boolean | null
+          notes: string | null
+          proficiency_level: string
+          skill_name: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          caregiver_id: string
+          created_at?: string
+          id?: string
+          is_certified?: boolean | null
+          notes?: string | null
+          proficiency_level?: string
+          skill_name: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          caregiver_id?: string
+          created_at?: string
+          id?: string
+          is_certified?: boolean | null
+          notes?: string | null
+          proficiency_level?: string
+          skill_name?: string
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_skills_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caregivers: {
         Row: {
           created_at: string

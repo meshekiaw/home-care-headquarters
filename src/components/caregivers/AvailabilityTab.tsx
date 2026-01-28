@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Clock, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Clock, Trash2, Calendar, List } from "lucide-react";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import AvailabilityCalendar from "./AvailabilityCalendar";
 
 interface AvailabilityTabProps {
   availability: Tables<"caregiver_availability">[];
@@ -31,6 +33,7 @@ const TIME_SLOTS = [
 ];
 
 export default function AvailabilityTab({ availability, onSetSlot, onDeleteSlot }: AvailabilityTabProps) {
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     day_of_week: 1,
@@ -58,7 +61,7 @@ export default function AvailabilityTab({ availability, onSetSlot, onDeleteSlot 
     });
   };
 
-  // Group availability by day
+  // Group availability by day for list view
   const availabilityByDay = DAYS.map((day) => ({
     ...day,
     slots: availability.filter((a) => a.day_of_week === day.value).sort((a, b) => a.start_time.localeCompare(b.start_time)),
@@ -67,9 +70,19 @@ export default function AvailabilityTab({ availability, onSetSlot, onDeleteSlot 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Set weekly availability schedule
-        </p>
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "calendar" | "list")} className="w-auto">
+          <TabsList className="h-8">
+            <TabsTrigger value="calendar" className="text-xs px-2.5 gap-1.5">
+              <Calendar className="w-3.5 h-3.5" />
+              Calendar
+            </TabsTrigger>
+            <TabsTrigger value="list" className="text-xs px-2.5 gap-1.5">
+              <List className="w-3.5 h-3.5" />
+              List
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
@@ -159,43 +172,51 @@ export default function AvailabilityTab({ availability, onSetSlot, onDeleteSlot 
         </Dialog>
       </div>
 
-      <div className="space-y-3">
-        {availabilityByDay.map((day) => (
-          <Card key={day.value}>
-            <CardContent className="p-4">
-              <div className="flex items-start gap-4">
-                <div className="w-24 flex-shrink-0">
-                  <span className="font-medium text-sm">{day.label}</span>
-                </div>
-                <div className="flex-1">
-                  {day.slots.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {day.slots.map((slot) => (
-                        <Badge
-                          key={slot.id}
-                          variant={slot.is_available ? "default" : "secondary"}
-                          className="text-sm py-1.5 px-3 gap-2 group"
-                        >
-                          <Clock className="w-3.5 h-3.5" />
-                          {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
-                          <button
-                            onClick={() => onDeleteSlot(slot.id)}
-                            className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+      {viewMode === "calendar" ? (
+        <AvailabilityCalendar
+          availability={availability}
+          onSetSlot={onSetSlot}
+          onDeleteSlot={onDeleteSlot}
+        />
+      ) : (
+        <div className="space-y-3">
+          {availabilityByDay.map((day) => (
+            <Card key={day.value}>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-24 flex-shrink-0">
+                    <span className="font-medium text-sm">{day.label}</span>
+                  </div>
+                  <div className="flex-1">
+                    {day.slots.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {day.slots.map((slot) => (
+                          <Badge
+                            key={slot.id}
+                            variant={slot.is_available ? "default" : "secondary"}
+                            className="text-sm py-1.5 px-3 gap-2 group"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">No availability set</span>
-                  )}
+                            <Clock className="w-3.5 h-3.5" />
+                            {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                            <button
+                              onClick={() => onDeleteSlot(slot.id)}
+                              className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No availability set</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {availability.length === 0 && (
         <Card className="mt-4">
@@ -203,7 +224,9 @@ export default function AvailabilityTab({ availability, onSetSlot, onDeleteSlot 
             <Clock className="w-12 h-12 text-muted-foreground mb-4" />
             <h3 className="font-semibold mb-1">No availability set</h3>
             <p className="text-sm text-muted-foreground">
-              Add time slots to define when this caregiver is available
+              {viewMode === "calendar" 
+                ? "Click and drag on the calendar to add availability, or use the Add Time Slot button"
+                : "Add time slots to define when this caregiver is available"}
             </p>
           </CardContent>
         </Card>

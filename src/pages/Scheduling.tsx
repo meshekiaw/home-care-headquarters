@@ -23,7 +23,6 @@ export default function Scheduling() {
   const {
     appointments,
     loading,
-    checkConflicts,
     createAppointment,
     updateAppointment,
     deleteAppointment,
@@ -229,7 +228,6 @@ export default function Scheduling() {
         onSave={createAppointment}
         onUpdate={updateAppointment}
         onDelete={deleteAppointment}
-        checkConflicts={checkConflicts}
       />
     </DashboardLayout>
   );

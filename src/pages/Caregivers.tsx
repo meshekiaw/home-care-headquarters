@@ -6,17 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCaregivers } from "@/hooks/useCaregivers";
-import CaregiverProfileDialog from "@/components/caregivers/CaregiverProfileDialog";
+
 import AddCaregiverDialog from "@/components/caregivers/AddCaregiverDialog";
-import { UserCheck, Plus, Search, Star, Phone, Mail, AlertTriangle } from "lucide-react";
+import { UserCheck, Plus, Search, Phone, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 
 export default function Caregivers() {
   const { caregivers, loading, createCaregiver, refetch } = useCaregivers();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCaregiver, setSelectedCaregiver] = useState<Tables<"caregivers"> | null>(null);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const filteredCaregivers = caregivers.filter((caregiver) => {
     const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
@@ -26,8 +26,7 @@ export default function Caregivers() {
   });
 
   const handleViewProfile = (caregiver: Tables<"caregivers">) => {
-    setSelectedCaregiver(caregiver);
-    setProfileOpen(true);
+    navigate(`/caregivers/${caregiver.id}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -175,13 +174,6 @@ export default function Caregivers() {
           </div>
         )}
       </div>
-
-      <CaregiverProfileDialog
-        caregiver={selectedCaregiver}
-        open={profileOpen}
-        onOpenChange={setProfileOpen}
-        onUpdate={refetch}
-      />
 
       <AddCaregiverDialog
         open={addDialogOpen}

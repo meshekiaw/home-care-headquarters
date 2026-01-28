@@ -9,6 +9,7 @@ import CredentialsTab from "./CredentialsTab";
 import AvailabilityTab from "./AvailabilityTab";
 import SkillsTab from "./SkillsTab";
 import CaregiverOverviewTab from "./CaregiverOverviewTab";
+import AssignmentsHistoryTab from "./AssignmentsHistoryTab";
 
 interface CaregiverProfileDialogProps {
   caregiver: Tables<"caregivers"> | null;
@@ -89,8 +90,9 @@ export default function CaregiverProfileDialog({
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="assignments">Assignments</TabsTrigger>
               <TabsTrigger value="credentials">
                 Credentials
                 {credentials.length > 0 && (
@@ -117,6 +119,10 @@ export default function CaregiverProfileDialog({
                 skills={skills}
                 availability={availability}
               />
+            </TabsContent>
+
+            <TabsContent value="assignments" className="mt-4">
+              <AssignmentsHistoryTab caregiverId={caregiver.id} />
             </TabsContent>
 
             <TabsContent value="credentials" className="mt-4">

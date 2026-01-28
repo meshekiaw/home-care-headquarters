@@ -11,10 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AddCaregiverDialog from "@/components/caregivers/AddCaregiverDialog";
 import BulkImportDialog from "@/components/caregivers/BulkImportDialog";
-import { UserCheck, Plus, Search, Phone, Mail, Upload } from "lucide-react";
+import { UserCheck, Plus, Search, Phone, Mail, Upload, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
+import { downloadCSV, formatCaregiverForExport } from "@/utils/csvExport";
 
 export default function Caregivers() {
   const { caregivers, loading, createCaregiver, refetch } = useCaregivers();
@@ -58,6 +59,18 @@ export default function Caregivers() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                const exportData = caregivers.map(formatCaregiverForExport);
+                downloadCSV(exportData, `caregivers-${new Date().toISOString().split('T')[0]}`);
+                toast({ title: "Export complete", description: `Exported ${caregivers.length} caregivers` });
+              }}
+              disabled={caregivers.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
             <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
               <Upload className="w-4 h-4 mr-2" />
               Import CSV

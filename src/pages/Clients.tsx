@@ -20,7 +20,8 @@ import {
   Mail,
   MapPin,
   Users,
-  Filter
+  Filter,
+  Download
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { downloadCSV, formatClientForExport } from "@/utils/csvExport";
 
 interface Client {
   id: string;
@@ -101,12 +103,26 @@ export default function Clients() {
             <h2 className="text-2xl font-bold">Clients</h2>
             <p className="text-muted-foreground">Manage your client profiles and care plans</p>
           </div>
-          <Link to="/clients/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Client
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                const exportData = clients.map(formatClientForExport);
+                downloadCSV(exportData, `clients-${new Date().toISOString().split('T')[0]}`);
+                toast({ title: "Export complete", description: `Exported ${clients.length} clients` });
+              }}
+              disabled={clients.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
             </Button>
-          </Link>
+            <Link to="/clients/new">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Client
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Search and Filters */}

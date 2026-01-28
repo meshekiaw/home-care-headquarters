@@ -14,6 +14,7 @@ import ClientNew from "./pages/ClientNew";
 import ClientProfile from "./pages/ClientProfile";
 import Scheduling from "./pages/Scheduling";
 import Caregivers from "./pages/Caregivers";
+import CaregiverProfile from "./pages/CaregiverProfile";
 import Communications from "./pages/Communications";
 import Analytics from "./pages/Analytics";
 import Compliance from "./pages/Compliance";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/clients/:id" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
             <Route path="/scheduling" element={<ProtectedRoute><Scheduling /></ProtectedRoute>} />
             <Route path="/caregivers" element={<ProtectedRoute><Caregivers /></ProtectedRoute>} />
+            <Route path="/caregivers/:id" element={<ProtectedRoute><CaregiverProfile /></ProtectedRoute>} />
             <Route path="/communications" element={<ProtectedRoute><Communications /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/compliance" element={<ProtectedRoute><Compliance /></ProtectedRoute>} />

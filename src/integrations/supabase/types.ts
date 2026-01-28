@@ -276,6 +276,8 @@ export type Database = {
       }
       caregivers: {
         Row: {
+          address: string | null
+          city: string | null
           created_at: string
           email: string | null
           first_name: string
@@ -283,12 +285,17 @@ export type Database = {
           id: string
           last_name: string
           phone: string | null
+          service_radius_miles: number | null
           specializations: string[] | null
+          state: string | null
           status: string
           updated_at: string
           user_id: string
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
           first_name: string
@@ -296,12 +303,17 @@ export type Database = {
           id?: string
           last_name: string
           phone?: string | null
+          service_radius_miles?: number | null
           specializations?: string[] | null
+          state?: string | null
           status?: string
           updated_at?: string
           user_id: string
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           created_at?: string
           email?: string | null
           first_name?: string
@@ -309,10 +321,13 @@ export type Database = {
           id?: string
           last_name?: string
           phone?: string | null
+          service_radius_miles?: number | null
           specializations?: string[] | null
+          state?: string | null
           status?: string
           updated_at?: string
           user_id?: string
+          zip_code?: string | null
         }
         Relationships: []
       }

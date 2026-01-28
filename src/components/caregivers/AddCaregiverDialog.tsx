@@ -18,6 +18,11 @@ interface AddCaregiverDialogProps {
     status: string;
     hourly_rate?: number;
     specializations?: string[];
+    address?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    service_radius_miles?: number;
   }) => Promise<any>;
 }
 
@@ -44,6 +49,11 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
     status: "active",
     hourly_rate: "",
     specializations: [] as string[],
+    address: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    service_radius_miles: "25",
   });
 
   const handleSubmit = async () => {
@@ -57,6 +67,11 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         status: formData.status,
         hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : undefined,
         specializations: formData.specializations.length > 0 ? formData.specializations : undefined,
+        address: formData.address || undefined,
+        city: formData.city || undefined,
+        state: formData.state || undefined,
+        zip_code: formData.zip_code || undefined,
+        service_radius_miles: formData.service_radius_miles ? parseInt(formData.service_radius_miles) : undefined,
       });
       onOpenChange(false);
       setFormData({
@@ -67,6 +82,11 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         status: "active",
         hourly_rate: "",
         specializations: [],
+        address: "",
+        city: "",
+        state: "",
+        zip_code: "",
+        service_radius_miles: "25",
       });
     } finally {
       setLoading(false);
@@ -184,6 +204,63 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
                   </Badge>
                 )
               )}
+            </div>
+          </div>
+
+          {/* Location Section */}
+          <div className="pt-4 border-t">
+            <Label className="text-base font-semibold">Location (for proximity matching)</Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Add location to match caregivers with nearby clients
+            </p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Street Address</Label>
+                <Input
+                  value={formData.address}
+                  onChange={(e) => setFormData((f) => ({ ...f, address: e.target.value }))}
+                  placeholder="123 Main St"
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>City</Label>
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => setFormData((f) => ({ ...f, city: e.target.value }))}
+                    placeholder="San Francisco"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>State</Label>
+                  <Input
+                    value={formData.state}
+                    onChange={(e) => setFormData((f) => ({ ...f, state: e.target.value }))}
+                    placeholder="CA"
+                    maxLength={2}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Zip Code</Label>
+                  <Input
+                    value={formData.zip_code}
+                    onChange={(e) => setFormData((f) => ({ ...f, zip_code: e.target.value }))}
+                    placeholder="94102"
+                    maxLength={10}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Service Radius (miles)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.service_radius_miles}
+                  onChange={(e) => setFormData((f) => ({ ...f, service_radius_miles: e.target.value }))}
+                  placeholder="25"
+                />
+              </div>
             </div>
           </div>
         </div>

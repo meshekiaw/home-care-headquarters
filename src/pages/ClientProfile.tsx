@@ -19,7 +19,8 @@ import {
   Stethoscope,
   Users,
   FileText,
-  Target
+  Target,
+  Navigation
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ import { MedicalHistoryTab } from "@/components/clients/MedicalHistoryTab";
 import { AssignedCaregiversTab } from "@/components/clients/AssignedCaregiversTab";
 import { DocumentsTab } from "@/components/clients/DocumentsTab";
 import { ClientRequiredSkillsTab } from "@/components/clients/ClientRequiredSkillsTab";
+import ProximityMatchTab from "@/components/clients/ProximityMatchTab";
 
 interface Client {
   id: string;
@@ -210,14 +212,18 @@ export default function ClientProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
             <TabsTrigger value="skill-match" className="flex items-center gap-2">
               <Target className="w-4 h-4" />
-              <span className="hidden sm:inline">Skill Match</span>
+              <span className="hidden sm:inline">Skills</span>
+            </TabsTrigger>
+            <TabsTrigger value="proximity" className="flex items-center gap-2">
+              <Navigation className="w-4 h-4" />
+              <span className="hidden sm:inline">Nearby</span>
             </TabsTrigger>
             <TabsTrigger value="care-plans" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -243,6 +249,10 @@ export default function ClientProfile() {
 
           <TabsContent value="skill-match">
             <ClientRequiredSkillsTab clientId={client.id} />
+          </TabsContent>
+
+          <TabsContent value="proximity">
+            <ProximityMatchTab clientId={client.id} />
           </TabsContent>
 
           <TabsContent value="care-plans">

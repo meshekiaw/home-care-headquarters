@@ -2,14 +2,16 @@ import { useState } from "react";
 import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, AlertTriangle, PanelRightClose, PanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeekView } from "@/components/scheduling/WeekView";
 import { MonthView } from "@/components/scheduling/MonthView";
 import { DayView } from "@/components/scheduling/DayView";
 import { AppointmentDialog } from "@/components/scheduling/AppointmentDialog";
+import { ConflictDashboard } from "@/components/scheduling/ConflictDashboard";
 import { useAppointments, type Appointment } from "@/hooks/useAppointments";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWeeklyConflicts } from "@/hooks/useWeeklyConflicts";
 
 type ViewType = "day" | "week" | "month";
 
@@ -19,6 +21,7 @@ export default function Scheduling() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedHour, setSelectedHour] = useState<number | undefined>();
   const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>();
+  const [showConflicts, setShowConflicts] = useState(true);
 
   const {
     appointments,
@@ -27,6 +30,8 @@ export default function Scheduling() {
     updateAppointment,
     deleteAppointment,
   } = useAppointments(selectedDate);
+
+  const { errorCount, warningCount } = useWeeklyConflicts(selectedDate);
 
   const navigatePrevious = () => {
     switch (viewType) {
@@ -103,14 +108,43 @@ export default function Scheduling() {
             <h2 className="text-2xl font-bold">Scheduling</h2>
             <p className="text-muted-foreground">Manage caregiver schedules and client visits</p>
           </div>
-          <Button onClick={handleNewAppointment}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Appointment
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showConflicts ? "secondary" : "outline"}
+              onClick={() => setShowConflicts(!showConflicts)}
+              className="relative"
+            >
+              {showConflicts ? (
+                <PanelRightClose className="w-4 h-4 mr-2" />
+              ) : (
+                <PanelRight className="w-4 h-4 mr-2" />
+              )}
+              Conflicts
+              {(errorCount > 0 || warningCount > 0) && (
+                <span className="absolute -top-1 -right-1 flex items-center justify-center">
+                  {errorCount > 0 ? (
+                    <span className="w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                      {errorCount}
+                    </span>
+                  ) : (
+                    <span className="w-5 h-5 rounded-full bg-warning text-warning-foreground text-xs flex items-center justify-center">
+                      {warningCount}
+                    </span>
+                  )}
+                </span>
+              )}
+            </Button>
+            <Button onClick={handleNewAppointment}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Appointment
+            </Button>
+          </div>
         </div>
 
-        <Card className="flex-1 flex flex-col overflow-hidden">
-          <CardContent className="p-4 flex flex-col flex-1 overflow-hidden">
+        <div className={`flex-1 flex gap-6 overflow-hidden ${showConflicts ? "" : ""}`}>
+          {/* Main Calendar */}
+          <Card className={`flex-1 flex flex-col overflow-hidden ${showConflicts ? "lg:flex-[2]" : ""}`}>
+            <CardContent className="p-4 flex flex-col flex-1 overflow-hidden">
             {/* Calendar Controls */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <div className="flex items-center gap-2">
@@ -191,8 +225,16 @@ export default function Scheduling() {
                 </>
               )}
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Conflict Dashboard */}
+          {showConflicts && (
+            <div className="hidden lg:block lg:flex-1 lg:max-w-md">
+              <ConflictDashboard weekDate={selectedDate} />
+            </div>
+          )}
+        </div>
 
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-sm">

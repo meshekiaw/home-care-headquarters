@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          caregiver_id: string
+          client_id: string
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          notes: string | null
+          start_time: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caregiver_id: string
+          client_id: string
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          notes?: string | null
+          start_time: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caregiver_id?: string
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          notes?: string | null
+          start_time?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       care_plans: {
         Row: {
           client_id: string

@@ -1,0 +1,188 @@
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { 
+  User, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Calendar,
+  AlertCircle,
+  FileText
+} from "lucide-react";
+
+interface Client {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  date_of_birth: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  notes: string | null;
+  status: string;
+  created_at: string;
+}
+
+interface ClientOverviewProps {
+  client: Client;
+  formatDate: (date: string | null) => string;
+}
+
+export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {/* Personal Information */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <User className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg">Personal Information</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Full Name</p>
+              <p className="font-medium">{client.first_name} {client.last_name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Date of Birth</p>
+              <p className="font-medium">{formatDate(client.date_of_birth)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="font-medium capitalize">{client.status}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Client Since</p>
+              <p className="font-medium">{formatDate(client.created_at)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Information */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Phone className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg">Contact Information</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {client.phone ? (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Phone className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <a href={`tel:${client.phone}`} className="font-medium hover:text-primary transition-colors">
+                    {client.phone}
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">No phone number</p>
+            )}
+            
+            {client.email ? (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <a href={`mailto:${client.email}`} className="font-medium hover:text-primary transition-colors">
+                    {client.email}
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">No email address</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Address */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg">Address</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {client.address || client.city || client.state ? (
+            <div className="space-y-1">
+              {client.address && <p className="font-medium">{client.address}</p>}
+              {(client.city || client.state || client.zip_code) && (
+                <p className="text-muted-foreground">
+                  {[client.city, client.state, client.zip_code].filter(Boolean).join(', ')}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">No address on file</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Emergency Contact */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-destructive" />
+            <CardTitle className="text-lg">Emergency Contact</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {client.emergency_contact_name || client.emergency_contact_phone ? (
+            <div className="space-y-2">
+              {client.emergency_contact_name && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{client.emergency_contact_name}</p>
+                </div>
+              )}
+              {client.emergency_contact_phone && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <a 
+                    href={`tel:${client.emergency_contact_phone}`} 
+                    className="font-medium hover:text-primary transition-colors"
+                  >
+                    {client.emergency_contact_phone}
+                  </a>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">No emergency contact on file</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Notes */}
+      {client.notes && (
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">Notes</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground whitespace-pre-wrap">{client.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

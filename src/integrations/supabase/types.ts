@@ -14,6 +14,202 @@ export type Database = {
   }
   public: {
     Tables: {
+      care_plans: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          frequency: string | null
+          goals: string | null
+          id: string
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          goals?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          goals?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregivers: {
+        Row: {
+          created_at: string
+          email: string | null
+          first_name: string
+          hourly_rate: number | null
+          id: string
+          last_name: string
+          phone: string | null
+          specializations: string[] | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          first_name: string
+          hourly_rate?: number | null
+          id?: string
+          last_name: string
+          phone?: string | null
+          specializations?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          hourly_rate?: number | null
+          id?: string
+          last_name?: string
+          phone?: string | null
+          specializations?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      client_caregivers: {
+        Row: {
+          assigned_date: string
+          caregiver_id: string
+          client_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_date?: string
+          caregiver_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_date?: string
+          caregiver_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_caregivers_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_caregivers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_documents: {
+        Row: {
+          category: string | null
+          client_id: string
+          created_at: string
+          expires_at: string | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          name: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          client_id: string
+          created_at?: string
+          expires_at?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          name: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          client_id?: string
+          created_at?: string
+          expires_at?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          name?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -73,6 +269,53 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      medical_history: {
+        Row: {
+          client_id: string
+          condition_name: string
+          created_at: string
+          diagnosis_date: string | null
+          id: string
+          is_current: boolean | null
+          notes: string | null
+          severity: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          condition_name: string
+          created_at?: string
+          diagnosis_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          severity?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          condition_name?: string
+          created_at?: string
+          diagnosis_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          notes?: string | null
+          severity?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

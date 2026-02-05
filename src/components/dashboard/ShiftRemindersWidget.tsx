@@ -1,0 +1,212 @@
+ import { useEffect, useState } from "react";
+ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+ import { Badge } from "@/components/ui/badge";
+ import { Button } from "@/components/ui/button";
+ import { Skeleton } from "@/components/ui/skeleton";
+ import { Bell, Clock, ArrowRight } from "lucide-react";
+ import { supabase } from "@/integrations/supabase/client";
+ import { format, differenceInMinutes } from "date-fns";
+ import { Link } from "react-router-dom";
+ 
+ interface UpcomingShift {
+   id: string;
+   title: string;
+   end_time: string;
+   caregiver_name: string;
+   client_name: string;
+   minutes_until_end: number;
+ }
+ 
+ interface RecentNotification {
+   id: string;
+   subject: string;
+   notification_type: string;
+   created_at: string;
+   email_sent: boolean;
+   sms_sent: boolean;
+ }
+ 
+ export default function ShiftRemindersWidget() {
+   const [upcomingShifts, setUpcomingShifts] = useState<UpcomingShift[]>([]);
+   const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([]);
+   const [loading, setLoading] = useState(true);
+ 
+   useEffect(() => {
+     async function fetchData() {
+       try {
+         const now = new Date();
+         const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000);
+ 
+         // Fetch appointments ending in the next 30 minutes
+         const { data: appointments } = await supabase
+           .from('appointments')
+           .select(`
+             id,
+             title,
+             end_time,
+             caregivers:caregiver_id(first_name, last_name),
+             clients:client_id(first_name, last_name)
+           `)
+           .eq('status', 'scheduled')
+           .gte('end_time', now.toISOString())
+           .lte('end_time', thirtyMinutesFromNow.toISOString())
+           .order('end_time', { ascending: true })
+           .limit(5);
+ 
+         if (appointments) {
+           const shifts = appointments.map((apt: any) => ({
+             id: apt.id,
+             title: apt.title,
+             end_time: apt.end_time,
+             caregiver_name: apt.caregivers 
+               ? `${apt.caregivers.first_name} ${apt.caregivers.last_name}`
+               : 'Unknown',
+             client_name: apt.clients
+               ? `${apt.clients.first_name} ${apt.clients.last_name}`
+               : 'Unknown',
+             minutes_until_end: differenceInMinutes(new Date(apt.end_time), now)
+           }));
+           setUpcomingShifts(shifts);
+         }
+ 
+         // Fetch recent notifications
+         const { data: notifications } = await supabase
+           .from('notifications')
+           .select('id, subject, notification_type, created_at, email_sent, sms_sent')
+           .order('created_at', { ascending: false })
+           .limit(5);
+ 
+         if (notifications) {
+           setRecentNotifications(notifications);
+         }
+       } catch (error) {
+         console.error('Error fetching shift reminders:', error);
+       } finally {
+         setLoading(false);
+       }
+     }
+ 
+     fetchData();
+     
+     // Refresh every minute
+     const interval = setInterval(fetchData, 60000);
+     return () => clearInterval(interval);
+   }, []);
+ 
+   const getNotificationTypeBadge = (type: string) => {
+     if (type.includes('shift_reminder')) {
+       return <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">Shift Reminder</Badge>;
+     }
+     if (type.includes('credential')) {
+       return <Badge variant="secondary" className="bg-destructive/10 text-destructive border-destructive/20">Credential</Badge>;
+     }
+     if (type.includes('assessment')) {
+       return <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">Assessment</Badge>;
+     }
+     if (type.includes('handoff')) {
+       return <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Handoff</Badge>;
+     }
+     return <Badge variant="outline">{type}</Badge>;
+   };
+ 
+   if (loading) {
+     return (
+       <Card>
+         <CardHeader>
+           <CardTitle className="text-lg font-semibold flex items-center gap-2">
+             <Bell className="w-5 h-5" />
+             Shift Reminders & Notifications
+           </CardTitle>
+         </CardHeader>
+         <CardContent className="space-y-4">
+           <Skeleton className="h-16 w-full" />
+           <Skeleton className="h-16 w-full" />
+           <Skeleton className="h-16 w-full" />
+         </CardContent>
+       </Card>
+     );
+   }
+ 
+   return (
+     <Card>
+       <CardHeader className="flex flex-row items-center justify-between pb-4">
+         <CardTitle className="text-lg font-semibold flex items-center gap-2">
+           <Bell className="w-5 h-5 text-primary" />
+           Shift Reminders & Notifications
+         </CardTitle>
+         <Link to="/notifications">
+           <Button variant="ghost" size="sm">
+             View all
+             <ArrowRight className="w-4 h-4 ml-1" />
+           </Button>
+         </Link>
+       </CardHeader>
+       <CardContent className="space-y-6">
+         {/* Upcoming Shifts Ending Soon */}
+         <div>
+           <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+             <Clock className="w-4 h-4" />
+             Shifts Ending Soon
+           </h4>
+           {upcomingShifts.length === 0 ? (
+             <p className="text-sm text-muted-foreground italic">No shifts ending in the next 30 minutes</p>
+           ) : (
+             <div className="space-y-2">
+               {upcomingShifts.map((shift) => (
+                 <div 
+                   key={shift.id} 
+                   className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20"
+                 >
+                   <div className="flex-1 min-w-0">
+                     <p className="text-sm font-medium truncate">{shift.title}</p>
+                     <p className="text-xs text-muted-foreground">
+                       {shift.caregiver_name} → {shift.client_name}
+                     </p>
+                   </div>
+                   <Badge variant="secondary" className="bg-warning/10 text-warning ml-2 shrink-0">
+                     {shift.minutes_until_end} min
+                   </Badge>
+                 </div>
+               ))}
+             </div>
+           )}
+         </div>
+ 
+         {/* Recent Notifications */}
+         <div>
+           <h4 className="text-sm font-medium text-muted-foreground mb-3">Recent Notifications</h4>
+           {recentNotifications.length === 0 ? (
+             <p className="text-sm text-muted-foreground italic">No recent notifications</p>
+           ) : (
+             <div className="space-y-2">
+               {recentNotifications.map((notification) => (
+                 <div 
+                   key={notification.id} 
+                   className="flex items-start justify-between p-3 rounded-lg bg-secondary/50"
+                 >
+                   <div className="flex-1 min-w-0">
+                     <div className="flex items-center gap-2 mb-1">
+                       {getNotificationTypeBadge(notification.notification_type)}
+                       <div className="flex gap-1">
+                         {notification.email_sent && (
+                           <span className="text-xs text-success">✓ Email</span>
+                         )}
+                         {notification.sms_sent && (
+                           <span className="text-xs text-success">✓ SMS</span>
+                         )}
+                       </div>
+                     </div>
+                     <p className="text-sm truncate">{notification.subject}</p>
+                     <p className="text-xs text-muted-foreground">
+                       {format(new Date(notification.created_at), 'MMM d, h:mm a')}
+                     </p>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+         </div>
+       </CardContent>
+     </Card>
+   );
+ }

@@ -46,6 +46,7 @@
      loading,
      generatingPolicy,
      addRegulation,
+    bulkAddRegulations,
      deleteRegulation,
      generatePolicy,
      updatePolicyStatus,
@@ -80,9 +81,21 @@
        effective_date: data.effective_date || null,
        is_predefined: data.is_predefined || false,
      });
-     if (result) {
-       setShowAddDialog(false);
-     }
+    return result;
+  };
+
+  const handleBulkAddRegulations = async (regsData: any[]) => {
+    const regulations = regsData.map(data => ({
+      state: data.state,
+      regulation_name: data.regulation_name,
+      regulation_description: data.regulation_description || null,
+      regulation_code: data.regulation_code || null,
+      category: data.category || 'general',
+      source_url: data.source_url || null,
+      effective_date: data.effective_date || null,
+      is_predefined: data.is_predefined || false,
+    }));
+    await bulkAddRegulations(regulations);
    };
  
    const getStatusBadge = (status: string) => {
@@ -328,6 +341,7 @@
          open={showAddDialog}
          onOpenChange={setShowAddDialog}
          onAdd={handleAddRegulation}
+        onBulkAdd={handleBulkAddRegulations}
        />
  
        <PolicyViewerDialog

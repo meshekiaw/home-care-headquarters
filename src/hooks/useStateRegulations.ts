@@ -111,6 +111,38 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      }
    };
  
+  const bulkAddRegulations = async (regulations: Omit<StateRegulation, 'id' | 'user_id' | 'created_at' | 'updated_at'>[]) => {
+    if (!user) return [];
+
+    try {
+      const regsWithUserId = regulations.map(reg => ({
+        ...reg,
+        user_id: user.id,
+      }));
+
+      const { data, error } = await supabase
+        .from('state_regulations')
+        .insert(regsWithUserId)
+        .select();
+
+      if (error) throw error;
+
+      setRegulations(prev => [...prev, ...(data || [])]);
+      toast({
+        title: "Regulations added",
+        description: `${data?.length || 0} regulations have been added.`,
+      });
+      return data || [];
+    } catch (error: any) {
+      toast({
+        title: "Error adding regulations",
+        description: error.message,
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
    const deleteRegulation = async (id: string) => {
      try {
        const { error } = await supabase
@@ -244,6 +276,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      loading,
      generatingPolicy,
      addRegulation,
+    bulkAddRegulations,
      deleteRegulation,
      generatePolicy,
      updatePolicyStatus,

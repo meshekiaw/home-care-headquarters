@@ -20,6 +20,10 @@
  import { useToast } from "@/hooks/use-toast";
  import { NurseOverviewTab } from "@/components/nurses/NurseOverviewTab";
  import { NurseCredentialsTab } from "@/components/nurses/NurseCredentialsTab";
+ import { AssignedClientsTab } from "@/components/nurses/AssignedClientsTab";
+ import { ExpiringAssessmentsTab } from "@/components/nurses/ExpiringAssessmentsTab";
+ import { HandoffQueueTab } from "@/components/nurses/HandoffQueueTab";
+ import { Users, ClipboardList, HandHelping } from "lucide-react";
  
  interface Nurse {
    id: string;
@@ -179,16 +183,29 @@
            </div>
          </div>
  
-         {/* Tabs */}
-         <Tabs defaultValue="overview" className="space-y-6">
-           <TabsList>
+ 
+          {/* Tabs */}
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 lg:w-auto lg:inline-grid">
              <TabsTrigger value="overview" className="flex items-center gap-2">
                <User className="w-4 h-4" />
                Overview
              </TabsTrigger>
              <TabsTrigger value="credentials" className="flex items-center gap-2">
                <Shield className="w-4 h-4" />
-               Credentials
+                <span className="hidden sm:inline">Credentials</span>
+              </TabsTrigger>
+              <TabsTrigger value="clients" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Clients</span>
+              </TabsTrigger>
+              <TabsTrigger value="assessments" className="flex items-center gap-2">
+                <ClipboardList className="w-4 h-4" />
+                <span className="hidden sm:inline">Assessments</span>
+              </TabsTrigger>
+              <TabsTrigger value="handoffs" className="flex items-center gap-2">
+                <HandHelping className="w-4 h-4" />
+                <span className="hidden sm:inline">Handoffs</span>
              </TabsTrigger>
            </TabsList>
  
@@ -199,6 +216,18 @@
            <TabsContent value="credentials">
              <NurseCredentialsTab nurseId={nurse.id} />
            </TabsContent>
+ 
+            <TabsContent value="clients">
+              <AssignedClientsTab nurseId={nurse.id} />
+            </TabsContent>
+ 
+            <TabsContent value="assessments">
+              <ExpiringAssessmentsTab nurseId={nurse.id} />
+            </TabsContent>
+ 
+            <TabsContent value="handoffs">
+              <HandoffQueueTab nurseId={nurse.id} />
+            </TabsContent>
          </Tabs>
        </div>
      </DashboardLayout>

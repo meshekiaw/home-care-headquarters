@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -17,9 +17,10 @@ import {
   X,
   ChevronLeft,
   Bell,
-   Stethoscope,
+  Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -41,9 +42,33 @@ const navItems = [
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const { toast } = useToast();
   const { user, signOut } = useAuth();
+
+  // Fetch unread notification count
+  useEffect(() => {
+    async function fetchUnreadCount() {
+      if (!user) return;
+      
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('email_sent', false)
+        .eq('sms_sent', false);
+      
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    }
+
+    fetchUnreadCount();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -86,6 +111,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
+            const isNotifications = item.path === "/notifications";
             return (
               <Link
                 key={item.path}
@@ -97,7 +123,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
               >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
+                <div className="relative">
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {isNotifications && unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-destructive text-destructive-foreground rounded-full">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </div>
                 {sidebarOpen && <span className="font-medium">{item.label}</span>}
               </Link>
             );
@@ -151,6 +184,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <nav className="py-4 px-3 space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
+            const isNotifications = item.path === "/notifications";
             return (
               <Link
                 key={item.path}
@@ -163,7 +197,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent"
                 )}
               >
-                <item.icon className="w-5 h-5" />
+                <div className="relative">
+                  <item.icon className="w-5 h-5" />
+                  {isNotifications && unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-destructive text-destructive-foreground rounded-full">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </div>
                 <span className="font-medium">{item.label}</span>
               </Link>
             );

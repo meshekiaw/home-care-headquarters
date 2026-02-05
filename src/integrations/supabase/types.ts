@@ -74,6 +74,67 @@ export type Database = {
           },
         ]
       }
+      assessment_handoffs: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          id: string
+          picked_up_at: string | null
+          picked_up_by_nurse_id: string | null
+          reason: string | null
+          released_at: string
+          released_by_nurse_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          id?: string
+          picked_up_at?: string | null
+          picked_up_by_nurse_id?: string | null
+          reason?: string | null
+          released_at?: string
+          released_by_nurse_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          id?: string
+          picked_up_at?: string | null
+          picked_up_by_nurse_id?: string | null
+          reason?: string | null
+          released_at?: string
+          released_by_nurse_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_handoffs_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "client_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_handoffs_picked_up_by_nurse_id_fkey"
+            columns: ["picked_up_by_nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_handoffs_released_by_nurse_id_fkey"
+            columns: ["released_by_nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       care_plans: {
         Row: {
           client_id: string
@@ -331,6 +392,66 @@ export type Database = {
         }
         Relationships: []
       }
+      client_assessments: {
+        Row: {
+          assessment_name: string
+          assessment_type: string
+          assigned_nurse_id: string | null
+          client_id: string
+          completed_date: string | null
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessment_name: string
+          assessment_type: string
+          assigned_nurse_id?: string | null
+          client_id: string
+          completed_date?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assessment_name?: string
+          assessment_type?: string
+          assigned_nurse_id?: string | null
+          client_id?: string
+          completed_date?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_assessments_assigned_nurse_id_fkey"
+            columns: ["assigned_nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_caregivers: {
         Row: {
           assigned_date: string
@@ -428,6 +549,57 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_nurses: {
+        Row: {
+          assigned_date: string
+          client_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          nurse_id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_date?: string
+          client_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          nurse_id: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_date?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          nurse_id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_nurses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_nurses_nurse_id_fkey"
+            columns: ["nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
             referencedColumns: ["id"]
           },
         ]

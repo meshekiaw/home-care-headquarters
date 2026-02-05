@@ -31,6 +31,7 @@ import { AssignedCaregiversTab } from "@/components/clients/AssignedCaregiversTa
 import { DocumentsTab } from "@/components/clients/DocumentsTab";
 import { ClientRequiredSkillsTab } from "@/components/clients/ClientRequiredSkillsTab";
 import ProximityMatchTab from "@/components/clients/ProximityMatchTab";
+ import { AdmissionFormsTab } from "@/components/forms/AdmissionFormsTab";
 
 interface Client {
   id: string;
@@ -212,7 +213,7 @@ export default function ClientProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 lg:w-auto lg:inline-grid">
+             <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -241,6 +242,10 @@ export default function ClientProfile() {
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Documents</span>
             </TabsTrigger>
+               <TabsTrigger value="forms" className="flex items-center gap-2">
+                 <ClipboardList className="w-4 h-4" />
+                 <span className="hidden sm:inline">Forms</span>
+               </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -270,6 +275,10 @@ export default function ClientProfile() {
           <TabsContent value="documents">
             <DocumentsTab clientId={client.id} />
           </TabsContent>
+ 
+             <TabsContent value="forms">
+               <AdmissionFormsTab clientId={client.id} />
+             </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>

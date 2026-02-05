@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, addDays, format } from "date-fns";
 
 interface StatCardProps {
   title: string;
@@ -55,6 +55,7 @@ export default function Dashboard() {
   const [clientCount, setClientCount] = useState(0);
   const [caregiverCount, setCaregiverCount] = useState(0);
   const [todayAppointments, setTodayAppointments] = useState(0);
+  const [expiringCredentials, setExpiringCredentials] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,8 +64,10 @@ export default function Dashboard() {
         const today = new Date();
         const dayStart = startOfDay(today).toISOString();
         const dayEnd = endOfDay(today).toISOString();
+        const thirtyDaysFromNow = format(addDays(today, 30), 'yyyy-MM-dd');
+        const todayFormatted = format(today, 'yyyy-MM-dd');
 
-        const [clientsResult, caregiversResult, appointmentsResult] = await Promise.all([
+        const [clientsResult, caregiversResult, appointmentsResult, credentialsResult] = await Promise.all([
           supabase
           .from('clients')
             .select('*', { count: 'exact', head: true }),
@@ -75,12 +78,18 @@ export default function Dashboard() {
             .from('appointments')
             .select('*', { count: 'exact', head: true })
             .gte('start_time', dayStart)
-            .lte('start_time', dayEnd)
+            .lte('start_time', dayEnd),
+          supabase
+            .from('caregiver_credentials')
+            .select('*', { count: 'exact', head: true })
+            .gte('expiry_date', todayFormatted)
+            .lte('expiry_date', thirtyDaysFromNow)
         ]);
 
         setClientCount(clientsResult.count || 0);
         setCaregiverCount(caregiversResult.count || 0);
         setTodayAppointments(appointmentsResult.count || 0);
+        setExpiringCredentials(credentialsResult.count || 0);
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
@@ -140,11 +149,11 @@ export default function Dashboard() {
             icon={UserCheck}
           />
           <StatCard 
-            title="Compliance Score" 
-            value="98%"
-            change="+2% this week"
-            changeType="positive"
-            icon={CheckCircle2}
+            title="Expiring Credentials" 
+            value={loading ? "..." : expiringCredentials}
+            change="Next 30 days"
+            changeType={expiringCredentials > 0 ? "negative" : "positive"}
+            icon={AlertTriangle}
           />
         </div>
 

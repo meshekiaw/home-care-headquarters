@@ -2,6 +2,9 @@
  import { supabase } from "@/integrations/supabase/client";
  import { useToast } from "@/hooks/use-toast";
  import { useAuth } from "@/contexts/AuthContext";
+
+// Re-export from centralized data file
+export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
  
  export interface StateRegulation {
    id: string;
@@ -31,69 +34,6 @@
    created_at: string;
    updated_at: string;
  }
- 
- // Predefined common home care regulations by state
- export const PREDEFINED_REGULATIONS: Record<string, Array<{ name: string; description: string; code?: string; category: string }>> = {
-   "California": [
-     { name: "Home Care Aide Registration", description: "All home care aides must register with the Home Care Services Bureau", code: "HSC 1796.10", category: "Licensing" },
-     { name: "Criminal Background Check", description: "Background checks required for all employees with client contact", code: "HSC 1796.22", category: "Employment" },
-     { name: "Training Requirements", description: "Minimum 5 hours of initial training required", code: "HSC 1796.42", category: "Training" },
-     { name: "Service Records", description: "Maintain accurate records of services provided", code: "CCR 22-73512", category: "Documentation" },
-   ],
-   "Texas": [
-     { name: "Home and Community Support License", description: "License required to provide home health, hospice, or personal assistance services", code: "26 TAC 558", category: "Licensing" },
-     { name: "Administrator Qualifications", description: "Agency administrator must meet education and experience requirements", code: "26 TAC 558.203", category: "Employment" },
-     { name: "Competency Evaluation", description: "Staff competency must be evaluated annually", code: "26 TAC 558.401", category: "Training" },
-     { name: "Incident Reporting", description: "Report incidents to HHSC within 24 hours", code: "26 TAC 558.283", category: "Compliance" },
-   ],
-   "Florida": [
-     { name: "Home Health Agency License", description: "State license required to operate a home health agency", code: "Ch. 400 F.S.", category: "Licensing" },
-     { name: "Level 2 Background Screening", description: "All employees must pass Level 2 background screening", code: "Ch. 435 F.S.", category: "Employment" },
-     { name: "Home Health Aide Training", description: "75 hours of training required for home health aides", code: "59A-8.0095 F.A.C.", category: "Training" },
-     { name: "Patient Rights", description: "Patients must be informed of their rights", code: "59A-8.0085 F.A.C.", category: "Compliance" },
-   ],
-   "New York": [
-     { name: "Licensed Home Care Services Agency", description: "LHCSA license required from DOH", code: "PHL Article 36", category: "Licensing" },
-     { name: "Aide Certification", description: "Home health aides must be certified", code: "10 NYCRR 766", category: "Employment" },
-     { name: "In-Service Training", description: "12 hours of in-service training annually", code: "10 NYCRR 766.11", category: "Training" },
-     { name: "Plan of Care", description: "Written plan of care required for each patient", code: "10 NYCRR 766.5", category: "Documentation" },
-   ],
-   "Pennsylvania": [
-     { name: "Home Care Agency License", description: "License required from PA Department of Health", code: "28 Pa. Code Ch. 611", category: "Licensing" },
-     { name: "Direct Care Worker Training", description: "Initial and ongoing training requirements", code: "28 Pa. Code 611.51", category: "Training" },
-     { name: "Consumer Rights", description: "Consumer bill of rights must be provided", code: "28 Pa. Code 611.21", category: "Compliance" },
-     { name: "Documentation Standards", description: "Service documentation requirements", code: "28 Pa. Code 611.55", category: "Documentation" },
-   ],
-  "Illinois": [
-    { name: "Home Services Agency License", description: "License required from Illinois Department of Public Health", code: "77 Ill. Adm. Code 245", category: "Licensing" },
-    { name: "Health Care Worker Background Check", description: "Fingerprint-based background check required", code: "225 ILCS 46", category: "Employment" },
-    { name: "Home Health Aide Training", description: "120 hours of training required for home health aides", code: "77 Ill. Adm. Code 245.40", category: "Training" },
-    { name: "Client Rights", description: "Written statement of rights must be provided to clients", code: "77 Ill. Adm. Code 245.60", category: "Compliance" },
-  ],
-  "Ohio": [
-    { name: "Home Health Agency License", description: "Certificate of need and license from Ohio Department of Health", code: "ORC 3701.07", category: "Licensing" },
-    { name: "Background Investigation", description: "Criminal records check required for all employees", code: "ORC 3721.121", category: "Employment" },
-    { name: "Aide Competency Requirements", description: "Competency evaluation and training requirements", code: "OAC 3701-16-08", category: "Training" },
-    { name: "Patient Care Records", description: "Clinical record requirements for each patient", code: "OAC 3701-16-12", category: "Documentation" },
-  ],
-  "Georgia": [
-    { name: "Private Home Care Provider License", description: "License required from Georgia Department of Community Health", code: "O.C.G.A. § 31-7-300", category: "Licensing" },
-    { name: "Criminal Background Check", description: "Background check required through Georgia Crime Information Center", code: "O.C.G.A. § 31-7-353", category: "Employment" },
-    { name: "Personal Care Aide Training", description: "Minimum training requirements for personal care aides", code: "Ga. Comp. R. & Regs. 111-8-65", category: "Training" },
-    { name: "Service Plan Documentation", description: "Written plan of care required for each client", code: "Ga. Comp. R. & Regs. 111-8-65-.08", category: "Documentation" },
-  ],
- };
- 
- export const US_STATES = [
-   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
-   "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
-   "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", 
-   "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
-   "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", 
-   "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
-   "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", 
-   "Wisconsin", "Wyoming"
- ];
  
  export function useStateRegulations() {
    const { toast } = useToast();

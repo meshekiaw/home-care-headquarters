@@ -24,6 +24,7 @@
    created_at: string;
    email_sent: boolean;
    sms_sent: boolean;
+   related_id: string | null;
  }
  
  export default function ShiftRemindersWidget() {
@@ -72,7 +73,7 @@
          // Fetch recent notifications
          const { data: notifications } = await supabase
            .from('notifications')
-           .select('id, subject, notification_type, created_at, email_sent, sms_sent')
+           .select('id, subject, notification_type, created_at, email_sent, sms_sent, related_id')
            .order('created_at', { ascending: false })
            .limit(5);
  
@@ -107,6 +108,30 @@
        return <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Handoff</Badge>;
      }
      return <Badge variant="outline">{type}</Badge>;
+   };
+ 
+   const getNotificationLink = (notification: RecentNotification): string | null => {
+     if (!notification.related_id) return null;
+     
+     const type = notification.notification_type;
+     
+     if (type.includes('shift_reminder') || type.includes('appointment')) {
+       return `/scheduling`;
+     }
+     if (type.includes('credential') && type.includes('caregiver')) {
+       return `/caregivers/${notification.related_id}`;
+     }
+     if (type.includes('credential') && type.includes('nurse')) {
+       return `/nurses/${notification.related_id}`;
+     }
+     if (type.includes('credential') && type.includes('agency')) {
+       return `/settings`;
+     }
+     if (type.includes('assessment') || type.includes('handoff')) {
+       return `/clients/${notification.related_id}`;
+     }
+     
+     return null;
    };
  
    if (loading) {
@@ -179,11 +204,9 @@
              <p className="text-sm text-muted-foreground italic">No recent notifications</p>
            ) : (
              <div className="space-y-2">
-               {recentNotifications.map((notification) => (
-                 <div 
-                   key={notification.id} 
-                   className="flex items-start justify-between p-3 rounded-lg bg-secondary/50"
-                 >
+               {recentNotifications.map((notification) => {
+                 const link = getNotificationLink(notification);
+                 const content = (
                    <div className="flex-1 min-w-0">
                      <div className="flex items-center gap-2 mb-1">
                        {getNotificationTypeBadge(notification.notification_type)}
@@ -201,8 +224,30 @@
                        {format(new Date(notification.created_at), 'MMM d, h:mm a')}
                      </p>
                    </div>
-                 </div>
-               ))}
+                 );
+ 
+                 if (link) {
+                   return (
+                     <Link
+                       key={notification.id}
+                       to={link}
+                       className="flex items-start justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer group"
+                     >
+                       {content}
+                       <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground shrink-0 mt-1" />
+                     </Link>
+                   );
+                 }
+ 
+                 return (
+                   <div 
+                     key={notification.id} 
+                     className="flex items-start justify-between p-3 rounded-lg bg-secondary/50"
+                   >
+                     {content}
+                   </div>
+                 );
+               })}
              </div>
            )}
          </div>

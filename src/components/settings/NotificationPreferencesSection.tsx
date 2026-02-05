@@ -14,6 +14,7 @@
    email_enabled: boolean;
    sms_enabled: boolean;
    assessment_expiry_alerts: boolean;
+  credential_expiry_alerts: boolean;
    handoff_alerts: boolean;
    days_before_expiry: number;
  }
@@ -22,6 +23,7 @@
    email_enabled: true,
    sms_enabled: true,
    assessment_expiry_alerts: true,
+  credential_expiry_alerts: true,
    handoff_alerts: true,
    days_before_expiry: 30,
  };
@@ -55,6 +57,7 @@
            email_enabled: data.email_enabled,
            sms_enabled: data.sms_enabled,
            assessment_expiry_alerts: data.assessment_expiry_alerts,
+          credential_expiry_alerts: data.credential_expiry_alerts ?? true,
            handoff_alerts: data.handoff_alerts,
            days_before_expiry: data.days_before_expiry,
          });
@@ -78,6 +81,7 @@
              email_enabled: preferences.email_enabled,
              sms_enabled: preferences.sms_enabled,
              assessment_expiry_alerts: preferences.assessment_expiry_alerts,
+            credential_expiry_alerts: preferences.credential_expiry_alerts,
              handoff_alerts: preferences.handoff_alerts,
              days_before_expiry: preferences.days_before_expiry,
            })
@@ -92,6 +96,7 @@
              email_enabled: preferences.email_enabled,
              sms_enabled: preferences.sms_enabled,
              assessment_expiry_alerts: preferences.assessment_expiry_alerts,
+            credential_expiry_alerts: preferences.credential_expiry_alerts,
              handoff_alerts: preferences.handoff_alerts,
              days_before_expiry: preferences.days_before_expiry,
            })
@@ -202,6 +207,23 @@
                }
              />
            </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Credential Expiry Alerts</p>
+              <p className="text-sm text-muted-foreground">
+                Notify when caregiver, nurse, or agency credentials are expiring
+              </p>
+            </div>
+            <Switch
+              checked={preferences.credential_expiry_alerts}
+              onCheckedChange={(checked) =>
+                setPreferences((prev) => ({
+                  ...prev,
+                  credential_expiry_alerts: checked,
+                }))
+              }
+            />
+          </div>
            <div className="flex items-center justify-between">
              <div>
                <p className="font-medium">Handoff Queue Alerts</p>

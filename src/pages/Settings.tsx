@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
  import { StateRegulationsSection } from "@/components/settings/StateRegulationsSection";
  import { NotificationPreferencesSection } from "@/components/settings/NotificationPreferencesSection";
+ import { AgencyCredentialsSection } from "@/components/settings/AgencyCredentialsSection";
 
 export default function Settings() {
   return (
@@ -67,7 +68,10 @@ export default function Settings() {
          {/* Notification Preferences */}
          <NotificationPreferencesSection />
  
-        <Card>
+         {/* Agency Credentials */}
+         <AgencyCredentialsSection />
+ 
+         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-primary" />

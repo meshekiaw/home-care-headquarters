@@ -121,6 +121,16 @@ export default function Scheduling() {
     setDialogOpen(true);
   };
 
+  const handleConflictClick = (appointmentId: string) => {
+    const appointment = appointments.find(apt => apt.id === appointmentId);
+    if (appointment) {
+      setSelectedDate(new Date(appointment.start_time));
+      setViewType("day");
+      // Set highlight via URL param for visual feedback
+      setSearchParams({ highlight: appointmentId }, { replace: true });
+    }
+  };
+
   const handleNewAppointment = () => {
     setSelectedHour(9);
     setEditingAppointment(undefined);
@@ -279,7 +289,10 @@ export default function Scheduling() {
           {/* Conflict Dashboard */}
           {showConflicts && (
             <div className="hidden lg:block lg:flex-1 lg:max-w-md">
-              <ConflictDashboard weekDate={selectedDate} />
+              <ConflictDashboard 
+                weekDate={selectedDate} 
+                onAppointmentClick={handleConflictClick}
+              />
             </div>
           )}
         </div>

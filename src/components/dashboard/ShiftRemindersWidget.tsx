@@ -178,8 +178,8 @@
            ) : (
              <div className="space-y-2">
                {upcomingShifts.map((shift) => (
-                   <Link 
-                     to="/scheduling"
+                    <Link 
+                      to={`/scheduling?highlight=${shift.id}`}
                    key={shift.id} 
                      className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20 hover:bg-warning/10 transition-colors cursor-pointer group"
                  >

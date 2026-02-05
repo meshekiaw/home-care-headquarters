@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { format, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Appointment } from "@/hooks/useAppointments";
@@ -8,6 +8,7 @@ interface DayViewProps {
   appointments: Appointment[];
   onTimeSlotClick: (date: Date, hour: number) => void;
   onAppointmentClick: (appointment: Appointment) => void;
+  highlightId?: string | null;
 }
 
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 6); // 6 AM to 7 PM
@@ -17,7 +18,16 @@ export function DayView({
   appointments,
   onTimeSlotClick,
   onAppointmentClick,
+  highlightId,
 }: DayViewProps) {
+  const highlightRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to highlighted appointment
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightId]);
   const dayAppointments = useMemo(() => {
     const dayKey = format(selectedDate, "yyyy-MM-dd");
     return appointments.filter((apt) => 
@@ -97,19 +107,23 @@ export function DayView({
             ))}
 
             {/* Appointments */}
-            {dayAppointments.map((apt) => (
-              <div
-                key={apt.id}
-                className={cn(
-                  "absolute left-2 right-2 rounded-lg border-l-4 p-3 cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:z-10",
-                  getStatusColor(apt.status)
-                )}
-                style={getAppointmentStyle(apt)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAppointmentClick(apt);
-                }}
-              >
+            {dayAppointments.map((apt) => {
+              const isHighlighted = apt.id === highlightId;
+              return (
+                <div
+                  key={apt.id}
+                  ref={isHighlighted ? highlightRef : undefined}
+                  className={cn(
+                    "absolute left-2 right-2 rounded-lg border-l-4 p-3 cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:z-10",
+                    getStatusColor(apt.status),
+                    isHighlighted && "ring-4 ring-primary ring-offset-2 z-20 animate-pulse"
+                  )}
+                  style={getAppointmentStyle(apt)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAppointmentClick(apt);
+                  }}
+                >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold truncate">{apt.title}</div>
@@ -137,7 +151,8 @@ export function DayView({
                   </span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

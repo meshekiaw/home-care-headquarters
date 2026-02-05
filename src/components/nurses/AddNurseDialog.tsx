@@ -72,7 +72,7 @@
          zip_code: formData.zip_code || null,
          license_number: formData.license_number || null,
          license_state: formData.license_state || null,
-         license_expiry: formData.license_expiry || null,
+          license_expiry: formData.license_expiry ? formData.license_expiry : null,
          hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
          notes: formData.notes || null,
        });

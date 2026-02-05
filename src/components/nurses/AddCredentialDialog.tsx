@@ -109,8 +109,8 @@
          credential_name: formData.credential_name,
          credential_number: formData.credential_number || null,
          issuing_organization: formData.issuing_organization || null,
-         issue_date: formData.issue_date || null,
-         expiry_date: formData.expiry_date || null,
+          issue_date: formData.issue_date ? formData.issue_date : null,
+          expiry_date: formData.expiry_date ? formData.expiry_date : null,
          document_url: documentUrl,
          notes: formData.notes || null,
        });

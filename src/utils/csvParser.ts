@@ -176,3 +176,135 @@ export function generateSampleCSV(): string {
 John,Doe,john.doe@email.com,(555) 123-4567,active,25.00,Elder Care|Dementia Care,123 Main St,Springfield,IL,62701,15
 Jane,Smith,jane.smith@email.com,(555) 987-6543,active,28.50,Pediatric Care|Physical Therapy,456 Oak Ave,Chicago,IL,60601,20`;
 }
+
+// ============= Client CSV Parsing =============
+
+export interface ClientCSVRow {
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  status?: string;
+  date_of_birth?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  notes?: string;
+}
+
+export interface ParsedClient {
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  status: string;
+  date_of_birth: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  notes: string | null;
+}
+
+export interface ClientParseResult {
+  clients: ParsedClient[];
+  errors: ValidationError[];
+  totalRows: number;
+}
+
+export function parseClientCSV(content: string): ClientCSVRow[] {
+  const lines = content.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+  
+  return lines.slice(1).map(line => {
+    const values = parseCSVLine(line);
+    const row: Record<string, string> = {};
+    
+    headers.forEach((header, index) => {
+      row[header] = values[index]?.trim() || '';
+    });
+    
+    return row as unknown as ClientCSVRow;
+  });
+}
+
+export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseResult {
+  const clients: ParsedClient[] = [];
+  const errors: ValidationError[] = [];
+  
+  rows.forEach((row, index) => {
+    const rowNum = index + 2;
+    
+    // Required field validation
+    if (!row.first_name?.trim()) {
+      errors.push({ row: rowNum, field: 'first_name', message: 'First name is required' });
+    }
+    if (!row.last_name?.trim()) {
+      errors.push({ row: rowNum, field: 'last_name', message: 'Last name is required' });
+    }
+    
+    // Email validation
+    if (row.email?.trim() && !isValidEmail(row.email.trim())) {
+      errors.push({ row: rowNum, field: 'email', message: 'Invalid email format' });
+    }
+    
+    // Status validation
+    const validStatuses = ['active', 'inactive', 'pending'];
+    const status = row.status?.trim().toLowerCase() || 'active';
+    if (!validStatuses.includes(status)) {
+      errors.push({ row: rowNum, field: 'status', message: `Status must be one of: ${validStatuses.join(', ')}` });
+    }
+    
+    // Date of birth validation
+    let dateOfBirth: string | null = null;
+    if (row.date_of_birth?.trim()) {
+      const parsed = new Date(row.date_of_birth.trim());
+      if (isNaN(parsed.getTime())) {
+        errors.push({ row: rowNum, field: 'date_of_birth', message: 'Invalid date format (use YYYY-MM-DD)' });
+      } else {
+        dateOfBirth = parsed.toISOString().split('T')[0];
+      }
+    }
+    
+    // Only add if no critical errors for this row
+    const rowErrors = errors.filter(e => e.row === rowNum);
+    const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name');
+    
+    if (!hasCriticalError) {
+      clients.push({
+        first_name: row.first_name?.trim() || '',
+        last_name: row.last_name?.trim() || '',
+        email: row.email?.trim() || null,
+        phone: row.phone?.trim() || null,
+        status: validStatuses.includes(status) ? status : 'active',
+        date_of_birth: dateOfBirth,
+        address: row.address?.trim() || null,
+        city: row.city?.trim() || null,
+        state: row.state?.trim() || null,
+        zip_code: row.zip_code?.trim() || null,
+        emergency_contact_name: row.emergency_contact_name?.trim() || null,
+        emergency_contact_phone: row.emergency_contact_phone?.trim() || null,
+        notes: row.notes?.trim() || null,
+      });
+    }
+  });
+  
+  return {
+    clients,
+    errors,
+    totalRows: rows.length,
+  };
+}
+
+export function generateClientSampleCSV(): string {
+  return `first_name,last_name,email,phone,status,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes
+John,Smith,john.smith@email.com,(555) 123-4567,active,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance
+Mary,Johnson,mary.j@email.com,(555) 987-6543,active,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits`;
+}

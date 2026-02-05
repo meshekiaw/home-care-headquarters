@@ -21,7 +21,8 @@ import {
   MapPin,
   Users,
   Filter,
-  Download
+  Download,
+  Upload
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,6 +33,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { downloadCSV, formatClientForExport } from "@/utils/csvExport";
+import BulkImportDialog from "@/components/clients/BulkImportDialog";
+import type { ParsedClient } from "@/utils/csvParser";
 
 interface Client {
   id: string;
@@ -49,6 +52,7 @@ export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -73,6 +77,38 @@ export default function Clients() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleBulkImport(parsedClients: ParsedClient[]): Promise<{ success: number; failed: number }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in to import clients", variant: "destructive" });
+      return { success: 0, failed: parsedClients.length };
+    }
+
+    let success = 0;
+    let failed = 0;
+
+    for (const client of parsedClients) {
+      const { error } = await supabase.from('clients').insert({
+        ...client,
+        user_id: user.id,
+      });
+
+      if (error) {
+        console.error("Failed to import client:", client, error);
+        failed++;
+      } else {
+        success++;
+      }
+    }
+
+    if (success > 0) {
+      fetchClients();
+      toast({ title: "Import complete", description: `Successfully imported ${success} clients` });
+    }
+
+    return { success, failed };
   }
 
   const filteredClients = clients.filter(client => {
@@ -104,6 +140,13 @@ export default function Clients() {
             <p className="text-muted-foreground">Manage your client profiles and care plans</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setImportDialogOpen(true)}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Import CSV
+            </Button>
             <Button 
               variant="outline" 
               onClick={() => {
@@ -259,6 +302,12 @@ export default function Clients() {
           </CardContent>
         </Card>
       </div>
+
+      <BulkImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleBulkImport}
+      />
     </DashboardLayout>
   );
 }

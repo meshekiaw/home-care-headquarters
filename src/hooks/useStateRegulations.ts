@@ -64,6 +64,24 @@
      { name: "Consumer Rights", description: "Consumer bill of rights must be provided", code: "28 Pa. Code 611.21", category: "Compliance" },
      { name: "Documentation Standards", description: "Service documentation requirements", code: "28 Pa. Code 611.55", category: "Documentation" },
    ],
+  "Illinois": [
+    { name: "Home Services Agency License", description: "License required from Illinois Department of Public Health", code: "77 Ill. Adm. Code 245", category: "Licensing" },
+    { name: "Health Care Worker Background Check", description: "Fingerprint-based background check required", code: "225 ILCS 46", category: "Employment" },
+    { name: "Home Health Aide Training", description: "120 hours of training required for home health aides", code: "77 Ill. Adm. Code 245.40", category: "Training" },
+    { name: "Client Rights", description: "Written statement of rights must be provided to clients", code: "77 Ill. Adm. Code 245.60", category: "Compliance" },
+  ],
+  "Ohio": [
+    { name: "Home Health Agency License", description: "Certificate of need and license from Ohio Department of Health", code: "ORC 3701.07", category: "Licensing" },
+    { name: "Background Investigation", description: "Criminal records check required for all employees", code: "ORC 3721.121", category: "Employment" },
+    { name: "Aide Competency Requirements", description: "Competency evaluation and training requirements", code: "OAC 3701-16-08", category: "Training" },
+    { name: "Patient Care Records", description: "Clinical record requirements for each patient", code: "OAC 3701-16-12", category: "Documentation" },
+  ],
+  "Georgia": [
+    { name: "Private Home Care Provider License", description: "License required from Georgia Department of Community Health", code: "O.C.G.A. § 31-7-300", category: "Licensing" },
+    { name: "Criminal Background Check", description: "Background check required through Georgia Crime Information Center", code: "O.C.G.A. § 31-7-353", category: "Employment" },
+    { name: "Personal Care Aide Training", description: "Minimum training requirements for personal care aides", code: "Ga. Comp. R. & Regs. 111-8-65", category: "Training" },
+    { name: "Service Plan Documentation", description: "Written plan of care required for each client", code: "Ga. Comp. R. & Regs. 111-8-65-.08", category: "Documentation" },
+  ],
  };
  
  export const US_STATES = [

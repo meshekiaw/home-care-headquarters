@@ -34,6 +34,7 @@ const navItems = [
   { icon: MessageSquare, label: "Communications", path: "/communications" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
   { icon: FileCheck, label: "Compliance", path: "/compliance" },
+  { icon: Bell, label: "Notifications", path: "/notifications" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

@@ -8,3 +8,6 @@ project_id = "iljmedelpqwzwyecvksa"
  
  [functions.send-handoff-notification]
  verify_jwt = false
+ 
+ [functions.resend-notification]
+ verify_jwt = false

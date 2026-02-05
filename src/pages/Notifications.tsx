@@ -27,7 +27,8 @@
    Clock,
    RefreshCw,
    AlertTriangle,
-   HandHelping
+   HandHelping,
+   RotateCcw
  } from "lucide-react";
  import { supabase } from "@/integrations/supabase/client";
  import { useToast } from "@/hooks/use-toast";
@@ -58,6 +59,7 @@
    const [loading, setLoading] = useState(true);
    const [filter, setFilter] = useState<string>("all");
    const [refreshing, setRefreshing] = useState(false);
+   const [resendingId, setResendingId] = useState<string | null>(null);
  
    useEffect(() => {
      fetchNotifications();
@@ -131,6 +133,57 @@
        setRefreshing(false);
      }
    }
+ 
+   async function handleResend(notificationId: string) {
+     setResendingId(notificationId);
+     try {
+       const response = await fetch(
+         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/resend-notification`,
+         {
+           method: "POST",
+           headers: {
+             "Content-Type": "application/json",
+             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+           },
+           body: JSON.stringify({ notification_id: notificationId }),
+         }
+       );
+ 
+       const result = await response.json();
+ 
+       if (response.ok) {
+         if (result.success) {
+           toast({
+             title: "Notification resent",
+             description: `Email: ${result.email_sent ? "✓" : "✗"}, SMS: ${result.sms_sent ? "✓" : "✗"}`,
+           });
+         } else {
+           toast({
+             title: "Resend failed",
+             description: result.error || "Could not resend notification",
+             variant: "destructive",
+           });
+         }
+         fetchNotifications();
+       } else {
+         throw new Error(result.error || "Failed to resend notification");
+       }
+     } catch (error: any) {
+       toast({
+         title: "Error resending notification",
+         description: error.message,
+         variant: "destructive",
+       });
+     } finally {
+       setResendingId(null);
+     }
+   }
+ 
+   const canResend = (notification: Notification) => {
+     const hasFailedEmail = notification.recipient_email && !notification.email_sent;
+     const hasFailedSms = notification.recipient_phone && !notification.sms_sent;
+     return hasFailedEmail || hasFailedSms;
+   };
  
    const getTypeIcon = (type: string) => {
      switch (type) {
@@ -322,6 +375,7 @@
                        <TableHead>Subject</TableHead>
                        <TableHead>Delivery</TableHead>
                        <TableHead>Date</TableHead>
+                       <TableHead className="w-24">Actions</TableHead>
                      </TableRow>
                    </TableHeader>
                    <TableBody>
@@ -361,6 +415,24 @@
                              {format(new Date(notification.created_at), "MMM d, h:mm a")}
                            </div>
                          </TableCell>
+                           <TableCell>
+                             {canResend(notification) && (
+                               <Button
+                                 variant="ghost"
+                                 size="sm"
+                                 onClick={() => handleResend(notification.id)}
+                                 disabled={resendingId === notification.id}
+                                 className="h-8 px-2"
+                               >
+                                 <RotateCcw
+                                   className={`w-4 h-4 mr-1 ${
+                                     resendingId === notification.id ? "animate-spin" : ""
+                                   }`}
+                                 />
+                                 Resend
+                               </Button>
+                             )}
+                           </TableCell>
                        </TableRow>
                      ))}
                    </TableBody>

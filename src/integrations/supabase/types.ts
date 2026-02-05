@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_credentials: {
+        Row: {
+          created_at: string
+          credential_name: string
+          credential_number: string | null
+          credential_type: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string | null
+          issuing_organization: string | null
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_name: string
+          credential_number?: string | null
+          credential_type: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_name?: string
+          credential_number?: string | null
+          credential_type?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           caregiver_id: string
@@ -1079,6 +1127,7 @@ export type Database = {
         Row: {
           assessment_expiry_alerts: boolean
           created_at: string
+          credential_expiry_alerts: boolean | null
           days_before_expiry: number
           email_enabled: boolean
           handoff_alerts: boolean
@@ -1091,6 +1140,7 @@ export type Database = {
         Insert: {
           assessment_expiry_alerts?: boolean
           created_at?: string
+          credential_expiry_alerts?: boolean | null
           days_before_expiry?: number
           email_enabled?: boolean
           handoff_alerts?: boolean
@@ -1103,6 +1153,7 @@ export type Database = {
         Update: {
           assessment_expiry_alerts?: boolean
           created_at?: string
+          credential_expiry_alerts?: boolean | null
           days_before_expiry?: number
           email_enabled?: boolean
           handoff_alerts?: boolean

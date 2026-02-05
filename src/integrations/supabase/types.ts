@@ -1075,6 +1075,68 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          error_message: string | null
+          id: string
+          message: string
+          notification_type: string
+          recipient_email: string | null
+          recipient_nurse_id: string | null
+          recipient_phone: string | null
+          related_id: string | null
+          sms_sent: boolean | null
+          sms_sent_at: string | null
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          error_message?: string | null
+          id?: string
+          message: string
+          notification_type: string
+          recipient_email?: string | null
+          recipient_nurse_id?: string | null
+          recipient_phone?: string | null
+          related_id?: string | null
+          sms_sent?: boolean | null
+          sms_sent_at?: string | null
+          subject: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string
+          notification_type?: string
+          recipient_email?: string | null
+          recipient_nurse_id?: string | null
+          recipient_phone?: string | null
+          related_id?: string | null
+          sms_sent?: boolean | null
+          sms_sent_at?: string | null
+          subject?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_nurse_id_fkey"
+            columns: ["recipient_nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nurse_credentials: {
         Row: {
           created_at: string

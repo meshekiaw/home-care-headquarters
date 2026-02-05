@@ -2,3 +2,9 @@ project_id = "iljmedelpqwzwyecvksa"
  
  [functions.generate-policy]
  verify_jwt = false
+ 
+ [functions.send-assessment-notifications]
+ verify_jwt = false
+ 
+ [functions.send-handoff-notification]
+ verify_jwt = false

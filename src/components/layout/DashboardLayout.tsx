@@ -17,6 +17,7 @@ import {
   X,
   ChevronLeft,
   Bell,
+   Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ const navItems = [
   { icon: Users, label: "Clients", path: "/clients" },
   { icon: Calendar, label: "Scheduling", path: "/scheduling" },
   { icon: UserCheck, label: "Caregivers", path: "/caregivers" },
+   { icon: Stethoscope, label: "Nurses", path: "/nurses" },
   { icon: MessageSquare, label: "Communications", path: "/communications" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
   { icon: FileCheck, label: "Compliance", path: "/compliance" },

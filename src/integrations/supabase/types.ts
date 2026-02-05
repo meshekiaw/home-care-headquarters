@@ -903,6 +903,131 @@ export type Database = {
           },
         ]
       }
+      nurse_credentials: {
+        Row: {
+          created_at: string
+          credential_name: string
+          credential_number: string | null
+          credential_type: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string | null
+          issuing_organization: string | null
+          notes: string | null
+          nurse_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_name: string
+          credential_number?: string | null
+          credential_type: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string | null
+          notes?: string | null
+          nurse_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_name?: string
+          credential_number?: string | null
+          credential_type?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_organization?: string | null
+          notes?: string | null
+          nurse_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurse_credentials_nurse_id_fkey"
+            columns: ["nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nurses: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          first_name: string
+          hourly_rate: number | null
+          id: string
+          last_name: string
+          license_expiry: string | null
+          license_number: string | null
+          license_state: string | null
+          notes: string | null
+          phone: string | null
+          specializations: string[] | null
+          state: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          first_name: string
+          hourly_rate?: number | null
+          id?: string
+          last_name: string
+          license_expiry?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          notes?: string | null
+          phone?: string | null
+          specializations?: string[] | null
+          state?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          hourly_rate?: number | null
+          id?: string
+          last_name?: string
+          license_expiry?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          notes?: string | null
+          phone?: string | null
+          specializations?: string[] | null
+          state?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       state_regulations: {
         Row: {
           category: string | null

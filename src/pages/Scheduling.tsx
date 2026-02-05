@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWeeklyConflicts } from "@/hooks/useWeeklyConflicts";
 import { downloadCSV, formatAppointmentForExport } from "@/utils/csvExport";
 import { useToast } from "@/hooks/use-toast";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 type ViewType = "day" | "week" | "month";
 
@@ -28,6 +29,7 @@ export default function Scheduling() {
   const [selectedHour, setSelectedHour] = useState<number | undefined>();
   const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>();
   const [showConflicts, setShowConflicts] = useState(true);
+  const [mobileConflictsOpen, setMobileConflictsOpen] = useState(false);
 
   const {
     appointments,
@@ -128,6 +130,8 @@ export default function Scheduling() {
       setViewType("day");
       // Set highlight via URL param for visual feedback
       setSearchParams({ highlight: appointmentId }, { replace: true });
+      // Close mobile sheet if open
+      setMobileConflictsOpen(false);
     }
   };
 
@@ -165,10 +169,11 @@ export default function Scheduling() {
               <Download className="w-4 h-4 mr-2" />
               Export CSV
             </Button>
+            {/* Desktop conflicts toggle */}
             <Button
               variant={showConflicts ? "secondary" : "outline"}
               onClick={() => setShowConflicts(!showConflicts)}
-              className="relative"
+              className="relative hidden lg:flex"
             >
               {showConflicts ? (
                 <PanelRightClose className="w-4 h-4 mr-2" />
@@ -190,6 +195,46 @@ export default function Scheduling() {
                 </span>
               )}
             </Button>
+
+            {/* Mobile conflicts sheet trigger */}
+            <Sheet open={mobileConflictsOpen} onOpenChange={setMobileConflictsOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="relative lg:hidden"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Conflicts
+                  {(errorCount > 0 || warningCount > 0) && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center">
+                      {errorCount > 0 ? (
+                        <span className="w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                          {errorCount}
+                        </span>
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-warning text-warning-foreground text-xs flex items-center justify-center">
+                          {warningCount}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-warning" />
+                    Scheduling Conflicts
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="h-[calc(100vh-80px)] overflow-hidden">
+                  <ConflictDashboard 
+                    weekDate={selectedDate} 
+                    onAppointmentClick={handleConflictClick}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
             <Button onClick={handleNewAppointment}>
               <Plus className="w-4 h-4 mr-2" />
               New Appointment

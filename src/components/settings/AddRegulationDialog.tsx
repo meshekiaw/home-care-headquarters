@@ -1,4 +1,5 @@
  import { useState } from "react";
+import { Search } from "lucide-react";
  import {
    Dialog,
    DialogContent,
@@ -22,6 +23,7 @@
  import { PREDEFINED_REGULATIONS, US_STATES } from "@/hooks/useStateRegulations";
  import { Badge } from "@/components/ui/badge";
  import { Check } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
  
  interface AddRegulationDialogProps {
    open: boolean;
@@ -33,6 +35,8 @@
    const [activeTab, setActiveTab] = useState("predefined");
    const [selectedState, setSelectedState] = useState("");
    const [selectedPredefined, setSelectedPredefined] = useState<string | null>(null);
+  const [stateSearch, setStateSearch] = useState("");
+  const [customStateSearch, setCustomStateSearch] = useState("");
    
    // Custom form state
    const [customState, setCustomState] = useState("");
@@ -43,6 +47,16 @@
    const [sourceUrl, setSourceUrl] = useState("");
  
    const predefinedRegs = selectedState ? PREDEFINED_REGULATIONS[selectedState] || [] : [];
+  
+  // Filter states that have predefined regulations
+  const statesWithPredefined = Object.keys(PREDEFINED_REGULATIONS).filter(state =>
+    state.toLowerCase().includes(stateSearch.toLowerCase())
+  );
+  
+  // Filter all US states for custom tab
+  const filteredUSStates = US_STATES.filter(state =>
+    state.toLowerCase().includes(customStateSearch.toLowerCase())
+  );
  
    const handleSubmit = () => {
      if (activeTab === "predefined" && selectedState && selectedPredefined) {
@@ -74,6 +88,8 @@
    const resetForm = () => {
      setSelectedState("");
      setSelectedPredefined(null);
+    setStateSearch("");
+    setCustomStateSearch("");
      setCustomState("");
      setRegulationName("");
      setRegulationDescription("");
@@ -108,23 +124,43 @@
            <TabsContent value="predefined" className="space-y-4 mt-4">
              <div className="space-y-2">
                <Label>Select State</Label>
-               <Select value={selectedState} onValueChange={(v) => {
-                 setSelectedState(v);
-                 setSelectedPredefined(null);
-               }}>
-                 <SelectTrigger>
-                   <SelectValue placeholder="Choose a state..." />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {Object.keys(PREDEFINED_REGULATIONS).map((state) => (
-                     <SelectItem key={state} value={state}>
-                       {state}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search states..."
+                    value={stateSearch}
+                    onChange={(e) => setStateSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <ScrollArea className="h-48 rounded-md border bg-background">
+                  <div className="p-2 space-y-1">
+                    {statesWithPredefined.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">No states found</p>
+                    ) : (
+                      statesWithPredefined.map((state) => (
+                        <button
+                          key={state}
+                          type="button"
+                          onClick={() => {
+                            setSelectedState(state);
+                            setSelectedPredefined(null);
+                            setStateSearch("");
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                            selectedState === state
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted"
+                          }`}
+                        >
+                          {state}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
                <p className="text-xs text-muted-foreground">
-                 Predefined regulations available for: {Object.keys(PREDEFINED_REGULATIONS).join(", ")}
+                  {selectedState ? `Selected: ${selectedState}` : "All 50 states have predefined regulations"}
                </p>
              </div>
  
@@ -172,18 +208,45 @@
              <div className="grid gap-4 sm:grid-cols-2">
                <div className="space-y-2">
                  <Label>State *</Label>
-                 <Select value={customState} onValueChange={setCustomState}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Select state..." />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {US_STATES.map((state) => (
-                       <SelectItem key={state} value={state}>
-                         {state}
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder={customState || "Search states..."}
+                      value={customStateSearch}
+                      onChange={(e) => setCustomStateSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  {customStateSearch && (
+                    <ScrollArea className="h-32 rounded-md border bg-background">
+                      <div className="p-2 space-y-1">
+                        {filteredUSStates.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-2">No states found</p>
+                        ) : (
+                          filteredUSStates.map((state) => (
+                            <button
+                              key={state}
+                              type="button"
+                              onClick={() => {
+                                setCustomState(state);
+                                setCustomStateSearch("");
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                                customState === state
+                                  ? "bg-primary text-primary-foreground"
+                                  : "hover:bg-muted"
+                              }`}
+                            >
+                              {state}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
+                  )}
+                  {customState && !customStateSearch && (
+                    <p className="text-xs text-muted-foreground">Selected: {customState}</p>
+                  )}
                </div>
                <div className="space-y-2">
                  <Label>Category</Label>

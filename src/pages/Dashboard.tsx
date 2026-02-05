@@ -15,6 +15,7 @@ import {
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, addDays, format } from "date-fns";
+ import ShiftRemindersWidget from "@/components/dashboard/ShiftRemindersWidget";
 
 interface StatCardProps {
   title: string;
@@ -220,6 +221,9 @@ export default function Dashboard() {
           </Card>
         </div>
 
+         {/* Shift Reminders & Notifications Widget */}
+         <ShiftRemindersWidget />
+ 
         {/* Quick Actions */}
         <Card>
           <CardHeader>

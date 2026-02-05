@@ -604,6 +604,161 @@ export type Database = {
         }
         Relationships: []
       }
+      form_signatures: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          signature_data: string | null
+          signed_at: string | null
+          signer_email: string | null
+          signer_id: string | null
+          signer_name: string
+          signer_type: string
+          signing_method: string | null
+          status: string
+          submission_id: string
+          token: string | null
+          token_expires_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          signature_data?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_id?: string | null
+          signer_name: string
+          signer_type: string
+          signing_method?: string | null
+          status?: string
+          submission_id: string
+          token?: string | null
+          token_expires_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          signature_data?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_id?: string | null
+          signer_name?: string
+          signer_type?: string
+          signing_method?: string | null
+          status?: string
+          submission_id?: string
+          token?: string | null
+          token_expires_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_signatures_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "form_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_submissions: {
+        Row: {
+          client_id: string
+          completed_at: string | null
+          created_at: string
+          form_data: Json
+          id: string
+          status: string
+          submitted_at: string | null
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          completed_at?: string | null
+          created_at?: string
+          form_data?: Json
+          id?: string
+          status?: string
+          submitted_at?: string | null
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          completed_at?: string | null
+          created_at?: string
+          form_data?: Json
+          id?: string
+          status?: string
+          submitted_at?: string | null
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_submissions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "form_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          fields: Json
+          id: string
+          is_active: boolean | null
+          name: string
+          template_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          fields?: Json
+          id?: string
+          is_active?: boolean | null
+          name: string
+          template_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          fields?: Json
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          template_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_policies: {
         Row: {
           approved_at: string | null

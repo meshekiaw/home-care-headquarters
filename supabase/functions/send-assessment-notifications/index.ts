@@ -21,6 +21,20 @@
    user_id: string;
  }
  
+ interface NotificationPreferences {
+   email_enabled: boolean;
+   sms_enabled: boolean;
+   assessment_expiry_alerts: boolean;
+   days_before_expiry: number;
+ }
+ 
+ const defaultPreferences: NotificationPreferences = {
+   email_enabled: true,
+   sms_enabled: true,
+   assessment_expiry_alerts: true,
+   days_before_expiry: 30,
+ };
+ 
  async function sendEmail(
    to: string,
    subject: string,
@@ -119,9 +133,30 @@
  
      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
  
-     // Get assessments expiring within 30 days
-     const thirtyDaysFromNow = new Date();
-     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+     // Fetch notification preferences (admin-level, nurse_id is null)
+     const { data: prefsData } = await supabase
+       .from("notification_preferences")
+       .select("*")
+       .is("nurse_id", null)
+       .limit(1);
+ 
+     const prefs: NotificationPreferences = prefsData?.[0] || defaultPreferences;
+ 
+     // Check if assessment expiry alerts are enabled
+     if (!prefs.assessment_expiry_alerts) {
+       console.log("Assessment expiry alerts are disabled");
+       return new Response(
+         JSON.stringify({ sent: 0, skipped: 0, disabled: true }),
+         {
+           status: 200,
+           headers: { ...corsHeaders, "Content-Type": "application/json" },
+         }
+       );
+     }
+ 
+     // Get assessments expiring within configured days
+     const daysAhead = new Date();
+     daysAhead.setDate(daysAhead.getDate() + prefs.days_before_expiry);
  
      const { data: assessments, error: assessmentError } = await supabase
        .from("client_assessments")
@@ -136,7 +171,7 @@
          nurses (first_name, last_name, email, phone)
        `)
        .eq("status", "pending")
-       .lte("due_date", thirtyDaysFromNow.toISOString().split("T")[0])
+       .lte("due_date", daysAhead.toISOString().split("T")[0])
        .gte("due_date", new Date().toISOString().split("T")[0]);
  
      if (assessmentError) {
@@ -203,8 +238,8 @@
        let smsSent = false;
        let errorMessage = "";
  
-       // Send email if nurse has email
-       if (nurse.email) {
+       // Send email if enabled and nurse has email
+       if (prefs.email_enabled && nurse.email) {
          const emailResult = await sendEmail(nurse.email, subject, emailHtml);
          emailSent = emailResult.success;
          if (!emailResult.success) {
@@ -212,8 +247,8 @@
          }
        }
  
-       // Send SMS if nurse has phone
-       if (nurse.phone) {
+       // Send SMS if enabled and nurse has phone
+       if (prefs.sms_enabled && nurse.phone) {
          const smsResult = await sendSMS(nurse.phone, message);
          smsSent = smsResult.success;
          if (!smsResult.success) {

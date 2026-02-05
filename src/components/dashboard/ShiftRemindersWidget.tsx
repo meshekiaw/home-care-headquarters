@@ -178,9 +178,10 @@
            ) : (
              <div className="space-y-2">
                {upcomingShifts.map((shift) => (
-                 <div 
+                   <Link 
+                     to="/scheduling"
                    key={shift.id} 
-                   className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20"
+                     className="flex items-center justify-between p-3 rounded-lg bg-warning/5 border border-warning/20 hover:bg-warning/10 transition-colors cursor-pointer group"
                  >
                    <div className="flex-1 min-w-0">
                      <p className="text-sm font-medium truncate">{shift.title}</p>
@@ -188,10 +189,13 @@
                        {shift.caregiver_name} → {shift.client_name}
                      </p>
                    </div>
-                   <Badge variant="secondary" className="bg-warning/10 text-warning ml-2 shrink-0">
-                     {shift.minutes_until_end} min
-                   </Badge>
-                 </div>
+                     <div className="flex items-center gap-2">
+                       <Badge variant="secondary" className="bg-warning/10 text-warning shrink-0">
+                         {shift.minutes_until_end} min
+                       </Badge>
+                       <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+                     </div>
+                   </Link>
                ))}
              </div>
            )}

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from "date-fns";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Plus, AlertTriangle, PanelRightClose, PanelRight, Download } from "lucide-react";
@@ -18,6 +19,9 @@ import { useToast } from "@/hooks/use-toast";
 type ViewType = "day" | "week" | "month";
 
 export default function Scheduling() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+  
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>("week");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -32,6 +36,25 @@ export default function Scheduling() {
     updateAppointment,
     deleteAppointment,
   } = useAppointments(selectedDate);
+
+  // Navigate to highlighted appointment's date when loaded
+  useEffect(() => {
+    if (highlightId && appointments.length > 0) {
+      const targetAppointment = appointments.find(apt => apt.id === highlightId);
+      if (targetAppointment) {
+        const aptDate = new Date(targetAppointment.start_time);
+        setSelectedDate(aptDate);
+        // Switch to day view for better visibility of the highlighted appointment
+        setViewType("day");
+      }
+      // Clear the highlight param after navigating (keeps URL clean)
+      const timer = setTimeout(() => {
+        setSearchParams({}, { replace: true });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightId, appointments, setSearchParams]);
+
 
   const { errorCount, warningCount } = useWeeklyConflicts(selectedDate);
   const { toast } = useToast();
@@ -227,6 +250,7 @@ export default function Scheduling() {
                       appointments={appointments}
                       onTimeSlotClick={handleTimeSlotClick}
                       onAppointmentClick={handleAppointmentClick}
+                      highlightId={highlightId}
                     />
                   )}
                   {viewType === "week" && (
@@ -235,6 +259,7 @@ export default function Scheduling() {
                       appointments={appointments}
                       onTimeSlotClick={handleTimeSlotClick}
                       onAppointmentClick={handleAppointmentClick}
+                      highlightId={highlightId}
                     />
                   )}
                   {viewType === "month" && (

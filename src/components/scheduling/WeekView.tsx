@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Appointment } from "@/hooks/useAppointments";
@@ -8,6 +8,7 @@ interface WeekViewProps {
   appointments: Appointment[];
   onTimeSlotClick: (date: Date, hour: number) => void;
   onAppointmentClick: (appointment: Appointment) => void;
+  highlightId?: string | null;
 }
 
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 6); // 6 AM to 7 PM
@@ -17,7 +18,16 @@ export function WeekView({
   appointments,
   onTimeSlotClick,
   onAppointmentClick,
+  highlightId,
 }: WeekViewProps) {
+  const highlightRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to highlighted appointment
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightId]);
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -119,28 +129,33 @@ export function WeekView({
                 ))}
 
                 {/* Appointments */}
-                {dayAppointments.map((apt) => (
-                  <div
-                    key={apt.id}
-                    className={cn(
-                      "absolute left-1 right-1 rounded-md border px-2 py-1 cursor-pointer overflow-hidden text-xs transition-all hover:shadow-md hover:z-10",
-                      getStatusColor(apt.status)
-                    )}
-                    style={getAppointmentStyle(apt)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAppointmentClick(apt);
-                    }}
-                  >
-                    <div className="font-medium truncate">{apt.title}</div>
-                    <div className="truncate opacity-75">
-                      {apt.client?.first_name} {apt.client?.last_name}
+                {dayAppointments.map((apt) => {
+                  const isHighlighted = apt.id === highlightId;
+                  return (
+                    <div
+                      key={apt.id}
+                      ref={isHighlighted ? highlightRef : undefined}
+                      className={cn(
+                        "absolute left-1 right-1 rounded-md border px-2 py-1 cursor-pointer overflow-hidden text-xs transition-all hover:shadow-md hover:z-10",
+                        getStatusColor(apt.status),
+                        isHighlighted && "ring-4 ring-primary ring-offset-2 z-20 animate-pulse"
+                      )}
+                      style={getAppointmentStyle(apt)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAppointmentClick(apt);
+                      }}
+                    >
+                      <div className="font-medium truncate">{apt.title}</div>
+                      <div className="truncate opacity-75">
+                        {apt.client?.first_name} {apt.client?.last_name}
+                      </div>
+                      <div className="truncate opacity-60">
+                        {apt.caregiver?.first_name} {apt.caregiver?.last_name}
+                      </div>
                     </div>
-                    <div className="truncate opacity-60">
-                      {apt.caregiver?.first_name} {apt.caregiver?.last_name}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })}

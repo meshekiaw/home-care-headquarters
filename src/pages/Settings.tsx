@@ -14,6 +14,7 @@ import {
   Save
 } from "lucide-react";
  import { StateRegulationsSection } from "@/components/settings/StateRegulationsSection";
+ import { NotificationPreferencesSection } from "@/components/settings/NotificationPreferencesSection";
 
 export default function Settings() {
   return (
@@ -62,6 +63,9 @@ export default function Settings() {
         {/* Agency Settings */}
         {/* State Regulations & Policies */}
         <StateRegulationsSection />
+         
+         {/* Notification Preferences */}
+         <NotificationPreferencesSection />
  
         <Card>
           <CardHeader>
@@ -86,33 +90,6 @@ export default function Settings() {
               <Label>Business Address</Label>
               <Input placeholder="123 Main St, City, State 12345" />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Notification Settings */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg">Notifications</CardTitle>
-            </div>
-            <CardDescription>Configure how you receive alerts</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { label: "Email notifications", description: "Receive updates via email" },
-              { label: "Scheduling alerts", description: "Get notified about schedule changes" },
-              { label: "Compliance reminders", description: "Alerts for expiring certifications" },
-              { label: "New message notifications", description: "Notify when you receive messages" },
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{item.label}</p>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            ))}
           </CardContent>
         </Card>
 

@@ -1075,6 +1075,53 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          assessment_expiry_alerts: boolean
+          created_at: string
+          days_before_expiry: number
+          email_enabled: boolean
+          handoff_alerts: boolean
+          id: string
+          nurse_id: string | null
+          sms_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessment_expiry_alerts?: boolean
+          created_at?: string
+          days_before_expiry?: number
+          email_enabled?: boolean
+          handoff_alerts?: boolean
+          id?: string
+          nurse_id?: string | null
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assessment_expiry_alerts?: boolean
+          created_at?: string
+          days_before_expiry?: number
+          email_enabled?: boolean
+          handoff_alerts?: boolean
+          id?: string
+          nurse_id?: string | null
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_nurse_id_fkey"
+            columns: ["nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

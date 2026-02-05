@@ -19,6 +19,21 @@ export default function Signup() {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const probeAuthService = async () => {
+    // Avoid leaking config details to UI; we only use this to tailor messaging.
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/health`;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  };
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
@@ -51,6 +66,25 @@ export default function Signup() {
       });
       navigate("/dashboard");
     } catch (error: any) {
+      // "Failed to fetch" usually means the browser couldn't reach the auth service (network/DNS/VPN/firewall).
+      const message = String(error?.message || "");
+      const isFetchFailure =
+        message.toLowerCase().includes("failed to fetch") ||
+        message.toLowerCase().includes("networkerror") ||
+        error?.name === "TypeError";
+
+      if (isFetchFailure) {
+        const reachable = await probeAuthService();
+        toast({
+          title: "Signup failed",
+          description: reachable
+            ? "Your browser can reach the authentication service, but the signup request still failed. Please try again in 30 seconds."
+            : "Your network is blocking the authentication service. Try a different network (phone hotspot), disable VPN/proxy, or change DNS (1.1.1.1 / 8.8.8.8), then retry.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Signup failed",
         description: error.message,

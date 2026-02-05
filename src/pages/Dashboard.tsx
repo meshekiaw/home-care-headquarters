@@ -8,12 +8,13 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   Clock, 
-  TrendingUp,
+  UserCheck,
   Plus,
   ArrowRight
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { startOfDay, endOfDay } from "date-fns";
 
 interface StatCardProps {
   title: string;
@@ -52,16 +53,34 @@ function StatCard({ title, value, change, changeType = "neutral", icon: Icon }: 
 
 export default function Dashboard() {
   const [clientCount, setClientCount] = useState(0);
+  const [caregiverCount, setCaregiverCount] = useState(0);
+  const [todayAppointments, setTodayAppointments] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const { count } = await supabase
+        const today = new Date();
+        const dayStart = startOfDay(today).toISOString();
+        const dayEnd = endOfDay(today).toISOString();
+
+        const [clientsResult, caregiversResult, appointmentsResult] = await Promise.all([
+          supabase
           .from('clients')
-          .select('*', { count: 'exact', head: true });
-        
-        setClientCount(count || 0);
+            .select('*', { count: 'exact', head: true }),
+          supabase
+            .from('caregivers')
+            .select('*', { count: 'exact', head: true }),
+          supabase
+            .from('appointments')
+            .select('*', { count: 'exact', head: true })
+            .gte('start_time', dayStart)
+            .lte('start_time', dayEnd)
+        ]);
+
+        setClientCount(clientsResult.count || 0);
+        setCaregiverCount(caregiversResult.count || 0);
+        setTodayAppointments(appointmentsResult.count || 0);
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
@@ -111,15 +130,14 @@ export default function Dashboard() {
             icon={Users}
           />
           <StatCard 
-            title="Scheduled Visits Today" 
-            value={24}
+            title="Today's Appointments" 
+            value={loading ? "..." : todayAppointments}
             icon={Calendar}
           />
           <StatCard 
-            title="Active Alerts" 
-            value={3}
-            changeType="negative"
-            icon={AlertTriangle}
+            title="Active Caregivers" 
+            value={loading ? "..." : caregiverCount}
+            icon={UserCheck}
           />
           <StatCard 
             title="Compliance Score" 
@@ -212,15 +230,15 @@ export default function Dashboard() {
                   <p className="text-sm font-medium">Schedule Visit</p>
                 </div>
               </Link>
-              <Link to="/caregivers" className="block">
+              <Link to="/analytics" className="block">
                 <div className="p-4 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all text-center group">
-                  <TrendingUp className="w-6 h-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
                   <p className="text-sm font-medium">View Reports</p>
                 </div>
               </Link>
               <Link to="/communications" className="block">
                 <div className="p-4 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all text-center group">
-                  <CheckCircle2 className="w-6 h-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                  <AlertTriangle className="w-6 h-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
                   <p className="text-sm font-medium">Send Message</p>
                 </div>
               </Link>

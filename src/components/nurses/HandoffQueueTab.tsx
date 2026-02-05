@@ -8,6 +8,9 @@
  import { Link } from "react-router-dom";
  import { differenceInDays, format } from "date-fns";
  
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
  interface Client {
    id: string;
    first_name: string;
@@ -169,6 +172,26 @@
        if (assessmentError) throw assessmentError;
  
        toast({ title: "Assessment picked up successfully!" });
+       
+       // Send handoff notification (fire and forget)
+       try {
+         await fetch(`${SUPABASE_URL}/functions/v1/send-handoff-notification`, {
+           method: 'POST',
+           headers: {
+             'Content-Type': 'application/json',
+             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+           },
+           body: JSON.stringify({
+             handoff_id: handoff.id,
+             assessment_id: handoff.assessment_id,
+             picked_up_by_nurse_id: nurseId,
+             released_by_nurse_id: handoff.released_by_nurse_id,
+           }),
+         });
+       } catch (notifyError) {
+         console.log("Notification service unavailable:", notifyError);
+       }
+       
        fetchHandoffs();
      } catch (error: any) {
        toast({

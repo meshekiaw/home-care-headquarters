@@ -188,7 +188,7 @@ export function AddRegulationDialog({ open, onOpenChange, onAdd, onBulkAdd }: Ad
                           type="button"
                           onClick={() => {
                             setSelectedState(state);
-                            setSelectedPredefined(null);
+                            setSelectedPredefined(new Set());
                             setStateSearch("");
                           }}
                           className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${

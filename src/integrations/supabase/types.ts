@@ -604,6 +604,56 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_policies: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          content: string
+          created_at: string
+          id: string
+          regulation_id: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          regulation_id: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          regulation_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_policies_regulation_id_fkey"
+            columns: ["regulation_id"]
+            isOneToOne: false
+            referencedRelation: "state_regulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_history: {
         Row: {
           client_id: string
@@ -697,6 +747,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      state_regulations: {
+        Row: {
+          category: string | null
+          created_at: string
+          effective_date: string | null
+          id: string
+          is_predefined: boolean | null
+          regulation_code: string | null
+          regulation_description: string | null
+          regulation_name: string
+          source_url: string | null
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          effective_date?: string | null
+          id?: string
+          is_predefined?: boolean | null
+          regulation_code?: string | null
+          regulation_description?: string | null
+          regulation_name: string
+          source_url?: string | null
+          state: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          effective_date?: string | null
+          id?: string
+          is_predefined?: boolean | null
+          regulation_code?: string | null
+          regulation_description?: string | null
+          regulation_name?: string
+          source_url?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

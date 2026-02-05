@@ -13,6 +13,7 @@ import {
   Building2,
   Save
 } from "lucide-react";
+ import { StateRegulationsSection } from "@/components/settings/StateRegulationsSection";
 
 export default function Settings() {
   return (
@@ -59,6 +60,9 @@ export default function Settings() {
         </Card>
 
         {/* Agency Settings */}
+        {/* State Regulations & Policies */}
+        <StateRegulationsSection />
+ 
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">

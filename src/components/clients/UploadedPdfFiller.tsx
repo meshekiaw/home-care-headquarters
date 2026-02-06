@@ -73,6 +73,9 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
           const buf = await res.arrayBuffer();
           if (cancelled) return;
 
+          // Clone the buffer before pdf-lib uses it, so we have a fresh copy for the typewriter component
+          const bufferForTypewriter = buf.slice(0);
+
           const pdfDoc = await PDFDocument.load(buf);
           const form = pdfDoc.getForm();
           const pdfFields = form.getFields();
@@ -100,7 +103,8 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
             else initialValues[meta.name] = "";
           }
 
-          setPdfBytes(buf);
+          // Use the cloned buffer for state so the typewriter component gets a fresh copy
+          setPdfBytes(bufferForTypewriter);
           setFields(metas);
           setValues(initialValues);
 

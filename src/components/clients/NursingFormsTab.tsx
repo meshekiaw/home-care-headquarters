@@ -854,9 +854,21 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="h-[70vh] w-full">
+          {selectedUploadedForm?.file_type?.includes('pdf') && (
+            <div className="bg-muted/50 border rounded-lg p-3 text-sm">
+              <p className="font-medium mb-1">📝 Fillable Form Instructions:</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                <li>Fill out the form fields directly in the viewer below</li>
+                <li>When done, click <strong>"Save Filled PDF"</strong> or press <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> (Windows) / <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">⌘</kbd>+<kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> (Mac)</li>
+                <li>Select "Save as PDF" as your printer to download the completed form</li>
+              </ol>
+            </div>
+          )}
+          
+          <div className="h-[60vh] w-full">
             {selectedUploadedForm?.file_type?.includes('pdf') ? (
               <iframe
+                id="pdf-viewer-frame"
                 src={selectedUploadedForm.file_url}
                 className="w-full h-full border rounded-lg"
                 title={selectedUploadedForm.name}
@@ -898,10 +910,35 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
             )}
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setViewUploadedFormOpen(false)}>
               Close
             </Button>
+            {selectedUploadedForm?.file_type?.includes('pdf') && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  // Open PDF in new window for printing (workaround for iframe cross-origin)
+                  const printWindow = window.open(selectedUploadedForm.file_url, '_blank');
+                  if (printWindow) {
+                    printWindow.onload = () => {
+                      setTimeout(() => {
+                        printWindow.print();
+                      }, 500);
+                    };
+                  } else {
+                    toast({
+                      title: "Pop-up blocked",
+                      description: "Please allow pop-ups or use Ctrl+P while viewing the PDF to save it.",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+              >
+                <PenTool className="w-4 h-4 mr-2" />
+                Save Filled PDF
+              </Button>
+            )}
             <Button
               onClick={() => {
                 if (selectedUploadedForm) {

@@ -36,8 +36,10 @@ import {
   ClipboardList,
   FileUp,
   ExternalLink,
-  Download
+  Download,
+  PenLine
 } from "lucide-react";
+import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { nursingFormTemplates, NursingFormTemplate } from "@/data/nursingFormTemplates";
@@ -131,6 +133,10 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     category: 'assessment' as const,
     fields: [] as FormField[],
   });
+
+  // Signature request state
+  const [signatureRequestOpen, setSignatureRequestOpen] = useState(false);
+  const [signatureRequestDocName, setSignatureRequestDocName] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -591,17 +597,28 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                     <div className="flex items-center gap-3">
                       {getStatusBadge(submission.status)}
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleViewSubmission(submission)}>
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteSubmission(submission.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleViewSubmission(submission)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setSignatureRequestDocName(submission.template?.name || 'Nursing Form');
+                          setSignatureRequestOpen(true);
+                        }}
+                        title="Request signature via email"
+                      >
+                        <PenLine className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDeleteSubmission(submission.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -1080,6 +1097,13 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Signature Request Dialog */}
+      <SignatureRequestDialog
+        open={signatureRequestOpen}
+        onOpenChange={setSignatureRequestOpen}
+        documentName={signatureRequestDocName}
+      />
 
       {/* Create Template Dialog */}
       <Dialog open={createTemplateOpen} onOpenChange={setCreateTemplateOpen}>

@@ -30,8 +30,10 @@ import {
   FileImage,
   FileSpreadsheet,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  PenLine
 } from "lucide-react";
+import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -63,6 +65,10 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
     category: "general",
     expires_at: "",
   });
+
+  // Signature request state
+  const [signatureRequestOpen, setSignatureRequestOpen] = useState(false);
+  const [signatureRequestDocName, setSignatureRequestDocName] = useState("");
 
   useEffect(() => {
     fetchDocuments();
@@ -374,6 +380,17 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
                         </Button>
                         <Button 
                           variant="ghost" 
+                          size="icon"
+                          onClick={() => {
+                            setSignatureRequestDocName(doc.name);
+                            setSignatureRequestOpen(true);
+                          }}
+                          title="Request signature via email"
+                        >
+                          <PenLine className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
                           size="icon" 
                           className="text-destructive hover:text-destructive"
                           onClick={() => handleDelete(doc.id)}
@@ -389,6 +406,13 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
           ))}
         </div>
       )}
+
+      {/* Signature Request Dialog */}
+      <SignatureRequestDialog
+        open={signatureRequestOpen}
+        onOpenChange={setSignatureRequestOpen}
+        documentName={signatureRequestDocName}
+      />
     </div>
   );
 }

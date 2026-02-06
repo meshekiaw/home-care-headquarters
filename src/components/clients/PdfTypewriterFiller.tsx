@@ -44,6 +44,7 @@ export type PdfTypewriterFillerProps = {
 export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfTypewriterFillerProps>(
   ({ pdfBytes, fileName, className, onError }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -51,7 +52,11 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     const [doc, setDoc] = useState<any>(null);
     const [pageCount, setPageCount] = useState(0);
     const [page, setPage] = useState(1);
-    const [scale, setScale] = useState(1.2);
+
+    // IMPORTANT: Default to fit-to-width so users can always see the whole page in narrow side panels.
+    const [scaleMode, setScaleMode] = useState<"fit" | "manual">("fit");
+    const [manualScale, setManualScale] = useState(1.2);
+    const [containerWidth, setContainerWidth] = useState(0);
 
     const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
     const [entries, setEntries] = useState<PdfTypewriterEntry[]>([]);
@@ -99,6 +104,19 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     }, [pdfBytes]);
 
     useEffect(() => {
+      const el = containerRef.current;
+      if (!el) return;
+
+      const ro = new ResizeObserver((entries) => {
+        const w = entries[0]?.contentRect?.width ?? 0;
+        setContainerWidth(w);
+      });
+
+      ro.observe(el);
+      return () => ro.disconnect();
+    }, []);
+
+    useEffect(() => {
       let cancelled = false;
 
       async function render() {
@@ -109,7 +127,22 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           const pdfPage = await doc.getPage(page);
           if (cancelled) return;
 
-          const viewport = pdfPage.getViewport({ scale });
+          const baseViewport = pdfPage.getViewport({ scale: 1 });
+
+          let renderScale = scaleMode === "manual" ? manualScale : 1;
+          if (scaleMode === "fit") {
+            const w = containerWidth || containerRef.current?.clientWidth || 0;
+            if (w > 0) {
+              // Small padding so the page doesn't touch the border.
+              const padded = Math.max(0, w - 16);
+              renderScale = padded / baseViewport.width;
+            }
+          }
+
+          // Clamp so we don't render extremely tiny/huge canvases.
+          renderScale = Math.max(0.6, Math.min(3.0, renderScale));
+
+          const viewport = pdfPage.getViewport({ scale: renderScale });
           const canvas = canvasRef.current;
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
@@ -133,7 +166,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
       return () => {
         cancelled = true;
       };
-    }, [doc, page, scale, onError]);
+    }, [doc, page, manualScale, scaleMode, containerWidth, onError]);
 
     function addEntryAtClick(e: MouseEvent<HTMLCanvasElement>) {
       if (!viewportSize) return;
@@ -212,6 +245,8 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
       setEntries([]);
       setPage(1);
       setError(null);
+      setScaleMode("fit");
+      setManualScale(1.2);
     }
 
     useImperativeHandle(ref, () => ({
@@ -262,9 +297,21 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           <div className="ml-auto flex items-center gap-2">
             <Button
               type="button"
+              variant={scaleMode === "fit" ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => setScaleMode("fit")}
+              disabled={loading}
+            >
+              Fit width
+            </Button>
+            <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => setScale((s) => Math.max(0.8, Math.round((s - 0.2) * 10) / 10))}
+              onClick={() => {
+                setScaleMode("manual");
+                setManualScale((s) => Math.max(0.6, Math.round((s - 0.2) * 10) / 10));
+              }}
               disabled={loading}
             >
               −
@@ -273,7 +320,10 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setScale((s) => Math.min(2.0, Math.round((s + 0.2) * 10) / 10))}
+              onClick={() => {
+                setScaleMode("manual");
+                setManualScale((s) => Math.min(3.0, Math.round((s + 0.2) * 10) / 10));
+              }}
               disabled={loading}
             >
               +
@@ -281,64 +331,64 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           </div>
         </div>
 
-        <div className="rounded-lg border overflow-auto">
-          <div className="relative inline-block align-top">
-            <canvas
-              ref={canvasRef}
-              className="block"
-              onClick={addEntryAtClick}
-              aria-label="PDF page canvas"
-            />
+        <div ref={containerRef} className="rounded-lg border overflow-auto">
+          <div className="inline-block align-top p-2">
+            <div className="relative inline-block align-top">
+              <canvas
+                ref={canvasRef}
+                className="block"
+                onClick={addEntryAtClick}
+                aria-label="PDF page canvas"
+              />
 
-            {/* overlay text inputs */}
-            {viewportSize &&
-              activeEntries.map((entry) => {
-                const left = `${entry.xPct * 100}%`;
-                const top = `${entry.yPct * 100}%`;
+              {/* overlay text inputs */}
+              {viewportSize &&
+                activeEntries.map((entry) => {
+                  const left = `${entry.xPct * 100}%`;
+                  const top = `${entry.yPct * 100}%`;
 
-                return (
-                  <div
-                    key={entry.id}
-                    className="absolute"
-                    style={{ left, top, transform: "translate(0, -50%)" }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-md border bg-background/95 backdrop-blur px-2 py-1 shadow-sm">
-                        <Label className="sr-only">Text</Label>
-                        <Input
-                          value={entry.text}
-                          onChange={(e) =>
-                            setEntries((prev) =>
-                              prev.map((p) => (p.id === entry.id ? { ...p, text: e.target.value } : p)),
-                            )
-                          }
-                          placeholder="Type…"
-                          className="h-7 w-44 text-xs"
-                        />
+                  return (
+                    <div
+                      key={entry.id}
+                      className="absolute"
+                      style={{ left, top, transform: "translate(0, -50%)" }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-md border bg-background/95 backdrop-blur px-2 py-1 shadow-sm">
+                          <Label className="sr-only">Text</Label>
+                          <Input
+                            value={entry.text}
+                            onChange={(e) =>
+                              setEntries((prev) =>
+                                prev.map((p) => (p.id === entry.id ? { ...p, text: e.target.value } : p)),
+                              )
+                            }
+                            placeholder="Type…"
+                            className="h-7 w-44 text-xs"
+                          />
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            setEntries((prev) => prev.filter((p) => p.id !== entry.id));
+                          }}
+                          aria-label="Remove text"
+                        >
+                          ×
+                        </Button>
                       </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2"
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          setEntries((prev) => prev.filter((p) => p.id !== entry.id));
-                        }}
-                        aria-label="Remove text"
-                      >
-                        ×
-                      </Button>
                     </div>
-                  </div>
-                );
-              })}
-          </div>
+                  );
+                })}
+            </div>
 
-          {loading && (
-            <div className="p-3 text-sm text-muted-foreground">Loading…</div>
-          )}
+            {loading && <div className="p-3 text-sm text-muted-foreground">Loading…</div>}
+          </div>
         </div>
       </div>
     );

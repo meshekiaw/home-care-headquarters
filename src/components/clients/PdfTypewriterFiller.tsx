@@ -69,7 +69,9 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
         setLoading(true);
         setError(null);
         try {
-          const loadingTask = (pdfjsLib as any).getDocument({ data: pdfBytes });
+          // Clone the ArrayBuffer to prevent "already detached" errors when pdfjs transfers it to the worker
+          const bufferCopy = pdfBytes.slice(0);
+          const loadingTask = (pdfjsLib as any).getDocument({ data: bufferCopy });
           const loaded = await loadingTask.promise;
           if (cancelled) return;
           setDoc(loaded);

@@ -62,6 +62,8 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
     const [entries, setEntries] = useState<PdfTypewriterEntry[]>([]);
     const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
+    const [draggingId, setDraggingId] = useState<string | null>(null);
+    const dragStartRef = useRef<{ x: number; y: number; xPct: number; yPct: number } | null>(null);
 
     const safeFileName = useMemo(() => {
       const base = fileName?.trim() || "filled-form.pdf";
@@ -171,7 +173,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     }, [doc, page, manualScale, scaleMode, containerWidth, onError]);
 
     function addEntryAtClick(e: MouseEvent<HTMLCanvasElement>) {
-      if (!viewportSize) return;
+      if (!viewportSize || draggingId) return;
 
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -198,6 +200,56 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
         },
       ]);
     }
+
+    function handleMarkerMouseDown(e: React.MouseEvent, entry: PdfTypewriterEntry) {
+      e.preventDefault();
+      e.stopPropagation();
+      setDraggingId(entry.id);
+      dragStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        xPct: entry.xPct,
+        yPct: entry.yPct,
+      };
+    }
+
+    useEffect(() => {
+      if (!draggingId) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      function handleMouseMove(e: globalThis.MouseEvent) {
+        if (!draggingId || !dragStartRef.current || !canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const deltaX = e.clientX - dragStartRef.current.x;
+        const deltaY = e.clientY - dragStartRef.current.y;
+
+        const deltaXPct = deltaX / rect.width;
+        const deltaYPct = deltaY / rect.height;
+
+        const newXPct = Math.min(1, Math.max(0, dragStartRef.current.xPct + deltaXPct));
+        const newYPct = Math.min(1, Math.max(0, dragStartRef.current.yPct + deltaYPct));
+
+        setEntries((prev) =>
+          prev.map((p) => (p.id === draggingId ? { ...p, xPct: newXPct, yPct: newYPct } : p))
+        );
+      }
+
+      function handleMouseUp() {
+        setDraggingId(null);
+        dragStartRef.current = null;
+      }
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }, [draggingId]);
 
     async function downloadFlattenedPdf() {
       try {
@@ -349,31 +401,44 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           type="button"
                           className={cn(
                             "absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background/90",
-                            entry.text?.trim() && !isOpen && "opacity-0"
+                            entry.text?.trim() && !isOpen && "opacity-0",
+                            draggingId === entry.id && "cursor-grabbing",
+                            !draggingId && "cursor-grab"
                           )}
                           style={{ left, top }}
+                          onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
                           onClick={(ev) => {
                             ev.stopPropagation();
-                            setActiveEntryId(entry.id);
+                            if (!draggingId) {
+                              setActiveEntryId(entry.id);
+                            }
                           }}
                           aria-label={entry.text ? `Edit text: ${entry.text}` : "Edit text"}
                           title={entry.text || "Edit text"}
                         />
                       </PopoverTrigger>
 
-                      {/* Render the typed value on the form so it appears “in the field”, not only in the editor */}
+                      {/* Render the typed value on the form so it appears "in the field", not only in the editor */}
                       {!!entry.text?.trim() && !isOpen && (
                         <div
-                          className="absolute select-none pointer-events-none"
+                          className={cn(
+                            "absolute select-none -translate-y-1/2",
+                            draggingId === entry.id ? "cursor-grabbing" : "cursor-grab"
+                          )}
                           style={{ left: `calc(${entry.xPct * 100}% + 12px)`, top }}
-                          aria-hidden="true"
+                          onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            if (!draggingId) {
+                              setActiveEntryId(entry.id);
+                            }
+                          }}
                         >
                           <span className="inline-block max-w-[280px] truncate text-sm leading-none text-foreground">
                             {entry.text}
                           </span>
                         </div>
                       )}
-
 
                       <PopoverContent
                         side="right"

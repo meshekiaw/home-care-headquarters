@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 
 type PdfTypewriterEntry = {
@@ -439,7 +440,10 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
                           onClick={(ev) => handleMarkerClick(ev, entry.id)}
                         >
-                          <span className="inline-block max-w-[280px] truncate text-sm leading-none text-foreground">
+                          <span 
+                            className="inline-block max-w-[280px] truncate leading-none text-foreground"
+                            style={{ fontSize: `${entry.fontSize}px` }}
+                          >
                             {entry.text}
                           </span>
                         </div>
@@ -450,7 +454,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                         align="start"
                         className="w-64 p-2"
                       >
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <div className="space-y-1">
                             <Label className="text-xs">Text</Label>
                             <Input
@@ -463,6 +467,25 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                               }
                               placeholder="Type…"
                               className="h-8 text-sm"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-xs">Font Size</Label>
+                              <span className="text-xs text-muted-foreground">{entry.fontSize}px</span>
+                            </div>
+                            <Slider
+                              value={[entry.fontSize]}
+                              onValueChange={([val]) =>
+                                setEntries((prev) =>
+                                  prev.map((p) => (p.id === entry.id ? { ...p, fontSize: val } : p)),
+                                )
+                              }
+                              min={8}
+                              max={24}
+                              step={1}
+                              className="w-full"
                             />
                           </div>
 

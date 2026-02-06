@@ -255,21 +255,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     }));
 
     return (
-      <div className={cn("space-y-3", className)}>
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Type on PDF</p>
-          <p className="text-xs text-muted-foreground">
-            This PDF doesn’t expose standard form fields. Click on the page to place text.
-          </p>
-        </div>
-
-        {error && (
-          <div className="rounded-lg border bg-background p-3 text-sm">
-            <p className="font-medium">PDF note</p>
-            <p className="mt-1 text-muted-foreground">{error}</p>
-          </div>
-        )}
-
+      <div className={cn("space-y-2", className)}>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
@@ -336,9 +322,9 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
             <div className="relative inline-block align-top">
               <canvas
                 ref={canvasRef}
-                className="block"
+                className="block cursor-crosshair"
                 onClick={addEntryAtClick}
-                aria-label="PDF page canvas"
+                aria-label="PDF page canvas - click to add text"
               />
 
               {/* overlay text inputs */}
@@ -353,8 +339,8 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                       className="absolute"
                       style={{ left, top, transform: "translate(0, -50%)" }}
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-md border bg-background/95 backdrop-blur px-2 py-1 shadow-sm">
+                      <div className="flex items-center gap-1">
+                        <div className="rounded border bg-background/95 backdrop-blur px-1 py-0.5 shadow-sm">
                           <Label className="sr-only">Text</Label>
                           <Input
                             value={entry.text}
@@ -364,7 +350,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                               )
                             }
                             placeholder="Type…"
-                            className="h-7 w-44 text-xs"
+                            className="h-6 w-24 text-xs px-1"
                           />
                         </div>
 
@@ -372,7 +358,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-7 px-2"
+                          className="h-5 w-5 p-0 text-xs"
                           onClick={(ev) => {
                             ev.stopPropagation();
                             setEntries((prev) => prev.filter((p) => p.id !== entry.id));

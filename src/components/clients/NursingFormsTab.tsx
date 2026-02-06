@@ -97,6 +97,8 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
   const [viewFormOpen, setViewFormOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [createTemplateOpen, setCreateTemplateOpen] = useState(false);
+  const [viewUploadedFormOpen, setViewUploadedFormOpen] = useState(false);
+  const [selectedUploadedForm, setSelectedUploadedForm] = useState<UploadedForm | null>(null);
   
   const [selectedTemplate, setSelectedTemplate] = useState<NursingFormTemplate | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
@@ -597,15 +599,43 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" asChild>
-                        <a href={form.file_url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setSelectedUploadedForm(form);
+                          setViewUploadedFormOpen(true);
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <a href={form.file_url} download>
-                          <Download className="w-4 h-4" />
-                        </a>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          // Use fetch to download to avoid browser blocking
+                          fetch(form.file_url)
+                            .then(response => response.blob())
+                            .then(blob => {
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = form.name || 'download';
+                              document.body.appendChild(a);
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                              document.body.removeChild(a);
+                            })
+                            .catch(() => {
+                              toast({
+                                title: "Download failed",
+                                description: "Unable to download the file. Try viewing it instead.",
+                                variant: "destructive"
+                              });
+                            });
+                        }}
+                      >
+                        <Download className="w-4 h-4" />
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -809,6 +839,78 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
             </Button>
             <Button onClick={handleFileUpload} disabled={uploading || !uploadForm.file || !uploadForm.name}>
               {uploading ? "Uploading..." : "Upload Form"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Uploaded Form Dialog */}
+      <Dialog open={viewUploadedFormOpen} onOpenChange={setViewUploadedFormOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{selectedUploadedForm?.name}</DialogTitle>
+            <DialogDescription>
+              Uploaded {selectedUploadedForm?.created_at && formatDate(selectedUploadedForm.created_at)}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="h-[70vh] w-full">
+            {selectedUploadedForm?.file_type?.includes('pdf') ? (
+              <iframe
+                src={selectedUploadedForm.file_url}
+                className="w-full h-full border rounded-lg"
+                title={selectedUploadedForm.name}
+              />
+            ) : selectedUploadedForm?.file_type?.includes('image') ? (
+              <div className="flex items-center justify-center h-full">
+                <img
+                  src={selectedUploadedForm.file_url}
+                  alt={selectedUploadedForm.name}
+                  className="max-h-full max-w-full object-contain rounded-lg"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <FileText className="w-16 h-16 text-muted-foreground" />
+                <p className="text-muted-foreground">Preview not available for this file type</p>
+                <Button
+                  onClick={() => {
+                    if (selectedUploadedForm) {
+                      fetch(selectedUploadedForm.file_url)
+                        .then(response => response.blob())
+                        .then(blob => {
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = selectedUploadedForm.name || 'download';
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                        });
+                    }
+                  }}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download File
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewUploadedFormOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedUploadedForm) {
+                  window.open(selectedUploadedForm.file_url, '_blank');
+                }
+              }}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Open in New Tab
             </Button>
           </DialogFooter>
         </DialogContent>

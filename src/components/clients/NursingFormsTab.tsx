@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -99,6 +99,12 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
   const [createTemplateOpen, setCreateTemplateOpen] = useState(false);
   const [viewUploadedFormOpen, setViewUploadedFormOpen] = useState(false);
   const [selectedUploadedForm, setSelectedUploadedForm] = useState<UploadedForm | null>(null);
+
+  // PDF viewer state (load PDF as a same-origin Blob URL so it's fillable inside the app)
+  const pdfIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [pdfViewerUrl, setPdfViewerUrl] = useState<string | null>(null);
+  const [pdfViewerLoading, setPdfViewerLoading] = useState(false);
+  const [pdfViewerError, setPdfViewerError] = useState<string | null>(null);
   
   const [selectedTemplate, setSelectedTemplate] = useState<NursingFormTemplate | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
@@ -430,6 +436,43 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     }
   };
 
+  async function loadUploadedPdfForViewer(form: UploadedForm) {
+    if (!form.file_url) return;
+
+    setPdfViewerLoading(true);
+    setPdfViewerError(null);
+
+    // Reset existing blob URL (if any)
+    setPdfViewerUrl((prev) => {
+      if (prev?.startsWith("blob:")) {
+        window.URL.revokeObjectURL(prev);
+      }
+      return null;
+    });
+
+    try {
+      const res = await fetch(form.file_url, { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`Failed to load PDF (${res.status})`);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      setPdfViewerUrl((prev) => {
+        if (prev?.startsWith("blob:")) {
+          window.URL.revokeObjectURL(prev);
+        }
+        return url;
+      });
+    } catch (e: any) {
+      setPdfViewerError(e?.message || "Failed to load PDF.");
+      setPdfViewerUrl(null);
+    } finally {
+      setPdfViewerLoading(false);
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
@@ -605,6 +648,19 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                         onClick={() => {
                           setSelectedUploadedForm(form);
                           setViewUploadedFormOpen(true);
+
+                          if (form.file_type?.includes("pdf")) {
+                            loadUploadedPdfForViewer(form);
+                          } else {
+                            setPdfViewerError(null);
+                            setPdfViewerLoading(false);
+                            setPdfViewerUrl((prev) => {
+                              if (prev?.startsWith("blob:")) {
+                                window.URL.revokeObjectURL(prev);
+                              }
+                              return null;
+                            });
+                          }
                         }}
                       >
                         <Eye className="w-4 h-4" />
@@ -845,7 +901,24 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
       </Dialog>
 
       {/* View Uploaded Form Dialog */}
-      <Dialog open={viewUploadedFormOpen} onOpenChange={setViewUploadedFormOpen}>
+      <Dialog
+        open={viewUploadedFormOpen}
+        onOpenChange={(open) => {
+          setViewUploadedFormOpen(open);
+
+          // Cleanup blob URL on close
+          if (!open) {
+            setPdfViewerError(null);
+            setPdfViewerLoading(false);
+            setPdfViewerUrl((prev) => {
+              if (prev?.startsWith("blob:")) {
+                window.URL.revokeObjectURL(prev);
+              }
+              return null;
+            });
+          }
+        }}
+      >
         <DialogContent className="max-w-5xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{selectedUploadedForm?.name}</DialogTitle>
@@ -853,27 +926,69 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
               Uploaded {selectedUploadedForm?.created_at && formatDate(selectedUploadedForm.created_at)}
             </DialogDescription>
           </DialogHeader>
-          
-          {selectedUploadedForm?.file_type?.includes('pdf') && (
+
+          {selectedUploadedForm?.file_type?.includes("pdf") && (
             <div className="bg-muted/50 border rounded-lg p-3 text-sm">
-              <p className="font-medium mb-1">📝 Fillable Form Instructions:</p>
+              <p className="font-medium mb-1">Fillable PDF workflow</p>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
                 <li>Fill out the form fields directly in the viewer below</li>
-                <li>When done, click <strong>"Save Filled PDF"</strong> or press <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">Ctrl</kbd>+<kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> (Windows) / <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">⌘</kbd>+<kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> (Mac)</li>
+                <li>
+                  When done, click <strong>Save Filled PDF</strong> (or press{" "}
+                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">Ctrl</kbd>+
+                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> on Windows /{" "}
+                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">⌘</kbd>+
+                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> on Mac)
+                </li>
                 <li>Select "Save as PDF" as your printer to download the completed form</li>
               </ol>
             </div>
           )}
-          
+
           <div className="h-[60vh] w-full">
-            {selectedUploadedForm?.file_type?.includes('pdf') ? (
-              <iframe
-                id="pdf-viewer-frame"
-                src={selectedUploadedForm.file_url}
-                className="w-full h-full border rounded-lg"
-                title={selectedUploadedForm.name}
-              />
-            ) : selectedUploadedForm?.file_type?.includes('image') ? (
+            {selectedUploadedForm?.file_type?.includes("pdf") ? (
+              <div className="relative h-full w-full">
+                {pdfViewerLoading && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border bg-background/80">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+                      Loading PDF…
+                    </div>
+                  </div>
+                )}
+
+                {pdfViewerError && (
+                  <div className="absolute left-3 right-3 top-3 z-20 rounded-lg border bg-background p-3 text-sm">
+                    <p className="font-medium">Couldn’t load the PDF inside Lovable</p>
+                    <p className="text-muted-foreground mt-1">
+                      You can still use <strong>Open in New Tab</strong>, or try again.
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => selectedUploadedForm && loadUploadedPdfForViewer(selectedUploadedForm)}
+                      >
+                        Retry
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPdfViewerError(null)}
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <iframe
+                  ref={pdfIframeRef}
+                  src={pdfViewerUrl ?? selectedUploadedForm.file_url}
+                  className="w-full h-full border rounded-lg"
+                  title={selectedUploadedForm.name}
+                />
+              </div>
+            ) : selectedUploadedForm?.file_type?.includes("image") ? (
               <div className="flex items-center justify-center h-full">
                 <img
                   src={selectedUploadedForm.file_url}
@@ -889,12 +1004,12 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                   onClick={() => {
                     if (selectedUploadedForm) {
                       fetch(selectedUploadedForm.file_url)
-                        .then(response => response.blob())
-                        .then(blob => {
+                        .then((response) => response.blob())
+                        .then((blob) => {
                           const url = window.URL.createObjectURL(blob);
-                          const a = document.createElement('a');
+                          const a = document.createElement("a");
                           a.href = url;
-                          a.download = selectedUploadedForm.name || 'download';
+                          a.download = selectedUploadedForm.name || "download";
                           document.body.appendChild(a);
                           a.click();
                           window.URL.revokeObjectURL(url);
@@ -909,28 +1024,35 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
               </div>
             )}
           </div>
-          
+
           <DialogFooter className="gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => setViewUploadedFormOpen(false)}>
               Close
             </Button>
-            {selectedUploadedForm?.file_type?.includes('pdf') && (
+            {selectedUploadedForm?.file_type?.includes("pdf") && (
               <Button
                 variant="secondary"
+                disabled={pdfViewerLoading}
                 onClick={() => {
-                  // Open PDF in new window for printing (workaround for iframe cross-origin)
-                  const printWindow = window.open(selectedUploadedForm.file_url, '_blank');
-                  if (printWindow) {
-                    printWindow.onload = () => {
-                      setTimeout(() => {
-                        printWindow.print();
-                      }, 500);
-                    };
-                  } else {
+                  const w = pdfIframeRef.current?.contentWindow;
+
+                  if (!w) {
                     toast({
-                      title: "Pop-up blocked",
-                      description: "Please allow pop-ups or use Ctrl+P while viewing the PDF to save it.",
-                      variant: "destructive"
+                      title: "Unable to print",
+                      description: "The PDF viewer isn't ready yet. Please try again.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  try {
+                    w.focus();
+                    w.print();
+                  } catch {
+                    toast({
+                      title: "Print not available in this viewer",
+                      description: "Click inside the PDF viewer and use Ctrl+P / ⌘+P to save as PDF.",
+                      variant: "destructive",
                     });
                   }
                 }}
@@ -942,7 +1064,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
             <Button
               onClick={() => {
                 if (selectedUploadedForm) {
-                  window.open(selectedUploadedForm.file_url, '_blank');
+                  window.open(pdfViewerUrl ?? selectedUploadedForm.file_url, "_blank", "noopener,noreferrer");
                 }
               }}
             >

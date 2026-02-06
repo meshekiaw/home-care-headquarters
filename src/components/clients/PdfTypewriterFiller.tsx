@@ -15,6 +15,7 @@ import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.js?url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 type PdfTypewriterEntry = {
@@ -60,6 +61,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
 
     const [viewportSize, setViewportSize] = useState<{ width: number; height: number } | null>(null);
     const [entries, setEntries] = useState<PdfTypewriterEntry[]>([]);
+    const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
 
     const safeFileName = useMemo(() => {
       const base = fileName?.trim() || "filled-form.pdf";
@@ -182,6 +184,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
       const yPct = Math.min(1, Math.max(0, y / rect.height));
 
       const id = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`).toString();
+      setActiveEntryId(id);
 
       setEntries((prev) => [
         ...prev,
@@ -333,42 +336,80 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                   const left = `${entry.xPct * 100}%`;
                   const top = `${entry.yPct * 100}%`;
 
-                  return (
-                    <div
-                      key={entry.id}
-                      className="absolute"
-                      style={{ left, top, transform: "translate(0, -50%)" }}
-                    >
-                      <div className="flex items-center gap-1">
-                        <div className="rounded border bg-background/95 backdrop-blur px-1 py-0.5 shadow-sm">
-                          <Label className="sr-only">Text</Label>
-                          <Input
-                            value={entry.text}
-                            onChange={(e) =>
-                              setEntries((prev) =>
-                                prev.map((p) => (p.id === entry.id ? { ...p, text: e.target.value } : p)),
-                              )
-                            }
-                            placeholder="Type…"
-                            className="h-6 w-24 text-xs px-1"
-                          />
-                        </div>
+                  const isOpen = activeEntryId === entry.id;
 
-                        <Button
+                  return (
+                    <Popover
+                      key={entry.id}
+                      open={isOpen}
+                      onOpenChange={(open) => setActiveEntryId(open ? entry.id : null)}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 text-xs"
+                          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background/90 backdrop-blur shadow-sm"
+                          style={{ left, top }}
                           onClick={(ev) => {
                             ev.stopPropagation();
-                            setEntries((prev) => prev.filter((p) => p.id !== entry.id));
+                            setActiveEntryId(entry.id);
                           }}
-                          aria-label="Remove text"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    </div>
+                          aria-label={entry.text ? `Edit text: ${entry.text}` : "Edit text"}
+                          title={entry.text || "Edit text"}
+                        />
+                      </PopoverTrigger>
+
+                      <PopoverContent
+                        side="right"
+                        align="start"
+                        className="w-64 p-2"
+                        onOpenAutoFocus={(e) => {
+                          // prevent focus-jump scrolling the container
+                          e.preventDefault();
+                        }}
+                      >
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Text</Label>
+                            <Input
+                              autoFocus
+                              value={entry.text}
+                              onChange={(e) =>
+                                setEntries((prev) =>
+                                  prev.map((p) => (p.id === entry.id ? { ...p, text: e.target.value } : p)),
+                                )
+                              }
+                              placeholder="Type…"
+                              className="h-8 text-sm"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2 text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setEntries((prev) => prev.filter((p) => p.id !== entry.id));
+                                setActiveEntryId(null);
+                              }}
+                            >
+                              Remove
+                            </Button>
+
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              className="h-8 px-2"
+                              onClick={() => setActiveEntryId(null)}
+                            >
+                              Done
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   );
                 })}
             </div>

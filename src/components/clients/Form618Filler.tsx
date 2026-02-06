@@ -649,7 +649,9 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
           </div>
           
           <div className="flex-1 min-h-0 overflow-auto p-2">
-            <canvas ref={canvasRef} className="block mx-auto max-w-full" />
+            <div className="inline-block min-w-full">
+              <canvas ref={canvasRef} className="block mx-auto" />
+            </div>
             {loading && <div className="p-3 text-sm text-muted-foreground text-center">Loading…</div>}
           </div>
         </div>

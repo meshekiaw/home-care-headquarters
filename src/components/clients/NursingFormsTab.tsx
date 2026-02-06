@@ -45,6 +45,7 @@ import { FormFieldRenderer, FormField } from "@/components/forms/FormFieldRender
 import { FormBuilder } from "@/components/forms/FormBuilder";
 import { SignaturePad } from "@/components/forms/SignaturePad";
 import { UploadedPdfFiller, type UploadedPdfFillerHandle } from "@/components/clients/UploadedPdfFiller";
+import { PdfCanvasViewer } from "@/components/clients/PdfCanvasViewer";
 
 interface FormSubmission {
   id: string;
@@ -101,12 +102,12 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
   const [viewUploadedFormOpen, setViewUploadedFormOpen] = useState(false);
   const [selectedUploadedForm, setSelectedUploadedForm] = useState<UploadedForm | null>(null);
 
-  // PDF viewer state (load PDF as a same-origin Blob URL so it's fillable inside the app)
-  const pdfIframeRef = useRef<HTMLIFrameElement | null>(null);
+  // PDF preview state (load PDF as a Blob URL for consistent fetching/rendering)
   const uploadedPdfFillerRef = useRef<UploadedPdfFillerHandle | null>(null);
   const [pdfViewerUrl, setPdfViewerUrl] = useState<string | null>(null);
   const [pdfViewerLoading, setPdfViewerLoading] = useState(false);
   const [pdfViewerError, setPdfViewerError] = useState<string | null>(null);
+
 
   const [selectedTemplate, setSelectedTemplate] = useState<NursingFormTemplate | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
@@ -980,12 +981,10 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                     </div>
                   )}
 
-                  <iframe
+                  <PdfCanvasViewer
                     key={pdfViewerUrl ?? selectedUploadedForm.id}
-                    ref={pdfIframeRef}
-                    src={pdfViewerUrl ?? selectedUploadedForm.file_url}
-                    className="w-full h-full border rounded-lg"
-                    title={selectedUploadedForm.name}
+                    fileUrl={pdfViewerUrl ?? selectedUploadedForm.file_url}
+                    className="h-full"
                   />
                 </div>
 
@@ -993,6 +992,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                   ref={uploadedPdfFillerRef}
                   fileUrl={pdfViewerUrl ?? selectedUploadedForm.file_url}
                   fileName={selectedUploadedForm.name ? `${selectedUploadedForm.name} (filled).pdf` : "filled-form.pdf"}
+                  scrollAreaClassName="h-full"
                   onError={(message) => {
                     toast({
                       title: "Unable to load PDF fields",

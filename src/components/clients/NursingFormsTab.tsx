@@ -949,8 +949,8 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
 
           <div className="h-[60vh] w-full">
             {selectedUploadedForm?.file_type?.includes("pdf") ? (
-              <div className="grid h-full w-full gap-4 lg:grid-cols-2">
-                <div className="relative h-full w-full">
+              <div className="grid h-full w-full min-h-0 gap-4 lg:grid-cols-2">
+                <div className="relative h-full w-full min-h-0">
                   {pdfViewerLoading && (
                     <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border bg-background/80">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -992,6 +992,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                   ref={uploadedPdfFillerRef}
                   fileUrl={pdfViewerUrl ?? selectedUploadedForm.file_url}
                   fileName={selectedUploadedForm.name ? `${selectedUploadedForm.name} (filled).pdf` : "filled-form.pdf"}
+                  className="h-full min-h-0"
                   scrollAreaClassName="h-full"
                   onError={(message) => {
                     toast({

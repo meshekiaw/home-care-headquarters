@@ -209,7 +209,7 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
     }));
 
     return (
-      <div className={cn("space-y-3", className)}>
+      <div className={cn("flex h-full min-h-0 flex-col gap-3", className)}>
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-sm font-medium">Fill form</p>
@@ -229,8 +229,8 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
           </div>
         )}
 
-        <div className="rounded-lg border">
-          <ScrollArea className={cn("h-[48vh]", scrollAreaClassName)}>
+        <div className="flex min-h-0 flex-1 flex-col rounded-lg border">
+          <ScrollArea className={cn("h-full", scrollAreaClassName)}>
             <div className="p-3 space-y-4">
               {loading ? (
                 <div className="text-sm text-muted-foreground">Loading…</div>

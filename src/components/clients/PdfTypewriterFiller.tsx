@@ -9,7 +9,8 @@ import {
 } from "react";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
+// Vite + pdfjs-dist: import worker as URL string (the *.entry module may not have a default export)
+import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.js?url";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +38,8 @@ export type PdfTypewriterFillerProps = {
   onError?: (message: string) => void;
 };
 
-// Configure worker (v3.x build)
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// Configure worker
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfTypewriterFillerProps>(
   ({ pdfBytes, fileName, className, onError }, ref) => {

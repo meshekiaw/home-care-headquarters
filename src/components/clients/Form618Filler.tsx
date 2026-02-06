@@ -31,97 +31,300 @@ export type Form618FillerProps = {
 };
 
 // Define form field structure for the 618 form
-// Each field has a name, page number, and position (percentage-based for flexibility)
+// Coordinates are percentage-based (0-1) where 0,0 is bottom-left of PDF page
 interface FormFieldDef {
   id: string;
   label: string;
   type: "text" | "textarea" | "date" | "checkbox" | "signature";
   page: number;
-  // Position as percentage of page dimensions
+  // Position as percentage of page dimensions (measured from bottom-left)
   xPct: number;
-  yPct: number;
-  // Optional width for text fields
-  maxWidth?: number;
+  yPct: number; // This is inverted - 0 = bottom, 1 = top
+  // Optional width percentage for text fields
+  widthPct?: number;
   fontSize?: number;
   section?: string;
 }
 
-// 618 Form Field Definitions - mapped to approximate positions on each page
+// DMS-618 Form Field Definitions - mapped to actual PDF positions
+// Page dimensions are approximately 612x792 points (8.5x11 inches)
+// yPct is measured from BOTTOM of page (PDF coordinate system)
 const FORM_618_FIELDS: FormFieldDef[] = [
-  // Page 1 - Header and Agency Info
-  { id: "agency_name", label: "Agency Name", type: "text", page: 1, xPct: 0.25, yPct: 0.12, section: "Agency Information" },
-  { id: "agency_address", label: "Agency Address", type: "text", page: 1, xPct: 0.25, yPct: 0.145, section: "Agency Information" },
-  { id: "agency_city_state_zip", label: "City, State, ZIP", type: "text", page: 1, xPct: 0.25, yPct: 0.17, section: "Agency Information" },
-  { id: "agency_phone", label: "Phone Number", type: "text", page: 1, xPct: 0.70, yPct: 0.12, section: "Agency Information" },
-  { id: "provider_number", label: "Provider Number", type: "text", page: 1, xPct: 0.70, yPct: 0.145, section: "Agency Information" },
+  // ======================
+  // PAGE 1 - Client and Provider Information
+  // ======================
+  // Section I - Client and Provider Information (table at top)
+  { id: "client_name", label: "Client Name (Last/First/Middle)", type: "text", page: 1, xPct: 0.05, yPct: 0.815, section: "I. Client Information", fontSize: 9 },
+  { id: "medicaid_id", label: "Medicaid ID #", type: "text", page: 1, xPct: 0.35, yPct: 0.815, section: "I. Client Information", fontSize: 9 },
+  { id: "service_plan_initial", label: "Initial", type: "checkbox", page: 1, xPct: 0.575, yPct: 0.855, section: "I. Client Information" },
+  { id: "service_plan_revision", label: "Revision", type: "checkbox", page: 1, xPct: 0.70, yPct: 0.855, section: "I. Client Information" },
+  { id: "service_plan_renewal", label: "Renewal", type: "checkbox", page: 1, xPct: 0.82, yPct: 0.855, section: "I. Client Information" },
+  { id: "client_dob", label: "Date of Birth (MM/DD/YYYY)", type: "date", page: 1, xPct: 0.60, yPct: 0.815, section: "I. Client Information", fontSize: 9 },
   
-  // Page 1 - Client Information
-  { id: "client_name", label: "Client's Name", type: "text", page: 1, xPct: 0.25, yPct: 0.22, section: "Client Information" },
-  { id: "medicaid_id", label: "Medicaid ID #", type: "text", page: 1, xPct: 0.70, yPct: 0.22, section: "Client Information" },
-  { id: "client_address", label: "Address", type: "text", page: 1, xPct: 0.25, yPct: 0.245, section: "Client Information" },
-  { id: "client_city_state_zip", label: "City, State, ZIP", type: "text", page: 1, xPct: 0.25, yPct: 0.27, section: "Client Information" },
-  { id: "client_phone", label: "Phone", type: "text", page: 1, xPct: 0.70, yPct: 0.245, section: "Client Information" },
-  { id: "client_dob", label: "Date of Birth", type: "date", page: 1, xPct: 0.70, yPct: 0.27, section: "Client Information" },
+  { id: "county_residence", label: "County of Residence", type: "text", page: 1, xPct: 0.05, yPct: 0.77, section: "I. Client Information", fontSize: 9 },
+  { id: "telephone", label: "Telephone Number(s)", type: "text", page: 1, xPct: 0.28, yPct: 0.77, section: "I. Client Information", fontSize: 9 },
+  { id: "parent_guardian", label: "Parent(s) / Guardian(s) Name(s)", type: "text", page: 1, xPct: 0.52, yPct: 0.77, section: "I. Client Information", fontSize: 9 },
   
-  // Page 1 - Physician Information  
-  { id: "physician_name", label: "Physician's Name", type: "text", page: 1, xPct: 0.25, yPct: 0.32, section: "Physician Information" },
-  { id: "physician_phone", label: "Physician Phone", type: "text", page: 1, xPct: 0.70, yPct: 0.32, section: "Physician Information" },
-  { id: "physician_address", label: "Physician Address", type: "text", page: 1, xPct: 0.25, yPct: 0.345, section: "Physician Information" },
+  { id: "mailing_address", label: "Complete Mailing Address", type: "text", page: 1, xPct: 0.05, yPct: 0.725, section: "I. Client Information", fontSize: 9, widthPct: 0.90 },
   
-  // Page 1 - Assessment Information
-  { id: "assessment_date", label: "Date of Assessment", type: "date", page: 1, xPct: 0.25, yPct: 0.40, section: "Assessment Details" },
-  { id: "assessment_type_initial", label: "Initial Assessment", type: "checkbox", page: 1, xPct: 0.50, yPct: 0.40, section: "Assessment Details" },
-  { id: "assessment_type_reassessment", label: "Reassessment", type: "checkbox", page: 1, xPct: 0.65, yPct: 0.40, section: "Assessment Details" },
-  { id: "assessment_type_revision", label: "Revision", type: "checkbox", page: 1, xPct: 0.80, yPct: 0.40, section: "Assessment Details" },
+  // Client Resides checkboxes
+  { id: "resides_alone", label: "Alone", type: "checkbox", page: 1, xPct: 0.17, yPct: 0.68, section: "I. Client Residence" },
+  { id: "resides_relatives", label: "With Relatives", type: "checkbox", page: 1, xPct: 0.27, yPct: 0.68, section: "I. Client Residence" },
+  { id: "resides_boarding", label: "Boarding Home", type: "checkbox", page: 1, xPct: 0.42, yPct: 0.68, section: "I. Client Residence" },
+  { id: "resides_group", label: "Group Home", type: "checkbox", page: 1, xPct: 0.56, yPct: 0.68, section: "I. Client Residence" },
+  { id: "resides_cbr", label: "Community-Based Residential", type: "checkbox", page: 1, xPct: 0.69, yPct: 0.68, section: "I. Client Residence" },
+  { id: "resides_rcf", label: "Residential Care Facility (RCF)", type: "checkbox", page: 1, xPct: 0.05, yPct: 0.655, section: "I. Client Residence" },
+  { id: "resides_other", label: "Other", type: "checkbox", page: 1, xPct: 0.28, yPct: 0.655, section: "I. Client Residence" },
+  { id: "resides_other_desc", label: "Other (Describe)", type: "text", page: 1, xPct: 0.40, yPct: 0.655, section: "I. Client Residence", fontSize: 9 },
   
-  // Page 2 - Freedom of Choice
-  { id: "freedom_choice_signature", label: "Client/Representative Signature", type: "signature", page: 2, xPct: 0.35, yPct: 0.48, section: "Freedom of Choice" },
-  { id: "freedom_choice_date", label: "Date", type: "date", page: 2, xPct: 0.75, yPct: 0.48, section: "Freedom of Choice" },
+  // PCP Information
+  { id: "pcp_name", label: "PCP Name", type: "text", page: 1, xPct: 0.05, yPct: 0.605, section: "I. PCP Information", fontSize: 9 },
+  { id: "pcp_provider_id", label: "Provider ID Number/Taxonomy Code", type: "text", page: 1, xPct: 0.35, yPct: 0.605, section: "I. PCP Information", fontSize: 9 },
+  { id: "pcp_last_exam", label: "Date of Last Exam", type: "date", page: 1, xPct: 0.70, yPct: 0.605, section: "I. PCP Information", fontSize: 9 },
   
-  // Page 2 - Medical Diagnoses
-  { id: "diagnosis_1", label: "Diagnosis 1 (ICD Code & Description)", type: "text", page: 2, xPct: 0.15, yPct: 0.72, section: "Medical Diagnoses" },
-  { id: "diagnosis_2", label: "Diagnosis 2", type: "text", page: 2, xPct: 0.15, yPct: 0.75, section: "Medical Diagnoses" },
-  { id: "diagnosis_3", label: "Diagnosis 3", type: "text", page: 2, xPct: 0.15, yPct: 0.78, section: "Medical Diagnoses" },
-  { id: "diagnosis_4", label: "Diagnosis 4", type: "text", page: 2, xPct: 0.15, yPct: 0.81, section: "Medical Diagnoses" },
-  { id: "diagnosis_5", label: "Diagnosis 5", type: "text", page: 2, xPct: 0.15, yPct: 0.84, section: "Medical Diagnoses" },
+  // Personal Care Provider (pre-filled but editable)
+  { id: "provider_name", label: "Personal Care Provider Name", type: "text", page: 1, xPct: 0.28, yPct: 0.555, section: "I. Provider Information", fontSize: 9 },
+  { id: "provider_id", label: "Provider ID Number", type: "text", page: 1, xPct: 0.05, yPct: 0.515, section: "I. Provider Information", fontSize: 9 },
+  { id: "provider_address", label: "Mailing Address", type: "text", page: 1, xPct: 0.35, yPct: 0.515, section: "I. Provider Information", fontSize: 9 },
   
-  // Page 3 - Physical Dependency Needs (ADLs)
-  { id: "bathing_assistance", label: "Bathing - Assistance Needed", type: "textarea", page: 3, xPct: 0.50, yPct: 0.18, section: "Physical Dependency - Bathing", fontSize: 9 },
-  { id: "dressing_assistance", label: "Dressing - Assistance Needed", type: "textarea", page: 3, xPct: 0.50, yPct: 0.30, section: "Physical Dependency - Dressing", fontSize: 9 },
-  { id: "grooming_assistance", label: "Grooming - Assistance Needed", type: "textarea", page: 3, xPct: 0.50, yPct: 0.42, section: "Physical Dependency - Grooming", fontSize: 9 },
-  { id: "toileting_assistance", label: "Toileting - Assistance Needed", type: "textarea", page: 3, xPct: 0.50, yPct: 0.54, section: "Physical Dependency - Toileting", fontSize: 9 },
-  { id: "transferring_assistance", label: "Transferring - Assistance Needed", type: "textarea", page: 3, xPct: 0.50, yPct: 0.66, section: "Physical Dependency - Transferring", fontSize: 9 },
-  { id: "mobility_assistance", label: "Mobility - Assistance Needed", type: "textarea", page: 3, xPct: 0.50, yPct: 0.78, section: "Physical Dependency - Mobility", fontSize: 9 },
+  // Section II - Service Locations
+  { id: "location_private", label: "Private Residence", type: "checkbox", page: 1, xPct: 0.31, yPct: 0.445, section: "II. Service Locations" },
+  { id: "location_rcf", label: "Residential Care Facility", type: "checkbox", page: 1, xPct: 0.46, yPct: 0.445, section: "II. Service Locations" },
+  { id: "location_school", label: "School", type: "checkbox", page: 1, xPct: 0.61, yPct: 0.445, section: "II. Service Locations" },
+  { id: "location_dds", label: "DDS Facility", type: "checkbox", page: 1, xPct: 0.71, yPct: 0.445, section: "II. Service Locations" },
+  { id: "location_other", label: "Other (describe)", type: "checkbox", page: 1, xPct: 0.82, yPct: 0.445, section: "II. Service Locations" },
+  { id: "service_location_address", label: "Service Location(s) Address(es)", type: "text", page: 1, xPct: 0.05, yPct: 0.405, section: "II. Service Locations", fontSize: 9, widthPct: 0.90 },
   
-  // Page 4 - More ADLs and IADLs
-  { id: "eating_assistance", label: "Eating - Assistance Needed", type: "textarea", page: 4, xPct: 0.50, yPct: 0.12, section: "Physical Dependency - Eating", fontSize: 9 },
-  { id: "medication_reminders", label: "Medication Reminders", type: "textarea", page: 4, xPct: 0.50, yPct: 0.30, section: "Medication Management", fontSize: 9 },
-  { id: "meal_preparation", label: "Meal Preparation", type: "textarea", page: 4, xPct: 0.50, yPct: 0.48, section: "IADLs - Meal Preparation", fontSize: 9 },
-  { id: "housekeeping", label: "Housekeeping", type: "textarea", page: 4, xPct: 0.50, yPct: 0.66, section: "IADLs - Housekeeping", fontSize: 9 },
-  { id: "laundry", label: "Laundry", type: "textarea", page: 4, xPct: 0.50, yPct: 0.84, section: "IADLs - Laundry", fontSize: 9 },
+  // Section III - Dates of Service
+  { id: "start_date_original", label: "Start of Care - Original (Required)", type: "date", page: 1, xPct: 0.27, yPct: 0.34, section: "III. Dates of Service", fontSize: 9 },
+  { id: "start_date_per_plan", label: "Per this Service Plan", type: "date", page: 1, xPct: 0.55, yPct: 0.34, section: "III. Dates of Service", fontSize: 9 },
+  { id: "projected_end_date", label: "Projected End Date (if <6 months)", type: "date", page: 1, xPct: 0.05, yPct: 0.295, section: "III. Dates of Service", fontSize: 9 },
+  { id: "current_assessment_date", label: "Current Assessment Date", type: "date", page: 1, xPct: 0.38, yPct: 0.295, section: "III. Dates of Service", fontSize: 9 },
+  { id: "assessing_rn", label: "Assessing RN", type: "text", page: 1, xPct: 0.60, yPct: 0.295, section: "III. Dates of Service", fontSize: 9 },
+  { id: "attending_physician", label: "Attending Physician (if other than PCP)", type: "text", page: 1, xPct: 0.05, yPct: 0.255, section: "III. Dates of Service", fontSize: 9 },
+  { id: "attending_physician_id", label: "Attending Physician Provider ID", type: "text", page: 1, xPct: 0.05, yPct: 0.215, section: "III. Dates of Service", fontSize: 9 },
+  { id: "order_referral_date", label: "Date of Order/Referral for Assessment", type: "date", page: 1, xPct: 0.42, yPct: 0.215, section: "III. Dates of Service", fontSize: 9 },
+  { id: "referral_source", label: "Referral Source", type: "text", page: 1, xPct: 0.70, yPct: 0.215, section: "III. Dates of Service", fontSize: 9 },
   
-  // Page 5 - Service Plan Details
-  { id: "shopping_errands", label: "Shopping/Errands", type: "textarea", page: 5, xPct: 0.50, yPct: 0.12, section: "IADLs - Shopping", fontSize: 9 },
-  { id: "escort_services", label: "Escort Services", type: "textarea", page: 5, xPct: 0.50, yPct: 0.30, section: "IADLs - Escort", fontSize: 9 },
+  // ======================
+  // PAGE 2 - Freedom of Choice, Medical Diagnoses, Mental Status
+  // ======================
+  // Header fields (repeat on each page)
+  { id: "p2_client_name", label: "Client's Name (Page 2)", type: "text", page: 2, xPct: 0.18, yPct: 0.94, section: "Page 2 Header", fontSize: 9 },
+  { id: "p2_medicaid_id", label: "Medicaid ID # (Page 2)", type: "text", page: 2, xPct: 0.60, yPct: 0.94, section: "Page 2 Header", fontSize: 9 },
   
-  // Page 5 - Service Frequency
-  { id: "service_frequency", label: "Total Service Hours per Week", type: "text", page: 5, xPct: 0.50, yPct: 0.55, section: "Service Plan" },
-  { id: "service_days", label: "Days per Week", type: "text", page: 5, xPct: 0.75, yPct: 0.55, section: "Service Plan" },
-  { id: "service_start_date", label: "Service Start Date", type: "date", page: 5, xPct: 0.25, yPct: 0.60, section: "Service Plan" },
-  { id: "service_end_date", label: "Service End Date", type: "date", page: 5, xPct: 0.60, yPct: 0.60, section: "Service Plan" },
+  // Section IV - Freedom of Choice Signature
+  { id: "freedom_choice_signature", label: "Client/Representative Signature", type: "signature", page: 2, xPct: 0.05, yPct: 0.77, section: "IV. Freedom of Choice" },
+  { id: "freedom_choice_date", label: "Date", type: "date", page: 2, xPct: 0.75, yPct: 0.77, section: "IV. Freedom of Choice", fontSize: 9 },
+  { id: "witness_signature_1", label: "Witness Signature 1", type: "signature", page: 2, xPct: 0.05, yPct: 0.715, section: "IV. Freedom of Choice" },
+  { id: "witness_signature_2", label: "Witness Signature 2", type: "signature", page: 2, xPct: 0.60, yPct: 0.715, section: "IV. Freedom of Choice" },
   
-  // Page 6 - Goals and Outcomes
-  { id: "client_goals", label: "Client Goals/Desired Outcomes", type: "textarea", page: 6, xPct: 0.15, yPct: 0.20, section: "Goals", fontSize: 9 },
-  { id: "additional_notes", label: "Additional Notes/Comments", type: "textarea", page: 6, xPct: 0.15, yPct: 0.50, section: "Additional Information", fontSize: 9 },
+  // Section V - Medical Diagnoses (ICD codes)
+  { id: "diagnosis_1_code", label: "ICD Code 1", type: "text", page: 2, xPct: 0.05, yPct: 0.575, section: "V. Medical Diagnoses", fontSize: 9 },
+  { id: "diagnosis_1_desc", label: "Description 1", type: "text", page: 2, xPct: 0.22, yPct: 0.575, section: "V. Medical Diagnoses", fontSize: 9, widthPct: 0.73 },
+  { id: "diagnosis_2_code", label: "ICD Code 2", type: "text", page: 2, xPct: 0.05, yPct: 0.545, section: "V. Medical Diagnoses", fontSize: 9 },
+  { id: "diagnosis_2_desc", label: "Description 2", type: "text", page: 2, xPct: 0.22, yPct: 0.545, section: "V. Medical Diagnoses", fontSize: 9, widthPct: 0.73 },
+  { id: "diagnosis_3_code", label: "ICD Code 3", type: "text", page: 2, xPct: 0.05, yPct: 0.515, section: "V. Medical Diagnoses", fontSize: 9 },
+  { id: "diagnosis_3_desc", label: "Description 3", type: "text", page: 2, xPct: 0.22, yPct: 0.515, section: "V. Medical Diagnoses", fontSize: 9, widthPct: 0.73 },
+  { id: "diagnosis_4_code", label: "ICD Code 4", type: "text", page: 2, xPct: 0.05, yPct: 0.485, section: "V. Medical Diagnoses", fontSize: 9 },
+  { id: "diagnosis_4_desc", label: "Description 4", type: "text", page: 2, xPct: 0.22, yPct: 0.485, section: "V. Medical Diagnoses", fontSize: 9, widthPct: 0.73 },
   
-  // Page 7 - Signatures
-  { id: "rn_signature", label: "RN Signature", type: "signature", page: 7, xPct: 0.25, yPct: 0.35, section: "Signatures" },
-  { id: "rn_date", label: "RN Date", type: "date", page: 7, xPct: 0.60, yPct: 0.35, section: "Signatures" },
-  { id: "rn_license", label: "RN License #", type: "text", page: 7, xPct: 0.80, yPct: 0.35, section: "Signatures" },
-  { id: "client_signature", label: "Client/Representative Signature", type: "signature", page: 7, xPct: 0.25, yPct: 0.50, section: "Signatures" },
-  { id: "client_signature_date", label: "Client Signature Date", type: "date", page: 7, xPct: 0.60, yPct: 0.50, section: "Signatures" },
-  { id: "supervisor_signature", label: "Supervisor Signature", type: "signature", page: 7, xPct: 0.25, yPct: 0.65, section: "Signatures" },
-  { id: "supervisor_date", label: "Supervisor Date", type: "date", page: 7, xPct: 0.60, yPct: 0.65, section: "Signatures" },
+  // Section VI - Mental Status checkboxes
+  { id: "mental_clear", label: "Clear", type: "checkbox", page: 2, xPct: 0.06, yPct: 0.39, section: "VI. Mental Status" },
+  { id: "mental_hyperactive", label: "Hyperactive", type: "checkbox", page: 2, xPct: 0.50, yPct: 0.39, section: "VI. Mental Status" },
+  { id: "mental_somewhat_confused", label: "Somewhat confused", type: "checkbox", page: 2, xPct: 0.06, yPct: 0.365, section: "VI. Mental Status" },
+  { id: "mental_withdrawn", label: "Withdrawn", type: "checkbox", page: 2, xPct: 0.50, yPct: 0.365, section: "VI. Mental Status" },
+  { id: "mental_moderately_confused", label: "Moderately confused", type: "checkbox", page: 2, xPct: 0.06, yPct: 0.34, section: "VI. Mental Status" },
+  { id: "mental_needs_restraint", label: "Needs restraint", type: "checkbox", page: 2, xPct: 0.50, yPct: 0.34, section: "VI. Mental Status" },
+  { id: "mental_markedly_confused", label: "Markedly confused", type: "checkbox", page: 2, xPct: 0.06, yPct: 0.315, section: "VI. Mental Status" },
+  { id: "mental_needs_supervision", label: "Needs supervision for personal safety", type: "checkbox", page: 2, xPct: 0.50, yPct: 0.315, section: "VI. Mental Status" },
+  { id: "mental_comments", label: "Comments", type: "textarea", page: 2, xPct: 0.14, yPct: 0.285, section: "VI. Mental Status", fontSize: 9 },
+  
+  // ======================
+  // PAGE 3 - Physical Dependency Status and ADLs
+  // ======================
+  { id: "p3_client_name", label: "Client's Name (Page 3)", type: "text", page: 3, xPct: 0.18, yPct: 0.94, section: "Page 3 Header", fontSize: 9 },
+  { id: "p3_medicaid_id", label: "Medicaid ID # (Page 3)", type: "text", page: 3, xPct: 0.60, yPct: 0.94, section: "Page 3 Header", fontSize: 9 },
+  
+  // Section VII - Physical Dependency - Bedridden
+  { id: "bedfast", label: "Bedfast", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.815, section: "VII. Bedridden Status" },
+  { id: "requires_turning", label: "Requires turning in bed", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.79, section: "VII. Bedridden Status" },
+  { id: "bed_to_chair_help", label: "Bed to chair with help", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.765, section: "VII. Bedridden Status" },
+  { id: "bed_to_chair_no_help", label: "Bed to chair without help", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.74, section: "VII. Bedridden Status" },
+  { id: "must_be_lifted", label: "Must be lifted into chair", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.715, section: "VII. Bedridden Status" },
+  
+  // Section VII - Ambulation
+  { id: "walks_alone", label: "Walks alone", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.815, section: "VII. Ambulation" },
+  { id: "walks_with_device", label: "Walks with device", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.79, section: "VII. Ambulation" },
+  { id: "walks_with_help", label: "Walks with help", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.765, section: "VII. Ambulation" },
+  { id: "wheelchair_self", label: "Wheelchair (self)", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.74, section: "VII. Ambulation" },
+  { id: "wheelchair_push", label: "Wheelchair (push)", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.715, section: "VII. Ambulation" },
+  { id: "motorized_chair", label: "Motorized chair", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.69, section: "VII. Ambulation" },
+  
+  // Section VII - Continence Status
+  { id: "catheter", label: "Catheter", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.815, section: "VII. Continence" },
+  { id: "colostomy", label: "Colostomy", type: "checkbox", page: 3, xPct: 0.78, yPct: 0.815, section: "VII. Continence" },
+  { id: "incontinent", label: "Incontinent", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.79, section: "VII. Continence" },
+  { id: "incontinent_bladder", label: "Bladder", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.765, section: "VII. Continence" },
+  { id: "incontinent_bowels", label: "Bowels", type: "checkbox", page: 3, xPct: 0.78, yPct: 0.765, section: "VII. Continence" },
+  { id: "cannot_train", label: "Cannot Train", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.715, section: "VII. Continence" },
+  { id: "trained", label: "Trained", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.69, section: "VII. Continence" },
+  { id: "needs_training", label: "Needs Training", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.665, section: "VII. Continence" },
+  
+  // Grooming section - Bathing
+  { id: "bathing_tub", label: "Bathing: Tub", type: "checkbox", page: 3, xPct: 0.15, yPct: 0.585, section: "VII. Grooming" },
+  { id: "bathing_shower", label: "Bathing: Shower", type: "checkbox", page: 3, xPct: 0.23, yPct: 0.585, section: "VII. Grooming" },
+  { id: "bathing_bed", label: "Bathing: Bed", type: "checkbox", page: 3, xPct: 0.33, yPct: 0.585, section: "VII. Grooming" },
+  { id: "bathing_no_help", label: "Bathing: No Help", type: "checkbox", page: 3, xPct: 0.55, yPct: 0.585, section: "VII. Grooming" },
+  { id: "bathing_partial", label: "Bathing: Partial Help", type: "checkbox", page: 3, xPct: 0.68, yPct: 0.585, section: "VII. Grooming" },
+  { id: "bathing_total", label: "Bathing: Total Help", type: "checkbox", page: 3, xPct: 0.82, yPct: 0.585, section: "VII. Grooming" },
+  
+  // Dressing
+  { id: "dressing_no_help", label: "Dressing: No Help", type: "checkbox", page: 3, xPct: 0.55, yPct: 0.555, section: "VII. Grooming" },
+  { id: "dressing_partial", label: "Dressing: Partial Help", type: "checkbox", page: 3, xPct: 0.68, yPct: 0.555, section: "VII. Grooming" },
+  { id: "dressing_total", label: "Dressing: Total Help", type: "checkbox", page: 3, xPct: 0.82, yPct: 0.555, section: "VII. Grooming" },
+  
+  // Shaving
+  { id: "shaving_no_help", label: "Shaving: No Help", type: "checkbox", page: 3, xPct: 0.55, yPct: 0.525, section: "VII. Grooming" },
+  { id: "shaving_partial", label: "Shaving: Partial Help", type: "checkbox", page: 3, xPct: 0.68, yPct: 0.525, section: "VII. Grooming" },
+  { id: "shaving_total", label: "Shaving: Total Help", type: "checkbox", page: 3, xPct: 0.82, yPct: 0.525, section: "VII. Grooming" },
+  
+  // Care of hair
+  { id: "hair_no_help", label: "Hair Care: No Help", type: "checkbox", page: 3, xPct: 0.55, yPct: 0.495, section: "VII. Grooming" },
+  { id: "hair_partial", label: "Hair Care: Partial Help", type: "checkbox", page: 3, xPct: 0.68, yPct: 0.495, section: "VII. Grooming" },
+  { id: "hair_total", label: "Hair Care: Total Help", type: "checkbox", page: 3, xPct: 0.82, yPct: 0.495, section: "VII. Grooming" },
+  
+  // Eating checkboxes
+  { id: "eat_no_help", label: "Has physical ability to eat without help", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.43, section: "VII. Eating" },
+  { id: "eat_partial", label: "Needs partial help to eat", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.405, section: "VII. Eating" },
+  { id: "eat_help_needed", label: "Needs help with eating", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.38, section: "VII. Eating" },
+  { id: "special_diet", label: "Special diet", type: "checkbox", page: 3, xPct: 0.08, yPct: 0.355, section: "VII. Eating" },
+  { id: "cannot_cut_food", label: "Cannot cut food into bite-size pieces", type: "checkbox", page: 3, xPct: 0.08, yPct: 0.33, section: "VII. Eating" },
+  { id: "cannot_bring_food", label: "Cannot bring food from plate to mouth", type: "checkbox", page: 3, xPct: 0.08, yPct: 0.305, section: "VII. Eating" },
+  
+  // Meal preparation
+  { id: "cook_no_help", label: "Has physical ability to cook without help", type: "checkbox", page: 3, xPct: 0.50, yPct: 0.43, section: "VII. Meal Prep" },
+  { id: "cook_partial", label: "Needs partial help with meal prep", type: "checkbox", page: 3, xPct: 0.50, yPct: 0.405, section: "VII. Meal Prep" },
+  { id: "cook_incapable", label: "Physically incapable of cooking", type: "checkbox", page: 3, xPct: 0.50, yPct: 0.38, section: "VII. Meal Prep" },
+  
+  // Section VIII - Activities of Daily Living
+  { id: "laundry_no_help", label: "Laundry: Needs no help", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.235, section: "VIII. ADLs - Laundry" },
+  { id: "laundry_partial", label: "Laundry: Needs partial help", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.21, section: "VIII. ADLs - Laundry" },
+  { id: "laundry_incapable", label: "Laundry: Physically incapable", type: "checkbox", page: 3, xPct: 0.05, yPct: 0.185, section: "VIII. ADLs - Laundry" },
+  
+  { id: "housekeeping_no_help", label: "Housekeeping: Needs no help", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.235, section: "VIII. ADLs - Housekeeping" },
+  { id: "housekeeping_partial", label: "Housekeeping: Needs partial help", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.21, section: "VIII. ADLs - Housekeeping" },
+  { id: "housekeeping_incapable", label: "Housekeeping: Physically incapable", type: "checkbox", page: 3, xPct: 0.35, yPct: 0.185, section: "VIII. ADLs - Housekeeping" },
+  
+  { id: "shopping_no_help", label: "Shopping: Needs no help", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.235, section: "VIII. ADLs - Shopping" },
+  { id: "shopping_partial", label: "Shopping: Needs partial help", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.21, section: "VIII. ADLs - Shopping" },
+  { id: "shopping_incapable", label: "Shopping: Physically incapable", type: "checkbox", page: 3, xPct: 0.65, yPct: 0.185, section: "VIII. ADLs - Shopping" },
+  
+  // ======================
+  // PAGE 4 - Assessment Narrative and Alternate Resources
+  // ======================
+  { id: "p4_client_name", label: "Client's Name (Page 4)", type: "text", page: 4, xPct: 0.18, yPct: 0.94, section: "Page 4 Header", fontSize: 9 },
+  { id: "p4_medicaid_id", label: "Medicaid ID # (Page 4)", type: "text", page: 4, xPct: 0.60, yPct: 0.94, section: "Page 4 Header", fontSize: 9 },
+  
+  { id: "assessment_narrative", label: "IX. Assessment Narrative", type: "textarea", page: 4, xPct: 0.05, yPct: 0.85, section: "IX. Assessment Narrative", fontSize: 9 },
+  { id: "alternate_resources", label: "X. Alternate Resources for Assistance", type: "textarea", page: 4, xPct: 0.05, yPct: 0.35, section: "X. Alternate Resources", fontSize: 9 },
+  
+  // ======================
+  // PAGE 5 - Certification and Service Plan
+  // ======================
+  { id: "p5_client_name", label: "Client's Name (Page 5)", type: "text", page: 5, xPct: 0.18, yPct: 0.94, section: "Page 5 Header", fontSize: 9 },
+  { id: "p5_medicaid_id", label: "Medicaid ID # (Page 5)", type: "text", page: 5, xPct: 0.60, yPct: 0.94, section: "Page 5 Header", fontSize: 9 },
+  
+  // Daily Totals table - Maximum/Minimum for each day
+  { id: "day1_max", label: "Day 1 Maximum", type: "text", page: 5, xPct: 0.195, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day2_max", label: "Day 2 Maximum", type: "text", page: 5, xPct: 0.28, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day3_max", label: "Day 3 Maximum", type: "text", page: 5, xPct: 0.37, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day4_max", label: "Day 4 Maximum", type: "text", page: 5, xPct: 0.455, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day5_max", label: "Day 5 Maximum", type: "text", page: 5, xPct: 0.54, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day6_max", label: "Day 6 Maximum", type: "text", page: 5, xPct: 0.625, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day7_max", label: "Day 7 Maximum", type: "text", page: 5, xPct: 0.71, yPct: 0.615, section: "XI. Daily Totals", fontSize: 8 },
+  
+  { id: "day1_min", label: "Day 1 Minimum", type: "text", page: 5, xPct: 0.195, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day2_min", label: "Day 2 Minimum", type: "text", page: 5, xPct: 0.28, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day3_min", label: "Day 3 Minimum", type: "text", page: 5, xPct: 0.37, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day4_min", label: "Day 4 Minimum", type: "text", page: 5, xPct: 0.455, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day5_min", label: "Day 5 Minimum", type: "text", page: 5, xPct: 0.54, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day6_min", label: "Day 6 Minimum", type: "text", page: 5, xPct: 0.625, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  { id: "day7_min", label: "Day 7 Minimum", type: "text", page: 5, xPct: 0.71, yPct: 0.585, section: "XI. Daily Totals", fontSize: 8 },
+  
+  // Weekly totals
+  { id: "weekly_max", label: "Weekly Maximum", type: "text", page: 5, xPct: 0.30, yPct: 0.535, section: "XI. Weekly Totals", fontSize: 9 },
+  { id: "weekly_min", label: "Weekly Minimum", type: "text", page: 5, xPct: 0.55, yPct: 0.535, section: "XI. Weekly Totals", fontSize: 9 },
+  
+  { id: "additional_comments", label: "Additional comments", type: "textarea", page: 5, xPct: 0.05, yPct: 0.485, section: "XI. Additional Comments", fontSize: 9 },
+  
+  // RN Signature
+  { id: "rn_signature", label: "Registered Nurse's Signature", type: "signature", page: 5, xPct: 0.55, yPct: 0.41, section: "XI. RN Signature" },
+  
+  // Section XII - Personal Care Service Plan Tasks table
+  { id: "eating_minutes", label: "Eating - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.285, section: "XII. Service Plan", fontSize: 9 },
+  { id: "eating_days", label: "Eating - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.285, section: "XII. Service Plan", fontSize: 9 },
+  { id: "bathing_minutes", label: "Bathing - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.26, section: "XII. Service Plan", fontSize: 9 },
+  { id: "bathing_days", label: "Bathing - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.26, section: "XII. Service Plan", fontSize: 9 },
+  { id: "grooming_minutes", label: "Grooming - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.235, section: "XII. Service Plan", fontSize: 9 },
+  { id: "grooming_days", label: "Grooming - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.235, section: "XII. Service Plan", fontSize: 9 },
+  { id: "toileting_minutes", label: "Toileting - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.21, section: "XII. Service Plan", fontSize: 9 },
+  { id: "toileting_days", label: "Toileting - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.21, section: "XII. Service Plan", fontSize: 9 },
+  { id: "dressing_minutes", label: "Dressing - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.185, section: "XII. Service Plan", fontSize: 9 },
+  { id: "dressing_days", label: "Dressing - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.185, section: "XII. Service Plan", fontSize: 9 },
+  { id: "transfer_minutes", label: "Transfer/Mobility - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.16, section: "XII. Service Plan", fontSize: 9 },
+  { id: "transfer_days", label: "Transfer/Mobility - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.16, section: "XII. Service Plan", fontSize: 9 },
+  { id: "housekeeping_minutes", label: "Housekeeping - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.135, section: "XII. Service Plan", fontSize: 9 },
+  { id: "housekeeping_days", label: "Housekeeping - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.135, section: "XII. Service Plan", fontSize: 9 },
+  { id: "laundry_minutes", label: "Laundry - Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.11, section: "XII. Service Plan", fontSize: 9 },
+  { id: "laundry_days", label: "Laundry - Days/wk", type: "text", page: 5, xPct: 0.25, yPct: 0.11, section: "XII. Service Plan", fontSize: 9 },
+  { id: "total_minutes", label: "Total Minutes", type: "text", page: 5, xPct: 0.15, yPct: 0.08, section: "XII. Service Plan", fontSize: 9 },
+  
+  // ======================
+  // PAGE 6 - Service Plan Continued and Signatures
+  // ======================
+  { id: "p6_client_name", label: "Client's Name (Page 6)", type: "text", page: 6, xPct: 0.18, yPct: 0.94, section: "Page 6 Header", fontSize: 9 },
+  { id: "p6_medicaid_id", label: "Medicaid ID # (Page 6)", type: "text", page: 6, xPct: 0.60, yPct: 0.94, section: "Page 6 Header", fontSize: 9 },
+  
+  { id: "service_plan_continued", label: "XIII. Service Plan (Continued)", type: "textarea", page: 6, xPct: 0.05, yPct: 0.855, section: "XIII. Service Plan Continued", fontSize: 9 },
+  
+  // Physician Authorization
+  { id: "physician_signature", label: "Signature of Attending Physician", type: "signature", page: 6, xPct: 0.05, yPct: 0.305, section: "Physician Authorization" },
+  { id: "physician_sig_date", label: "Date", type: "date", page: 6, xPct: 0.75, yPct: 0.305, section: "Physician Authorization", fontSize: 9 },
+  
+  // Client Acceptance
+  { id: "client_acceptance_signature", label: "Client/Representative Signature", type: "signature", page: 6, xPct: 0.05, yPct: 0.185, section: "Client Acceptance" },
+  { id: "client_acceptance_date", label: "Date", type: "date", page: 6, xPct: 0.75, yPct: 0.185, section: "Client Acceptance", fontSize: 9 },
+  
+  // ======================
+  // PAGE 7 - Provider Notification
+  // ======================
+  { id: "p7_client_name", label: "Client's Name (Page 7)", type: "text", page: 7, xPct: 0.18, yPct: 0.94, section: "Page 7 Header", fontSize: 9 },
+  { id: "p7_medicaid_id", label: "Medicaid ID # (Page 7)", type: "text", page: 7, xPct: 0.60, yPct: 0.94, section: "Page 7 Header", fontSize: 9 },
+  
+  // Additional Service-Time Increments
+  { id: "add_service_time", label: "Additional Service-Time Increments", type: "text", page: 7, xPct: 0.05, yPct: 0.765, section: "XIV. Provider Notification", fontSize: 9 },
+  { id: "add_begin_date", label: "Begin Date of Service", type: "date", page: 7, xPct: 0.40, yPct: 0.765, section: "XIV. Provider Notification", fontSize: 9 },
+  { id: "add_end_date", label: "End Date of Service", type: "date", page: 7, xPct: 0.70, yPct: 0.765, section: "XIV. Provider Notification", fontSize: 9 },
+  
+  // Notification of Approval table
+  { id: "procedure_code", label: "Procedure Code", type: "text", page: 7, xPct: 0.08, yPct: 0.625, section: "XIV. Approval", fontSize: 9 },
+  { id: "service_increments", label: "Service-Time Increments", type: "text", page: 7, xPct: 0.22, yPct: 0.625, section: "XIV. Approval", fontSize: 9 },
+  { id: "approval_begin_date", label: "Begin Date", type: "date", page: 7, xPct: 0.40, yPct: 0.625, section: "XIV. Approval", fontSize: 9 },
+  { id: "approval_end_date", label: "End Date", type: "date", page: 7, xPct: 0.58, yPct: 0.625, section: "XIV. Approval", fontSize: 9 },
+  { id: "control_number", label: "Control Number", type: "text", page: 7, xPct: 0.75, yPct: 0.625, section: "XIV. Approval", fontSize: 9 },
+  
+  // UR Nurse signatures
+  { id: "ur_nurse_approval_sig", label: "Signature of UR Nurse (Approval)", type: "signature", page: 7, xPct: 0.05, yPct: 0.535, section: "XIV. Approval" },
+  { id: "ur_nurse_approval_date", label: "Date", type: "date", page: 7, xPct: 0.55, yPct: 0.535, section: "XIV. Approval", fontSize: 9 },
+  { id: "dms_director_approval_sig", label: "Signature of DMS Medical Director (Approval)", type: "signature", page: 7, xPct: 0.05, yPct: 0.49, section: "XIV. Approval" },
+  { id: "dms_director_approval_date", label: "Date", type: "date", page: 7, xPct: 0.55, yPct: 0.49, section: "XIV. Approval", fontSize: 9 },
+  
+  // Notification of Denial
+  { id: "ur_nurse_denial_sig", label: "Signature of UR Nurse (Denial)", type: "signature", page: 7, xPct: 0.05, yPct: 0.365, section: "XIV. Denial" },
+  { id: "ur_nurse_denial_date", label: "Date", type: "date", page: 7, xPct: 0.55, yPct: 0.365, section: "XIV. Denial", fontSize: 9 },
+  { id: "dms_director_denial_sig", label: "Signature of DMS Medical Director (Denial)", type: "signature", page: 7, xPct: 0.05, yPct: 0.32, section: "XIV. Denial" },
+  { id: "dms_director_denial_date", label: "Date", type: "date", page: 7, xPct: 0.55, yPct: 0.32, section: "XIV. Denial", fontSize: 9 },
 ];
 
 // Group fields by section for organized display
@@ -280,12 +483,14 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
               const sigBytes = await fetch(value).then((r) => r.arrayBuffer());
               const sigImage = await pdfDoc.embedPng(new Uint8Array(sigBytes));
               
-              const maxWidth = 120;
-              const scale = Math.min(1, maxWidth / sigImage.width);
+              const maxWidth = 100;
+              const maxHeight = 30;
+              const scale = Math.min(maxWidth / sigImage.width, maxHeight / sigImage.height, 1);
               const sigWidth = sigImage.width * scale;
               const sigHeight = sigImage.height * scale;
               
-              const y = height - field.yPct * height - sigHeight / 2;
+              // yPct is from bottom, so y = yPct * height
+              const y = field.yPct * height;
 
               targetPage.drawImage(sigImage, {
                 x,
@@ -297,7 +502,8 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
               console.error("Failed to embed signature:", sigError);
             }
           } else if (typeof value === "string" && value.trim()) {
-            const y = height - field.yPct * height - fontSize;
+            // yPct is from bottom, so y = yPct * height
+            const y = field.yPct * height;
 
             // Handle multiline text for textareas
             if (field.type === "textarea") {
@@ -324,11 +530,11 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
             }
           } else if (field.type === "checkbox" && value === true) {
             // Draw checkmark
-            const y = height - field.yPct * height - 8;
+            const y = field.yPct * height;
             targetPage.drawText("✓", {
-              x,
-              y,
-              size: 12,
+              x: x - 3,
+              y: y - 3,
+              size: 10,
               font,
               color: rgb(0, 0, 0),
             });
@@ -365,6 +571,12 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
       downloadFilledPdf,
       reset,
     }));
+
+    // Get fields for current page
+    const currentPageFields = useMemo(() => {
+      const pageFields = FORM_618_FIELDS.filter(f => f.page === currentPage);
+      return groupFieldsBySection(pageFields);
+    }, [currentPage]);
 
     return (
       <div className={cn("flex h-full min-h-0", className)}>
@@ -410,72 +622,78 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
           </div>
         </div>
 
-        {/* Form Fields Panel */}
+        {/* Form Fields Panel - Shows fields for current page */}
         <div className="w-80 flex flex-col min-h-0 bg-background">
           <div className="p-3 border-b">
-            <h3 className="font-semibold text-sm">618 Personal Care Assessment</h3>
-            <p className="text-xs text-muted-foreground mt-1">Fill in the fields below</p>
+            <h3 className="font-semibold text-sm">DMS-618 Personal Care Assessment</h3>
+            <p className="text-xs text-muted-foreground mt-1">Page {currentPage} of {pageCount || 7} — Fill fields below</p>
           </div>
           
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-4">
-              {Array.from(groupedFields.entries()).map(([section, fields]) => (
-                <div key={section} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{section}</span>
-                    <Separator className="flex-1" />
-                  </div>
-                  
-                  {fields.map((field) => (
-                    <div key={field.id} className="space-y-1.5">
-                      <Label className="text-xs">{field.label}</Label>
-                      
-                      {field.type === "text" && (
-                        <Input
-                          value={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : ""}
-                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      )}
-                      
-                      {field.type === "date" && (
-                        <Input
-                          type="date"
-                          value={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : ""}
-                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      )}
-                      
-                      {field.type === "textarea" && (
-                        <Textarea
-                          value={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : ""}
-                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                          rows={2}
-                          className="text-sm resize-none"
-                        />
-                      )}
-                      
-                      {field.type === "checkbox" && (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={formValues[field.id] === true}
-                            onCheckedChange={(checked) => handleFieldChange(field.id, checked === true)}
-                          />
-                          <span className="text-xs text-muted-foreground">Check if applicable</span>
-                        </div>
-                      )}
-                      
-                      {field.type === "signature" && (
-                        <PdfSignatureMarker
-                          signatureData={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : null}
-                          onSignatureChange={(data) => handleFieldChange(field.id, data)}
-                        />
-                      )}
+              {currentPageFields.size === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No fillable fields on this page
+                </p>
+              ) : (
+                Array.from(currentPageFields.entries()).map(([section, fields]) => (
+                  <div key={section} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{section}</span>
+                      <Separator className="flex-1" />
                     </div>
-                  ))}
-                </div>
-              ))}
+                    
+                    {fields.map((field) => (
+                      <div key={field.id} className="space-y-1.5">
+                        <Label className="text-xs">{field.label}</Label>
+                        
+                        {field.type === "text" && (
+                          <Input
+                            value={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : ""}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            className="h-8 text-sm"
+                          />
+                        )}
+                        
+                        {field.type === "date" && (
+                          <Input
+                            type="date"
+                            value={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : ""}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            className="h-8 text-sm"
+                          />
+                        )}
+                        
+                        {field.type === "textarea" && (
+                          <Textarea
+                            value={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : ""}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            rows={3}
+                            className="text-sm resize-none"
+                          />
+                        )}
+                        
+                        {field.type === "checkbox" && (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={formValues[field.id] === true}
+                              onCheckedChange={(checked) => handleFieldChange(field.id, checked === true)}
+                            />
+                            <span className="text-xs text-muted-foreground">Check if applicable</span>
+                          </div>
+                        )}
+                        
+                        {field.type === "signature" && (
+                          <PdfSignatureMarker
+                            signatureData={typeof formValues[field.id] === "string" ? (formValues[field.id] as string) : null}
+                            onSignatureChange={(data) => handleFieldChange(field.id, data)}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
             </div>
           </ScrollArea>
           

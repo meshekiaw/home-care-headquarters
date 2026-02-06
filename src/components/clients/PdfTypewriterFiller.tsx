@@ -358,6 +358,20 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                         />
                       </PopoverTrigger>
 
+                      {/* Render the typed value on the form so it appears “in the field”, not only in the editor */}
+                      {!!entry.text?.trim() && !isOpen && (
+                        <div
+                          className="absolute -translate-y-1/2 select-none pointer-events-none"
+                          style={{ left, top, transform: "translate(-50%, -50%)" }}
+                          aria-hidden="true"
+                        >
+                          <span className="ml-2 inline-block max-w-[240px] truncate rounded-sm bg-background/70 px-1 py-0.5 text-[11px] leading-none text-foreground shadow-sm backdrop-blur">
+                            {entry.text}
+                          </span>
+                        </div>
+                      )}
+
+
                       <PopoverContent
                         side="right"
                         align="start"

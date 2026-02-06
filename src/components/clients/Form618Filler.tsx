@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { PdfSignatureMarker } from "@/components/clients/PdfSignatureMarker";
 import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
-import { ChevronLeft, ChevronRight, Download, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Send, ZoomIn, ZoomOut } from "lucide-react";
 
 // Configure worker
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
@@ -355,6 +355,11 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
     
     const [formValues, setFormValues] = useState<Record<string, string | boolean | null>>({});
     const [showSignatureRequest, setShowSignatureRequest] = useState(false);
+    const [zoomLevel, setZoomLevel] = useState(1); // 1 = 100%, 0.5 = 50%, 2 = 200%
+
+    const ZOOM_MIN = 0.5;
+    const ZOOM_MAX = 2.5;
+    const ZOOM_STEP = 0.25;
 
     const safeFileName = useMemo(() => {
       const base = fileName?.trim() || "618-filled.pdf";
@@ -431,8 +436,9 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
           const baseViewport = pdfPage.getViewport({ scale: 1 });
           const w = containerWidth || containerRef.current?.clientWidth || 400;
           const padded = Math.max(0, w - 16);
-          let renderScale = padded / baseViewport.width;
-          renderScale = Math.max(0.5, Math.min(2.5, renderScale));
+          // Apply zoom level to the base scale
+          let renderScale = (padded / baseViewport.width) * zoomLevel;
+          renderScale = Math.max(0.3, Math.min(4, renderScale));
 
           const viewport = pdfPage.getViewport({ scale: renderScale });
           const canvas = canvasRef.current;
@@ -452,7 +458,7 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
       return () => {
         cancelled = true;
       };
-    }, [doc, currentPage, containerWidth]);
+    }, [doc, currentPage, containerWidth, zoomLevel]);
 
     function handleFieldChange(fieldId: string, value: string | boolean | null) {
       setFormValues((prev) => ({ ...prev, [fieldId]: value }));
@@ -604,6 +610,32 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
+            
+            <div className="h-4 w-px bg-border mx-1" />
+            
+            {/* Zoom Controls */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setZoomLevel((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
+              disabled={loading || zoomLevel <= ZOOM_MIN}
+            >
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground min-w-[3.5rem] text-center">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setZoomLevel((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+              disabled={loading || zoomLevel >= ZOOM_MAX}
+            >
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            
             <div className="flex-1" />
             <Button
               type="button"

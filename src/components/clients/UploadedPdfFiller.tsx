@@ -30,6 +30,7 @@ export type UploadedPdfFillerProps = {
   fileUrl: string;
   fileName?: string;
   className?: string;
+  scrollAreaClassName?: string;
   onError?: (message: string) => void;
 };
 
@@ -42,7 +43,7 @@ function getFieldKind(field: any): PdfFieldKind {
 }
 
 export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdfFillerProps>(
-  ({ fileUrl, fileName = "filled-form.pdf", className, onError }, ref) => {
+  ({ fileUrl, fileName = "filled-form.pdf", className, scrollAreaClassName, onError }, ref) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
@@ -229,7 +230,7 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
         )}
 
         <div className="rounded-lg border">
-          <ScrollArea className="h-[48vh]">
+          <ScrollArea className={cn("h-[48vh]", scrollAreaClassName)}>
             <div className="p-3 space-y-4">
               {loading ? (
                 <div className="text-sm text-muted-foreground">Loading…</div>

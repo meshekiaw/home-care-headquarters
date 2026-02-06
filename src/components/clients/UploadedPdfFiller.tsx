@@ -1,7 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { PDFDocument, PDFCheckBox, PDFDropdown, PDFRadioGroup, PDFTextField } from "pdf-lib";
 
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,11 +108,7 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
           setFields(metas);
           setValues(initialValues);
 
-          if (metas.length === 0) {
-            setError(
-              "No standard PDF form fields found. Use “Type on PDF” below to enter text and download a filled copy.",
-            );
-          }
+          // Silently note if no fields found - no UI message needed
         } catch (e: any) {
           const msg = e?.message || "Failed to load PDF.";
           setError(msg);
@@ -209,31 +204,12 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
     }));
 
     return (
-      <div className={cn("flex h-full min-h-0 flex-col gap-3", className)}>
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-medium">Fill form</p>
-            <p className="text-xs text-muted-foreground">
-              If the PDF has standard fields we’ll list them. Otherwise you can type directly on the PDF.
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={reset} disabled={loading || !pdfBytes}>
-            Reset
-          </Button>
-        </div>
-
-        {error && (
-          <div className="rounded-lg border bg-background p-3 text-sm">
-            <p className="font-medium">PDF form note</p>
-            <p className="mt-1 text-muted-foreground">{error}</p>
-          </div>
-        )}
-
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border">
+      <div className={cn("flex h-full min-h-0 flex-col", className)}>
+        <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className={cn("h-full", scrollAreaClassName)}>
-            <div className="p-3 space-y-4">
+            <div className="h-full">
               {loading ? (
-                <div className="text-sm text-muted-foreground">Loading…</div>
+                <div className="p-3 text-sm text-muted-foreground">Loading…</div>
               ) : fields.length === 0 ? (
                 pdfBytes ? (
                   <PdfTypewriterFiller
@@ -246,75 +222,77 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
                     }}
                   />
                 ) : (
-                  <div className="text-sm text-muted-foreground">No fillable fields found.</div>
+                  <div className="p-3 text-sm text-muted-foreground">No fillable fields found.</div>
                 )
               ) : (
-                fields.map((f) => (
-                  <div key={f.name} className="space-y-2">
-                    <Label className="break-all">{f.name}</Label>
+                <div className="p-3 space-y-4">
+                  {fields.map((f) => (
+                    <div key={f.name} className="space-y-2">
+                      <Label className="break-all">{f.name}</Label>
 
-                    {f.kind === "text" && (
-                      <Input
-                        value={typeof values[f.name] === "string" ? (values[f.name] as string) : ""}
-                        onChange={(e) => setValues((prev) => ({ ...prev, [f.name]: e.target.value }))}
-                      />
-                    )}
-
-                    {f.kind === "checkbox" && (
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          checked={Boolean(values[f.name])}
-                          onCheckedChange={(checked) =>
-                            setValues((prev) => ({ ...prev, [f.name]: checked === true }))
-                          }
+                      {f.kind === "text" && (
+                        <Input
+                          value={typeof values[f.name] === "string" ? (values[f.name] as string) : ""}
+                          onChange={(e) => setValues((prev) => ({ ...prev, [f.name]: e.target.value }))}
                         />
-                        <span className="text-sm text-muted-foreground">Checked</span>
-                      </div>
-                    )}
+                      )}
 
-                    {f.kind === "dropdown" && (
-                      <Select
-                        value={typeof values[f.name] === "string" ? (values[f.name] as string) : ""}
-                        onValueChange={(v) => setValues((prev) => ({ ...prev, [f.name]: v }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(f.options || []).map((opt) => (
-                            <SelectItem key={opt} value={opt}>
-                              {opt}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
+                      {f.kind === "checkbox" && (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={Boolean(values[f.name])}
+                            onCheckedChange={(checked) =>
+                              setValues((prev) => ({ ...prev, [f.name]: checked === true }))
+                            }
+                          />
+                          <span className="text-sm text-muted-foreground">Checked</span>
+                        </div>
+                      )}
 
-                    {f.kind === "radio" && (
-                      <Select
-                        value={typeof values[f.name] === "string" ? (values[f.name] as string) : ""}
-                        onValueChange={(v) => setValues((prev) => ({ ...prev, [f.name]: v }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(f.options || []).map((opt) => (
-                            <SelectItem key={opt} value={opt}>
-                              {opt}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
+                      {f.kind === "dropdown" && (
+                        <Select
+                          value={typeof values[f.name] === "string" ? (values[f.name] as string) : ""}
+                          onValueChange={(v) => setValues((prev) => ({ ...prev, [f.name]: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select…" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(f.options || []).map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
 
-                    {f.kind === "unknown" && (
-                      <div className="text-xs text-muted-foreground">
-                        Unsupported field type; it will be skipped on download.
-                      </div>
-                    )}
-                  </div>
-                ))
+                      {f.kind === "radio" && (
+                        <Select
+                          value={typeof values[f.name] === "string" ? (values[f.name] as string) : ""}
+                          onValueChange={(v) => setValues((prev) => ({ ...prev, [f.name]: v }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select…" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(f.options || []).map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      {f.kind === "unknown" && (
+                        <div className="text-xs text-muted-foreground">
+                          Unsupported field type; it will be skipped on download.
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </ScrollArea>

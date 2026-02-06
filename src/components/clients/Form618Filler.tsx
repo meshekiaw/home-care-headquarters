@@ -422,6 +422,9 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
       return () => ro.disconnect();
     }, []);
 
+    // Track the initial container width for stable zoom calculations
+    const baseContainerWidthRef = useRef<number>(0);
+    
     // Render current page
     useEffect(() => {
       let cancelled = false;
@@ -434,10 +437,22 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
           if (cancelled) return;
 
           const baseViewport = pdfPage.getViewport({ scale: 1 });
-          const w = containerWidth || containerRef.current?.clientWidth || 400;
-          const padded = Math.max(0, w - 16);
-          // Apply zoom level to the base scale
-          let renderScale = (padded / baseViewport.width) * zoomLevel;
+          
+          // Use containerWidth for initial reference, store it for stable zoom calculations
+          const currentWidth = containerWidth || containerRef.current?.clientWidth || 400;
+          if (baseContainerWidthRef.current === 0) {
+            baseContainerWidthRef.current = currentWidth;
+          }
+          
+          // Use the stored base width for zoom calculations to prevent feedback loops
+          const referenceWidth = baseContainerWidthRef.current;
+          const padded = Math.max(0, referenceWidth - 16);
+          
+          // Calculate base scale (fit-to-width at 100% zoom)
+          const baseScale = padded / baseViewport.width;
+          
+          // Apply zoom as a multiplier to the base scale
+          let renderScale = baseScale * zoomLevel;
           renderScale = Math.max(0.3, Math.min(4, renderScale));
 
           const viewport = pdfPage.getViewport({ scale: renderScale });

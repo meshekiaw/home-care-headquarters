@@ -31,8 +31,9 @@ import { AssignedCaregiversTab } from "@/components/clients/AssignedCaregiversTa
 import { DocumentsTab } from "@/components/clients/DocumentsTab";
 import { ClientRequiredSkillsTab } from "@/components/clients/ClientRequiredSkillsTab";
 import ProximityMatchTab from "@/components/clients/ProximityMatchTab";
- import { AdmissionFormsTab } from "@/components/forms/AdmissionFormsTab";
- import { AssignedNursesTab } from "@/components/clients/AssignedNursesTab";
+import { AdmissionFormsTab } from "@/components/forms/AdmissionFormsTab";
+import { AssignedNursesTab } from "@/components/clients/AssignedNursesTab";
+import { NursingFormsTab } from "@/components/clients/NursingFormsTab";
 
 interface Client {
   id: string;
@@ -214,8 +215,8 @@ export default function ClientProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-           <TabsList className="grid w-full grid-cols-4 sm:grid-cols-9 lg:w-auto lg:inline-grid">
-             <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-5 sm:grid-cols-10 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
@@ -243,14 +244,18 @@ export default function ClientProfile() {
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Documents</span>
             </TabsTrigger>
-             <TabsTrigger value="nurses" className="flex items-center gap-2">
-               <Stethoscope className="w-4 h-4" />
-               <span className="hidden sm:inline">Nurses</span>
-             </TabsTrigger>
-             <TabsTrigger value="forms" className="flex items-center gap-2">
-               <ClipboardList className="w-4 h-4" />
-               <span className="hidden sm:inline">Forms</span>
-             </TabsTrigger>
+            <TabsTrigger value="nurses" className="flex items-center gap-2">
+              <Stethoscope className="w-4 h-4" />
+              <span className="hidden sm:inline">Nurses</span>
+            </TabsTrigger>
+            <TabsTrigger value="nursing-forms" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              <span className="hidden sm:inline">RN Forms</span>
+            </TabsTrigger>
+            <TabsTrigger value="forms" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Admission</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -281,13 +286,17 @@ export default function ClientProfile() {
             <DocumentsTab clientId={client.id} />
           </TabsContent>
  
-           <TabsContent value="nurses">
-             <AssignedNursesTab clientId={client.id} />
-           </TabsContent>
- 
-           <TabsContent value="forms">
-             <AdmissionFormsTab clientId={client.id} />
-           </TabsContent>
+          <TabsContent value="nurses">
+            <AssignedNursesTab clientId={client.id} />
+          </TabsContent>
+
+          <TabsContent value="nursing-forms">
+            <NursingFormsTab clientId={client.id} />
+          </TabsContent>
+
+          <TabsContent value="forms">
+            <AdmissionFormsTab clientId={client.id} />
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>

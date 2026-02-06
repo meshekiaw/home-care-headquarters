@@ -64,6 +64,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const dragStartRef = useRef<{ x: number; y: number; xPct: number; yPct: number } | null>(null);
+    const didDragRef = useRef(false);
 
     const safeFileName = useMemo(() => {
       const base = fileName?.trim() || "filled-form.pdf";
@@ -205,12 +206,21 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
       e.preventDefault();
       e.stopPropagation();
       setDraggingId(entry.id);
+      didDragRef.current = false;
       dragStartRef.current = {
         x: e.clientX,
         y: e.clientY,
         xPct: entry.xPct,
         yPct: entry.yPct,
       };
+    }
+
+    function handleMarkerClick(e: React.MouseEvent, entryId: string) {
+      e.stopPropagation();
+      // Only open editor if it wasn't a drag
+      if (!didDragRef.current) {
+        setActiveEntryId(entryId);
+      }
     }
 
     useEffect(() => {
@@ -225,6 +235,11 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
         const rect = canvas.getBoundingClientRect();
         const deltaX = e.clientX - dragStartRef.current.x;
         const deltaY = e.clientY - dragStartRef.current.y;
+
+        // Mark as dragged if moved more than 3px
+        if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+          didDragRef.current = true;
+        }
 
         const deltaXPct = deltaX / rect.width;
         const deltaYPct = deltaY / rect.height;
@@ -407,12 +422,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           )}
                           style={{ left, top }}
                           onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
-                          onClick={(ev) => {
-                            ev.stopPropagation();
-                            if (!draggingId) {
-                              setActiveEntryId(entry.id);
-                            }
-                          }}
+                          onClick={(ev) => handleMarkerClick(ev, entry.id)}
                           aria-label={entry.text ? `Edit text: ${entry.text}` : "Edit text"}
                           title={entry.text || "Edit text"}
                         />
@@ -427,12 +437,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           )}
                           style={{ left: `calc(${entry.xPct * 100}% + 12px)`, top }}
                           onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
-                          onClick={(ev) => {
-                            ev.stopPropagation();
-                            if (!draggingId) {
-                              setActiveEntryId(entry.id);
-                            }
-                          }}
+                          onClick={(ev) => handleMarkerClick(ev, entry.id)}
                         >
                           <span className="inline-block max-w-[280px] truncate text-sm leading-none text-foreground">
                             {entry.text}

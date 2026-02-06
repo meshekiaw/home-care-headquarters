@@ -31,6 +31,7 @@ export type UploadedPdfFillerProps = {
   className?: string;
   scrollAreaClassName?: string;
   onError?: (message: string) => void;
+  onModeChange?: (mode: "acroform" | "typewriter") => void;
 };
 
 function getFieldKind(field: any): PdfFieldKind {
@@ -42,7 +43,10 @@ function getFieldKind(field: any): PdfFieldKind {
 }
 
 export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdfFillerProps>(
-  ({ fileUrl, fileName = "filled-form.pdf", className, scrollAreaClassName, onError }, ref) => {
+  (
+    { fileUrl, fileName = "filled-form.pdf", className, scrollAreaClassName, onError, onModeChange },
+    ref,
+  ) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
@@ -102,6 +106,8 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
             if (meta.kind === "checkbox") initialValues[meta.name] = false;
             else initialValues[meta.name] = "";
           }
+
+          onModeChange?.(metas.length === 0 ? "typewriter" : "acroform");
 
           // Use the cloned buffer for state so the typewriter component gets a fresh copy
           setPdfBytes(bufferForTypewriter);

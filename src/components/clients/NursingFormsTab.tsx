@@ -107,6 +107,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
   const [pdfViewerUrl, setPdfViewerUrl] = useState<string | null>(null);
   const [pdfViewerLoading, setPdfViewerLoading] = useState(false);
   const [pdfViewerError, setPdfViewerError] = useState<string | null>(null);
+  const [pdfFillMode, setPdfFillMode] = useState<"unknown" | "acroform" | "typewriter">("unknown");
 
 
   const [selectedTemplate, setSelectedTemplate] = useState<NursingFormTemplate | null>(null);
@@ -650,6 +651,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                         size="icon"
                         onClick={() => {
                           setSelectedUploadedForm(form);
+                          setPdfFillMode("unknown");
                           setViewUploadedFormOpen(true);
 
                           if (form.file_type?.includes("pdf")) {
@@ -909,8 +911,13 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
         onOpenChange={(open) => {
           setViewUploadedFormOpen(open);
 
+          if (open) {
+            setPdfFillMode("unknown");
+          }
+
           // Cleanup blob URL on close
           if (!open) {
+            setPdfFillMode("unknown");
             setPdfViewerError(null);
             setPdfViewerLoading(false);
             setPdfViewerUrl((prev) => {
@@ -930,63 +937,53 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedUploadedForm?.file_type?.includes("pdf") && (
-            <div className="bg-muted/50 border rounded-lg p-3 text-sm">
-              <p className="font-medium mb-1">Fillable PDF workflow</p>
-              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                <li>Fill out the fields in the panel on the right (recommended)</li>
-                <li>
-                  When done, click <strong>Save Filled PDF</strong> (or press{" "}
-                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">Ctrl</kbd>+
-                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> on Windows /{" "}
-                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">⌘</kbd>+
-                  <kbd className="px-1.5 py-0.5 bg-background rounded border text-xs">P</kbd> on Mac)
-                </li>
-                <li>A filled PDF will download to your computer</li>
-              </ol>
-            </div>
-          )}
 
-          <div className="h-[60vh] w-full">
+          <div className="h-[70vh] w-full">
             {selectedUploadedForm?.file_type?.includes("pdf") ? (
-              <div className="grid h-full w-full min-h-0 gap-4 lg:grid-cols-2">
-                <div className="relative h-full w-full min-h-0">
-                  {pdfViewerLoading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border bg-background/80">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
-                        Loading PDF…
+              <div
+                className={`grid h-full w-full min-h-0 gap-4 ${
+                  pdfFillMode === "typewriter" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+                }`}
+              >
+                {pdfFillMode !== "typewriter" && (
+                  <div className="relative h-full w-full min-h-0">
+                    {pdfViewerLoading && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border bg-background/80">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+                          Loading PDF…
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {pdfViewerError && (
-                    <div className="absolute left-3 right-3 top-3 z-20 rounded-lg border bg-background p-3 text-sm">
-                      <p className="font-medium">Couldn’t load the PDF preview inside Lovable</p>
-                      <p className="text-muted-foreground mt-1">
-                        You can still fill the fields on the right and download a filled PDF.
-                      </p>
-                      <div className="mt-3 flex gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => selectedUploadedForm && loadUploadedPdfForViewer(selectedUploadedForm)}
-                        >
-                          Retry preview
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setPdfViewerError(null)}>
-                          Dismiss
-                        </Button>
+                    {pdfViewerError && (
+                      <div className="absolute left-3 right-3 top-3 z-20 rounded-lg border bg-background p-3 text-sm">
+                        <p className="font-medium">Couldn’t load the PDF preview inside Lovable</p>
+                        <p className="text-muted-foreground mt-1">
+                          You can still fill the fields on the right and download a filled PDF.
+                        </p>
+                        <div className="mt-3 flex gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => selectedUploadedForm && loadUploadedPdfForViewer(selectedUploadedForm)}
+                          >
+                            Retry preview
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setPdfViewerError(null)}>
+                            Dismiss
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <PdfCanvasViewer
-                    key={pdfViewerUrl ?? selectedUploadedForm.id}
-                    fileUrl={pdfViewerUrl ?? selectedUploadedForm.file_url}
-                    className="h-full"
-                  />
-                </div>
+                    <PdfCanvasViewer
+                      key={pdfViewerUrl ?? selectedUploadedForm.id}
+                      fileUrl={pdfViewerUrl ?? selectedUploadedForm.file_url}
+                      className="h-full"
+                    />
+                  </div>
+                )}
 
                 <UploadedPdfFiller
                   ref={uploadedPdfFillerRef}
@@ -994,6 +991,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
                   fileName={selectedUploadedForm.name ? `${selectedUploadedForm.name} (filled).pdf` : "filled-form.pdf"}
                   className="h-full min-h-0"
                   scrollAreaClassName="h-full"
+                  onModeChange={(mode) => setPdfFillMode(mode)}
                   onError={(message) => {
                     toast({
                       title: "Unable to load PDF fields",

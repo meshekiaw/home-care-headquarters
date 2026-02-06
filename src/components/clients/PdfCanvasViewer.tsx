@@ -199,12 +199,7 @@ export function PdfCanvasViewer({ fileUrl, className }: PdfCanvasViewerProps) {
         </div>
       </div>
 
-      {error && (
-        <div className="rounded-lg border bg-background p-3 text-sm">
-          <p className="font-medium">PDF preview note</p>
-          <p className="mt-1 text-muted-foreground">{error}</p>
-        </div>
-      )}
+      {/* Error display removed per user request */}
 
       <div ref={containerRef} className="min-h-0 flex-1 rounded-lg border overflow-auto">
         <div className="inline-block align-top p-2">

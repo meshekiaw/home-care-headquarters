@@ -21,21 +21,23 @@
  import { Input } from "@/components/ui/input";
  import { Label } from "@/components/ui/label";
  import { Textarea } from "@/components/ui/textarea";
- import { 
-   Plus, 
-   FileText, 
-   Send, 
-   CheckCircle, 
-   Clock, 
-   AlertCircle,
-   Eye,
-   Edit,
-   Trash2,
-   PenTool,
-   Mail,
-   Users,
-   FileUp
- } from "lucide-react";
+import { 
+  Plus, 
+  FileText, 
+  Send, 
+  CheckCircle, 
+  Clock, 
+  AlertCircle,
+  Eye,
+  Edit,
+  Trash2,
+  PenTool,
+  Mail,
+  Users,
+  FileUp,
+  PenLine
+} from "lucide-react";
+import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
  import { supabase } from "@/integrations/supabase/client";
  import { useToast } from "@/hooks/use-toast";
  import { prebuiltFormTemplates, FormTemplate } from "@/data/admissionFormTemplates";
@@ -98,13 +100,17 @@
      signing_method: 'in_app' | 'email_link';
    }[]>([]);
    
-   // New template state
-   const [newTemplate, setNewTemplate] = useState({
-     name: '',
-     description: '',
-     category: 'admission' as const,
-     fields: [] as FormField[],
-   });
+  // New template state
+  const [newTemplate, setNewTemplate] = useState({
+    name: '',
+    description: '',
+    category: 'admission' as const,
+    fields: [] as FormField[],
+  });
+
+  // Signature request state for external documents
+  const [signatureRequestDocOpen, setSignatureRequestDocOpen] = useState(false);
+  const [signatureRequestDocName, setSignatureRequestDocName] = useState("");
  
    useEffect(() => {
      fetchData();
@@ -484,15 +490,26 @@
                          <Send className="w-4 h-4" />
                        </Button>
                      )}
-                     <Button 
-                       variant="ghost" 
-                       size="icon"
-                       className="text-destructive hover:text-destructive"
-                       onClick={() => handleDeleteSubmission(submission.id)}
-                     >
-                       <Trash2 className="w-4 h-4" />
-                     </Button>
-                   </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setSignatureRequestDocName(submission.template?.name || 'Form');
+                          setSignatureRequestDocOpen(true);
+                        }}
+                        title="Request signature via email"
+                      >
+                        <PenLine className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDeleteSubmission(submission.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                  </div>
                </CardContent>
              </Card>
@@ -793,8 +810,15 @@
          </DialogContent>
        </Dialog>
  
-       {/* Create Template Dialog */}
-       <Dialog open={createTemplateOpen} onOpenChange={setCreateTemplateOpen}>
+      {/* Signature Request Dialog for external document signing */}
+      <SignatureRequestDialog
+        open={signatureRequestDocOpen}
+        onOpenChange={setSignatureRequestDocOpen}
+        documentName={signatureRequestDocName}
+      />
+
+      {/* Create Template Dialog */}
+      <Dialog open={createTemplateOpen} onOpenChange={setCreateTemplateOpen}>
          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
            <DialogHeader>
              <DialogTitle>Create Form Template</DialogTitle>

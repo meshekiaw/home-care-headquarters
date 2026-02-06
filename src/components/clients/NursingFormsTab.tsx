@@ -991,7 +991,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
 
                 <UploadedPdfFiller
                   ref={uploadedPdfFillerRef}
-                  fileUrl={selectedUploadedForm.file_url}
+                  fileUrl={pdfViewerUrl ?? selectedUploadedForm.file_url}
                   fileName={selectedUploadedForm.name ? `${selectedUploadedForm.name} (filled).pdf` : "filled-form.pdf"}
                   onError={(message) => {
                     toast({

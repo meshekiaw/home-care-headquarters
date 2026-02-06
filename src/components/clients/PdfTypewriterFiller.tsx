@@ -198,7 +198,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           xPct,
           yPct,
           text: "",
-          fontSize: 11,
+          fontSize: 14,
         },
       ]);
     }

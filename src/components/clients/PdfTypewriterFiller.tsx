@@ -17,15 +17,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { PdfSignatureMarker } from "@/components/clients/PdfSignatureMarker";
+import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
+import { PenLine, Send, Type } from "lucide-react";
+
+type EntryType = "text" | "signature";
 
 type PdfTypewriterEntry = {
   id: string;
   page: number; // 1-indexed
   xPct: number; // 0..1
   yPct: number; // 0..1
+  type: EntryType;
   text: string;
   fontSize: number;
+  signatureData: string | null;
 };
 
 export interface PdfTypewriterFillerHandle {
@@ -66,6 +74,8 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
     const [draggingId, setDraggingId] = useState<string | null>(null);
     const dragStartRef = useRef<{ x: number; y: number; xPct: number; yPct: number } | null>(null);
     const didDragRef = useRef(false);
+    const [entryMode, setEntryMode] = useState<EntryType>("text");
+    const [showSignatureRequest, setShowSignatureRequest] = useState(false);
 
     const safeFileName = useMemo(() => {
       const base = fileName?.trim() || "filled-form.pdf";
@@ -197,8 +207,10 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           page,
           xPct,
           yPct,
+          type: entryMode,
           text: "",
           fontSize: 14,
+          signatureData: null,
         },
       ]);
     }
@@ -273,23 +285,49 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
         const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
         for (const entry of entries) {
-          const text = entry.text?.trim();
-          if (!text) continue;
-
           const targetPage = pdfDoc.getPage(entry.page - 1);
           if (!targetPage) continue;
 
           const { width, height } = targetPage.getSize();
           const x = entry.xPct * width;
-          const y = height - entry.yPct * height - entry.fontSize;
 
-          targetPage.drawText(text, {
-            x,
-            y,
-            size: entry.fontSize,
-            font,
-            color: rgb(0, 0, 0),
-          });
+          if (entry.type === "text") {
+            const text = entry.text?.trim();
+            if (!text) continue;
+
+            const y = height - entry.yPct * height - entry.fontSize;
+
+            targetPage.drawText(text, {
+              x,
+              y,
+              size: entry.fontSize,
+              font,
+              color: rgb(0, 0, 0),
+            });
+          } else if (entry.type === "signature" && entry.signatureData) {
+            // Embed signature image
+            try {
+              const sigBytes = await fetch(entry.signatureData).then((r) => r.arrayBuffer());
+              const sigImage = await pdfDoc.embedPng(new Uint8Array(sigBytes));
+              
+              // Scale signature to a reasonable size (max 150 wide, proportional height)
+              const maxWidth = 150;
+              const scale = Math.min(1, maxWidth / sigImage.width);
+              const sigWidth = sigImage.width * scale;
+              const sigHeight = sigImage.height * scale;
+              
+              const y = height - entry.yPct * height - sigHeight / 2;
+
+              targetPage.drawImage(sigImage, {
+                x,
+                y,
+                width: sigWidth,
+                height: sigHeight,
+              });
+            } catch (sigError) {
+              console.error("Failed to embed signature:", sigError);
+            }
+          }
         }
 
         const out = await pdfDoc.save();
@@ -352,6 +390,43 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           </span>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Mode toggle */}
+            <div className="flex items-center border rounded-md overflow-hidden">
+              <Button
+                type="button"
+                variant={entryMode === "text" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-8 rounded-none border-0"
+                onClick={() => setEntryMode("text")}
+                title="Add text"
+              >
+                <Type className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant={entryMode === "signature" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-8 rounded-none border-0"
+                onClick={() => setEntryMode("signature")}
+                title="Add signature"
+              >
+                <PenLine className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSignatureRequest(true)}
+              title="Request signature via email"
+            >
+              <Send className="h-4 w-4 mr-1" />
+              Request
+            </Button>
+
+            <div className="w-px h-6 bg-border" />
+
             <Button
               type="button"
               variant={scaleMode === "fit" ? "secondary" : "outline"}
@@ -388,6 +463,13 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
           </div>
         </div>
 
+        {/* Signature Request Dialog */}
+        <SignatureRequestDialog
+          open={showSignatureRequest}
+          onOpenChange={setShowSignatureRequest}
+          documentName={safeFileName}
+        />
+
         <div ref={containerRef} className="rounded-lg border overflow-auto">
           <div className="inline-block align-top p-2">
             <div className="relative inline-block align-top">
@@ -398,13 +480,16 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                 aria-label="PDF page canvas - click to add text"
               />
 
-              {/* overlay text inputs */}
+              {/* overlay entries */}
               {viewportSize &&
                 activeEntries.map((entry) => {
                   const left = `${entry.xPct * 100}%`;
                   const top = `${entry.yPct * 100}%`;
 
                   const isOpen = activeEntryId === entry.id;
+                  const hasContent = entry.type === "text" 
+                    ? !!entry.text?.trim() 
+                    : !!entry.signatureData;
 
                   return (
                     <Popover
@@ -417,20 +502,21 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           type="button"
                           className={cn(
                             "absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background/90",
-                            entry.text?.trim() && !isOpen && "opacity-0",
+                            entry.type === "signature" && "border-primary bg-primary/10",
+                            hasContent && !isOpen && "opacity-0",
                             draggingId === entry.id && "cursor-grabbing",
                             !draggingId && "cursor-grab"
                           )}
                           style={{ left, top }}
                           onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
                           onClick={(ev) => handleMarkerClick(ev, entry.id)}
-                          aria-label={entry.text ? `Edit text: ${entry.text}` : "Edit text"}
-                          title={entry.text || "Edit text"}
+                          aria-label={entry.type === "text" ? (entry.text || "Edit text") : "Edit signature"}
+                          title={entry.type === "text" ? (entry.text || "Edit text") : "Edit signature"}
                         />
                       </PopoverTrigger>
 
-                      {/* Render the typed value on the form so it appears "in the field", not only in the editor */}
-                      {!!entry.text?.trim() && !isOpen && (
+                      {/* Render content overlay when not editing */}
+                      {hasContent && !isOpen && (
                         <div
                           className={cn(
                             "absolute select-none -translate-y-1/2",
@@ -440,54 +526,79 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           onMouseDown={(ev) => handleMarkerMouseDown(ev, entry)}
                           onClick={(ev) => handleMarkerClick(ev, entry.id)}
                         >
-                          <span 
-                            className="inline-block max-w-[280px] truncate leading-none text-foreground"
-                            style={{ fontSize: `${entry.fontSize}px` }}
-                          >
-                            {entry.text}
-                          </span>
+                          {entry.type === "text" ? (
+                            <span 
+                              className="inline-block max-w-[280px] truncate leading-none text-foreground"
+                              style={{ fontSize: `${entry.fontSize}px` }}
+                            >
+                              {entry.text}
+                            </span>
+                          ) : (
+                            <img 
+                              src={entry.signatureData!} 
+                              alt="Signature" 
+                              className="h-10 w-auto pointer-events-none"
+                              style={{ maxWidth: 150 }}
+                            />
+                          )}
                         </div>
                       )}
 
                       <PopoverContent
                         side="right"
                         align="start"
-                        className="w-64 p-2"
+                        className={cn("p-2", entry.type === "signature" ? "w-72" : "w-64")}
                       >
                         <div className="space-y-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Text</Label>
-                            <Input
-                              autoFocus
-                              value={entry.text}
-                              onChange={(e) =>
-                                setEntries((prev) =>
-                                  prev.map((p) => (p.id === entry.id ? { ...p, text: e.target.value } : p)),
-                                )
-                              }
-                              placeholder="Type…"
-                              className="h-8 text-sm"
-                            />
-                          </div>
+                          {entry.type === "text" ? (
+                            <>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Text</Label>
+                                <Input
+                                  autoFocus
+                                  value={entry.text}
+                                  onChange={(e) =>
+                                    setEntries((prev) =>
+                                      prev.map((p) => (p.id === entry.id ? { ...p, text: e.target.value } : p)),
+                                    )
+                                  }
+                                  placeholder="Type…"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
 
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-xs">Font Size</Label>
-                              <span className="text-xs text-muted-foreground">{entry.fontSize}px</span>
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-xs">Font Size</Label>
+                                  <span className="text-xs text-muted-foreground">{entry.fontSize}px</span>
+                                </div>
+                                <Slider
+                                  value={[entry.fontSize]}
+                                  onValueChange={([val]) =>
+                                    setEntries((prev) =>
+                                      prev.map((p) => (p.id === entry.id ? { ...p, fontSize: val } : p)),
+                                    )
+                                  }
+                                  min={8}
+                                  max={24}
+                                  step={1}
+                                  className="w-full"
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="space-y-1">
+                              <Label className="text-xs">Signature</Label>
+                              <PdfSignatureMarker
+                                signatureData={entry.signatureData}
+                                onSignatureChange={(data) =>
+                                  setEntries((prev) =>
+                                    prev.map((p) => (p.id === entry.id ? { ...p, signatureData: data } : p)),
+                                  )
+                                }
+                              />
                             </div>
-                            <Slider
-                              value={[entry.fontSize]}
-                              onValueChange={([val]) =>
-                                setEntries((prev) =>
-                                  prev.map((p) => (p.id === entry.id ? { ...p, fontSize: val } : p)),
-                                )
-                              }
-                              min={8}
-                              max={24}
-                              step={1}
-                              className="w-full"
-                            />
-                          </div>
+                          )}
 
                           <div className="flex items-center justify-between gap-2">
                             <Button

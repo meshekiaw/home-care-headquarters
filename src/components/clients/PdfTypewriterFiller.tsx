@@ -365,7 +365,7 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                           style={{ left, top, transform: "translate(-50%, -50%)" }}
                           aria-hidden="true"
                         >
-                          <span className="ml-2 inline-block max-w-[240px] truncate rounded-sm bg-background/70 px-1 py-0.5 text-[11px] leading-none text-foreground shadow-sm backdrop-blur">
+                          <span className="ml-2 inline-block max-w-[280px] truncate text-sm leading-none text-foreground">
                             {entry.text}
                           </span>
                         </div>
@@ -376,10 +376,6 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                         side="right"
                         align="start"
                         className="w-64 p-2"
-                        onOpenAutoFocus={(e) => {
-                          // prevent focus-jump scrolling the container
-                          e.preventDefault();
-                        }}
                       >
                         <div className="space-y-2">
                           <div className="space-y-1">

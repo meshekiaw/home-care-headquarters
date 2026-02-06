@@ -579,10 +579,10 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
     }, [currentPage]);
 
     return (
-      <div className={cn("flex h-full min-h-0", className)}>
+      <div className={cn("flex h-full max-h-full overflow-hidden", className)}>
         {/* PDF Preview */}
-        <div ref={containerRef} className="flex-1 min-w-0 flex flex-col border-r">
-          <div className="flex items-center gap-2 p-2 border-b bg-muted/30">
+        <div ref={containerRef} className="flex-1 min-w-0 flex flex-col border-r overflow-hidden">
+          <div className="flex items-center gap-2 p-2 border-b bg-muted/30 shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -616,20 +616,20 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
             </Button>
           </div>
           
-          <div className="flex-1 overflow-auto p-2">
-            <canvas ref={canvasRef} className="block mx-auto" />
+          <div className="flex-1 min-h-0 overflow-auto p-2">
+            <canvas ref={canvasRef} className="block mx-auto max-w-full" />
             {loading && <div className="p-3 text-sm text-muted-foreground text-center">Loading…</div>}
           </div>
         </div>
 
         {/* Form Fields Panel - Shows fields for current page */}
-        <div className="w-80 flex flex-col min-h-0 bg-background">
-          <div className="p-3 border-b">
+        <div className="w-80 shrink-0 flex flex-col overflow-hidden bg-background">
+          <div className="p-3 border-b shrink-0">
             <h3 className="font-semibold text-sm">DMS-618 Personal Care Assessment</h3>
             <p className="text-xs text-muted-foreground mt-1">Page {currentPage} of {pageCount || 7} — Fill fields below</p>
           </div>
           
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="p-3 space-y-4">
               {currentPageFields.size === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
@@ -697,7 +697,7 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
             </div>
           </ScrollArea>
           
-          <div className="p-3 border-t space-y-2">
+          <div className="p-3 border-t space-y-2 shrink-0">
             <Button
               className="w-full"
               onClick={async () => {

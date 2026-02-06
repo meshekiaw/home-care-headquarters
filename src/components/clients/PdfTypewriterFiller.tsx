@@ -361,11 +361,11 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                       {/* Render the typed value on the form so it appears “in the field”, not only in the editor */}
                       {!!entry.text?.trim() && !isOpen && (
                         <div
-                          className="absolute -translate-y-1/2 select-none pointer-events-none"
-                          style={{ left, top, transform: "translate(-50%, -50%)" }}
+                          className="absolute select-none pointer-events-none"
+                          style={{ left: `calc(${entry.xPct * 100}% + 12px)`, top }}
                           aria-hidden="true"
                         >
-                          <span className="ml-2 inline-block max-w-[280px] truncate text-sm leading-none text-foreground">
+                          <span className="inline-block max-w-[280px] truncate text-sm leading-none text-foreground">
                             {entry.text}
                           </span>
                         </div>

@@ -347,7 +347,10 @@ export const PdfTypewriterFiller = forwardRef<PdfTypewriterFillerHandle, PdfType
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background/90 backdrop-blur shadow-sm"
+                          className={cn(
+                            "absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background/90",
+                            entry.text?.trim() && !isOpen && "opacity-0"
+                          )}
                           style={{ left, top }}
                           onClick={(ev) => {
                             ev.stopPropagation();

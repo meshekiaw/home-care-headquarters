@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { PDFDocument, PDFCheckBox, PDFDropdown, PDFRadioGroup, PDFTextField } from "pdf-lib";
 
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PdfTypewriterFiller, type PdfTypewriterFillerHandle } from "@/components/clients/PdfTypewriterFiller";
 import { cn } from "@/lib/utils";
+
 
 export interface UploadedPdfFillerHandle {
   downloadFilledPdf: () => Promise<void>;
@@ -46,6 +48,8 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
     const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
     const [fields, setFields] = useState<PdfFieldMeta[]>([]);
     const [values, setValues] = useState<Record<string, FieldValue>>({});
+
+    const typewriterRef = useRef<PdfTypewriterFillerHandle | null>(null);
 
     const safeFileName = useMemo(() => {
       const base = fileName?.trim() || "filled-form.pdf";
@@ -101,7 +105,9 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
           setValues(initialValues);
 
           if (metas.length === 0) {
-            setError("This PDF doesn't expose any fillable fields.");
+            setError(
+              "No standard PDF form fields found. Use “Type on PDF” below to enter text and download a filled copy.",
+            );
           }
         } catch (e: any) {
           const msg = e?.message || "Failed to load PDF.";
@@ -120,6 +126,13 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
 
     async function downloadFilledPdf() {
       if (!pdfBytes) throw new Error("PDF not loaded yet");
+
+      // If the PDF doesn't have AcroForm fields, fall back to "type on PDF" mode.
+      if (fields.length === 0) {
+        if (!typewriterRef.current) throw new Error("PDF editor not ready yet");
+        await typewriterRef.current.downloadFlattenedPdf();
+        return;
+      }
 
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const form = pdfDoc.getForm();
@@ -163,6 +176,12 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
     }
 
     function reset() {
+      if (fields.length === 0) {
+        typewriterRef.current?.reset();
+        setError(null);
+        return;
+      }
+
       const resetValues: Record<string, FieldValue> = {};
       for (const meta of fields) {
         resetValues[meta.name] = meta.kind === "checkbox" ? false : "";
@@ -188,10 +207,12 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
       <div className={cn("space-y-3", className)}>
         <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-sm font-medium">Fill fields</p>
-            <p className="text-xs text-muted-foreground">This works even if your browser blocks embedded PDFs.</p>
+            <p className="text-sm font-medium">Fill form</p>
+            <p className="text-xs text-muted-foreground">
+              If the PDF has standard fields we’ll list them. Otherwise you can type directly on the PDF.
+            </p>
           </div>
-          <Button variant="outline" size="sm" onClick={reset} disabled={loading || fields.length === 0}>
+          <Button variant="outline" size="sm" onClick={reset} disabled={loading || !pdfBytes}>
             Reset
           </Button>
         </div>
@@ -207,9 +228,21 @@ export const UploadedPdfFiller = forwardRef<UploadedPdfFillerHandle, UploadedPdf
           <ScrollArea className="h-[48vh]">
             <div className="p-3 space-y-4">
               {loading ? (
-                <div className="text-sm text-muted-foreground">Loading fields…</div>
+                <div className="text-sm text-muted-foreground">Loading…</div>
               ) : fields.length === 0 ? (
-                <div className="text-sm text-muted-foreground">No fillable fields found.</div>
+                pdfBytes ? (
+                  <PdfTypewriterFiller
+                    ref={typewriterRef}
+                    pdfBytes={pdfBytes}
+                    fileName={safeFileName}
+                    onError={(msg) => {
+                      setError(msg);
+                      onError?.(msg);
+                    }}
+                  />
+                ) : (
+                  <div className="text-sm text-muted-foreground">No fillable fields found.</div>
+                )
               ) : (
                 fields.map((f) => (
                   <div key={f.name} className="space-y-2">

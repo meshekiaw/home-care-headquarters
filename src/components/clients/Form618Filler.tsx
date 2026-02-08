@@ -436,7 +436,10 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
           const pdfPage = await doc.getPage(currentPage);
           if (cancelled) return;
 
-          const baseViewport = pdfPage.getViewport({ scale: 1 });
+          // Get page rotation - the 618 form PDF is scanned upside-down, so we add 180 degrees
+          const pageRotation = (pdfPage.rotate || 0) + 180;
+          
+          const baseViewport = pdfPage.getViewport({ scale: 1, rotation: pageRotation });
           
           // Use containerWidth for initial reference, store it for stable zoom calculations
           const currentWidth = containerWidth || containerRef.current?.clientWidth || 400;
@@ -455,7 +458,7 @@ export const Form618Filler = forwardRef<Form618FillerHandle, Form618FillerProps>
           let renderScale = baseScale * zoomLevel;
           renderScale = Math.max(0.3, Math.min(4, renderScale));
 
-          const viewport = pdfPage.getViewport({ scale: renderScale });
+          const viewport = pdfPage.getViewport({ scale: renderScale, rotation: pageRotation });
           const canvas = canvasRef.current;
           const ctx = canvas.getContext("2d");
           if (!ctx) return;

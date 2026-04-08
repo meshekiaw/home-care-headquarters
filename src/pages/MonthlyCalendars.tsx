@@ -535,19 +535,27 @@ export default function MonthlyCalendars() {
 
             {/* Summary footer */}
             <div className="mt-3 text-sm bg-muted/50 rounded-md px-3 py-2 space-y-1">
-              {isARChoices ? (
-                <>
-                  <p className="text-muted-foreground">
-                    <strong className="text-rose-600">Personal Care:</strong> {personalCareHours} hrs distributed exactly across {weekdays.length} weekdays
-                  </p>
-                  <p className="text-muted-foreground">
-                    <strong className="text-blue-600">Attendant Care:</strong> {attendantCareHours} hrs distributed exactly across {weekdays.length} weekdays
-                  </p>
-                  <p className="text-foreground font-medium">
-                    Combined Total: {totalHours} hrs/month
-                  </p>
-                </>
-              ) : (
+              {isARChoices ? (() => {
+                const acQ = Math.round(attendantCareHours * 4);
+                const maxQ = 32;
+                const acDays = acQ > 0 ? Math.min(Math.max(1, Math.ceil(acQ / maxQ)), weekdays.length) : 0;
+                const pcDays = weekdays.length - acDays;
+                return (
+                  <>
+                    <p className="text-muted-foreground">
+                      <strong className="text-rose-600">Personal Care:</strong> {personalCareHours} hrs across first {pcDays} weekdays (used first)
+                    </p>
+                    {acDays > 0 && (
+                      <p className="text-muted-foreground">
+                        <strong className="text-blue-600">Attendant Care:</strong> {attendantCareHours} hrs across last {acDays} weekday{acDays > 1 ? "s" : ""} (used last)
+                      </p>
+                    )}
+                    <p className="text-foreground font-medium">
+                      Combined Total: {totalHours} hrs/month
+                    </p>
+                  </>
+                );
+              })() : (
                 <p className="text-muted-foreground">
                   <strong>Total:</strong> {totalHours} hours distributed exactly across {weekdays.length} weekdays.
                 </p>

@@ -1377,6 +1377,107 @@ export type Database = {
           },
         ]
       }
+      monthly_calendar_assignments: {
+        Row: {
+          attendant_care_hours: number
+          caregiver_id: string
+          client_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_archoices: boolean
+          personal_care_hours: number
+          standard_hours: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendant_care_hours?: number
+          caregiver_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_archoices?: boolean
+          personal_care_hours?: number
+          standard_hours?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendant_care_hours?: number
+          caregiver_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_archoices?: boolean
+          personal_care_hours?: number
+          standard_hours?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_calendar_assignments_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_calendar_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_calendars: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          generated_at: string
+          id: string
+          month: number
+          schedule_data: Json
+          total_hours: number
+          user_id: string
+          year: number
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          generated_at?: string
+          id?: string
+          month: number
+          schedule_data?: Json
+          total_hours?: number
+          user_id: string
+          year: number
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          generated_at?: string
+          id?: string
+          month?: number
+          schedule_data?: Json
+          total_hours?: number
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_calendars_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_calendar_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           assessment_expiry_alerts: boolean

@@ -13,8 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping, Download } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping, Download, Save, Trash2, Power, Eye } from "lucide-react";
 import { generateMonthlyCalendarPdf } from "@/utils/monthlyCalendarPdf";
+import { useCalendarAssignments, useGeneratedCalendars } from "@/hooks/useCalendarAssignments";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useCaregivers } from "@/hooks/useCaregivers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +69,15 @@ export default function MonthlyCalendars() {
   const [attendantCareHours, setAttendantCareHours] = useState<number>(4);
   const [isCustomAC, setIsCustomAC] = useState(false);
   const [standardHours, setStandardHours] = useState<number>(64);
+  const [viewingCalendarId, setViewingCalendarId] = useState<string | null>(null);
+
+  const {
+    assignments,
+    saveAssignment,
+    deleteAssignment,
+    toggleAssignment,
+  } = useCalendarAssignments();
+  const { data: generatedCalendars = [] } = useGeneratedCalendars();
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients", user?.id],
@@ -627,6 +646,205 @@ export default function MonthlyCalendars() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Save Assignment Button */}
+        {selectedClientId && selectedCaregiverId && (
+          <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="font-medium">Save this calendar assignment</p>
+                <p className="text-sm text-muted-foreground">
+                  Next month's calendar will be auto-generated on the last day of each month
+                </p>
+              </div>
+              <Button
+                className="gap-2"
+                onClick={() =>
+                  saveAssignment.mutate({
+                    client_id: selectedClientId,
+                    caregiver_id: selectedCaregiverId,
+                    is_archoices: isARChoices,
+                    personal_care_hours: personalCareHours,
+                    attendant_care_hours: attendantCareHours,
+                    standard_hours: standardHours,
+                  })
+                }
+                disabled={saveAssignment.isPending}
+              >
+                <Save className="h-4 w-4" />
+                {saveAssignment.isPending ? "Saving..." : "Save & Activate"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Active Assignments */}
+        {assignments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Active Calendar Assignments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Caregiver</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Hours</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assignments.map((a) => {
+                    const client = clients.find((c) => c.id === a.client_id);
+                    const caregiver = caregivers.find((c) => c.id === a.caregiver_id);
+                    return (
+                      <TableRow key={a.id}>
+                        <TableCell>
+                          {client
+                            ? `${client.first_name} ${client.last_name}`
+                            : "Unknown"}
+                        </TableCell>
+                        <TableCell>
+                          {caregiver
+                            ? `${caregiver.first_name} ${caregiver.last_name}`
+                            : "Unknown"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={a.is_archoices ? "default" : "secondary"}>
+                            {a.is_archoices ? "ARChoices" : "Standard"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {a.is_archoices
+                            ? `PC: ${a.personal_care_hours} / AC: ${a.attendant_care_hours}`
+                            : `${a.standard_hours} hrs`}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={a.is_active ? "default" : "outline"}>
+                            {a.is_active ? "Active" : "Paused"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedClientId(a.client_id);
+                              setSelectedCaregiverId(a.caregiver_id);
+                              setIsARChoices(a.is_archoices);
+                              setPersonalCareHours(Number(a.personal_care_hours));
+                              setAttendantCareHours(Number(a.attendant_care_hours));
+                              setStandardHours(Number(a.standard_hours));
+                            }}
+                            title="Load into editor"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              toggleAssignment.mutate({
+                                id: a.id,
+                                is_active: !a.is_active,
+                              })
+                            }
+                            title={a.is_active ? "Pause" : "Activate"}
+                          >
+                            <Power className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteAssignment.mutate(a.id)}
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Generated Calendars */}
+        {generatedCalendars.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Generated Calendars</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Month</TableHead>
+                    <TableHead>Assignment</TableHead>
+                    <TableHead>Total Hours</TableHead>
+                    <TableHead>Generated</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {generatedCalendars.map((cal) => {
+                    const assignment = assignments.find((a) => a.id === cal.assignment_id);
+                    const client = assignment
+                      ? clients.find((c) => c.id === assignment.client_id)
+                      : null;
+                    const caregiver = assignment
+                      ? caregivers.find((c) => c.id === assignment.caregiver_id)
+                      : null;
+                    const monthName = new Date(cal.year, cal.month - 1).toLocaleString("default", {
+                      month: "long",
+                      year: "numeric",
+                    });
+                    return (
+                      <TableRow key={cal.id}>
+                        <TableCell className="font-medium">{monthName}</TableCell>
+                        <TableCell>
+                          {client && caregiver
+                            ? `${client.first_name} ${client.last_name} → ${caregiver.first_name} ${caregiver.last_name}`
+                            : "Unknown"}
+                        </TableCell>
+                        <TableCell>{cal.total_hours} hrs</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {new Date(cal.generated_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => {
+                              if (assignment) {
+                                setSelectedClientId(assignment.client_id);
+                                setSelectedCaregiverId(assignment.caregiver_id);
+                                setIsARChoices(assignment.is_archoices);
+                                setPersonalCareHours(Number(assignment.personal_care_hours));
+                                setAttendantCareHours(Number(assignment.attendant_care_hours));
+                                setStandardHours(Number(assignment.standard_hours));
+                                setCurrentMonth(new Date(cal.year, cal.month - 1));
+                              }
+                            }}
+                          >
+                            <Eye className="h-3 w-3" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );

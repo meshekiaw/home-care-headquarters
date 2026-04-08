@@ -55,7 +55,7 @@ export default function MonthlyCalendars() {
   const [selectedCaregiverId, setSelectedCaregiverId] = useState<string>("");
   const [isARChoices, setIsARChoices] = useState(true);
   const [personalCareHours, setPersonalCareHours] = useState<number>(64);
-  const [attendantCareHours, setAttendantCareHours] = useState<number>(16);
+  const [attendantCareHours, setAttendantCareHours] = useState<number>(4);
   const [standardHours, setStandardHours] = useState<number>(64);
 
   const { data: clients = [] } = useQuery({
@@ -83,23 +83,77 @@ export default function MonthlyCalendars() {
     );
   }, [monthStart.getTime(), monthEnd.getTime()]);
 
-  // ARChoices: distribute Personal Care first, then Attendant Care fills remaining days
+  // ARChoices: PC fills weekdays from the START, AC fills remaining weekdays at the END
   const dailySchedule = useMemo(() => {
     const map = new Map<string, { pc: number; ac: number }>();
     if (weekdays.length === 0) return map;
 
     if (isARChoices) {
-      // Personal Care: distributed across ALL weekdays (used first)
+      // Step 1: Distribute PC hours across as many days as needed from the start
+      const pcQuarters = Math.round(personalCareHours * 4);
       const pcDaily = distributeQuarterHours(personalCareHours, weekdays.length);
-      // Attendant Care: distributed across ALL weekdays (used last / added after PC)
-      const acDaily = distributeQuarterHours(attendantCareHours, weekdays.length);
-
-      weekdays.forEach((day, idx) => {
-        map.set(format(day, "yyyy-MM-dd"), {
-          pc: pcDaily[idx],
-          ac: acDaily[idx],
+      
+      // Find how many full days PC covers — fill from day 0 forward
+      // We need to figure out how many days PC actually needs
+      // Distribute PC into first N days, then AC into remaining days
+      let pcRemaining = pcQuarters;
+      const pcPerDay: number[] = [];
+      
+      // Even distribution across all weekdays for PC, then trim AC days
+      // Better approach: figure out max daily PC, fill days until exhausted
+      // Use even split: PC across first N days where N = ceil(pcQuarters / maxDailyQuarters)
+      // Actually simplest: distribute PC evenly across ALL weekdays from start,
+      // then AC evenly across the LAST remaining days that have no PC
+      
+      // Distribute PC into first pcDayCount days
+      // pcDayCount = number of days needed if we distribute evenly
+      // We want PC to use as many days as needed from the start
+      const pcDailyEven = distributeQuarterHours(personalCareHours, weekdays.length);
+      
+      // All weekdays get PC hours (distributed from start)
+      // AC hours go on the LAST acDayCount days (no PC on those days)
+      // So we need to split: first (weekdays.length - acDayCount) days = PC only
+      // last acDayCount days = AC only
+      
+      // How many days does AC need?
+      const acQuarters = Math.round(attendantCareHours * 4);
+      
+      if (acQuarters === 0) {
+        // No AC, all days get PC
+        const pcDist = distributeQuarterHours(personalCareHours, weekdays.length);
+        weekdays.forEach((day, idx) => {
+          map.set(format(day, "yyyy-MM-dd"), { pc: pcDist[idx], ac: 0 });
         });
-      });
+      } else {
+        // Figure out how many days AC needs at the end
+        // Distribute AC across acDayCount days from the end
+        // PC gets the first (total - acDayCount) days
+        // We need to find acDayCount such that AC hours fit reasonably
+        // Let's compute: distribute AC evenly, find minimum days needed
+        // Start with fewest days possible and expand if daily AC > reasonable max
+        
+        // Simple approach: distribute AC across enough end-days so no day exceeds ~8 hrs
+        // But user just wants even distribution, so let's compute:
+        // acDayCount where each day gets roughly attendantCareHours/acDayCount
+        // We'll distribute across ceil(acQuarters / 32) days minimum (max 8 hrs/day)
+        // but at least 1 day
+        const maxQuartersPerDay = 32; // 8 hours max per day
+        const minAcDays = Math.max(1, Math.ceil(acQuarters / maxQuartersPerDay));
+        const acDayCount = Math.min(minAcDays, weekdays.length);
+        const pcDayCount = weekdays.length - acDayCount;
+        
+        if (pcDayCount > 0) {
+          const pcDist = distributeQuarterHours(personalCareHours, pcDayCount);
+          for (let i = 0; i < pcDayCount; i++) {
+            map.set(format(weekdays[i], "yyyy-MM-dd"), { pc: pcDist[i], ac: 0 });
+          }
+        }
+        
+        const acDist = distributeQuarterHours(attendantCareHours, acDayCount);
+        for (let i = 0; i < acDayCount; i++) {
+          map.set(format(weekdays[pcDayCount + i], "yyyy-MM-dd"), { pc: 0, ac: acDist[i] });
+        }
+      }
     } else {
       const daily = distributeQuarterHours(standardHours, weekdays.length);
       weekdays.forEach((day, idx) => {
@@ -234,15 +288,23 @@ export default function MonthlyCalendars() {
                     <HandHelping className="h-4 w-4 text-blue-500" />
                     Attendant Care Hours (used last)
                   </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={744}
-                    value={attendantCareHours}
-                    onChange={(e) => setAttendantCareHours(Number(e.target.value) || 0)}
-                  />
+                  <Select
+                    value={String(attendantCareHours)}
+                    onValueChange={(v) => setAttendantCareHours(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[4, 10, 12, 18, 21, 22, 24].map((h) => (
+                        <SelectItem key={h} value={String(h)}>
+                          {h} hours
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-muted-foreground">
-                    Typically 4–22 hours; distributed after personal care
+                    Distributed across the last weekdays after PC hours are used
                   </p>
                 </div>
               </div>
@@ -473,19 +535,27 @@ export default function MonthlyCalendars() {
 
             {/* Summary footer */}
             <div className="mt-3 text-sm bg-muted/50 rounded-md px-3 py-2 space-y-1">
-              {isARChoices ? (
-                <>
-                  <p className="text-muted-foreground">
-                    <strong className="text-rose-600">Personal Care:</strong> {personalCareHours} hrs distributed exactly across {weekdays.length} weekdays
-                  </p>
-                  <p className="text-muted-foreground">
-                    <strong className="text-blue-600">Attendant Care:</strong> {attendantCareHours} hrs distributed exactly across {weekdays.length} weekdays
-                  </p>
-                  <p className="text-foreground font-medium">
-                    Combined Total: {totalHours} hrs/month
-                  </p>
-                </>
-              ) : (
+              {isARChoices ? (() => {
+                const acQ = Math.round(attendantCareHours * 4);
+                const maxQ = 32;
+                const acDays = acQ > 0 ? Math.min(Math.max(1, Math.ceil(acQ / maxQ)), weekdays.length) : 0;
+                const pcDays = weekdays.length - acDays;
+                return (
+                  <>
+                    <p className="text-muted-foreground">
+                      <strong className="text-rose-600">Personal Care:</strong> {personalCareHours} hrs across first {pcDays} weekdays (used first)
+                    </p>
+                    {acDays > 0 && (
+                      <p className="text-muted-foreground">
+                        <strong className="text-blue-600">Attendant Care:</strong> {attendantCareHours} hrs across last {acDays} weekday{acDays > 1 ? "s" : ""} (used last)
+                      </p>
+                    )}
+                    <p className="text-foreground font-medium">
+                      Combined Total: {totalHours} hrs/month
+                    </p>
+                  </>
+                );
+              })() : (
                 <p className="text-muted-foreground">
                   <strong>Total:</strong> {totalHours} hours distributed exactly across {weekdays.length} weekdays.
                 </p>

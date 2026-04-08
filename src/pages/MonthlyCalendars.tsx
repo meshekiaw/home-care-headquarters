@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping, Download } from "lucide-react";
+import { generateMonthlyCalendarPdf } from "@/utils/monthlyCalendarPdf";
 import { useCaregivers } from "@/hooks/useCaregivers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

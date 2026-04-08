@@ -17,6 +17,7 @@ import CredentialsTab from "@/components/caregivers/CredentialsTab";
 import AvailabilityTab from "@/components/caregivers/AvailabilityTab";
 import SkillsTab from "@/components/caregivers/SkillsTab";
 import CaregiverOverviewTab from "@/components/caregivers/CaregiverOverviewTab";
+import UpcomingCalendarTab from "@/components/caregivers/UpcomingCalendarTab";
 import {
   ArrowLeft,
   UserCheck,
@@ -529,6 +530,15 @@ export default function CaregiverProfile() {
               onUpdate={updateSkill}
               onDelete={deleteSkill}
             />
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-6">
+            {caregiver && id && (
+              <UpcomingCalendarTab
+                caregiverId={id}
+                caregiverName={`${caregiver.first_name} ${caregiver.last_name}`}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>

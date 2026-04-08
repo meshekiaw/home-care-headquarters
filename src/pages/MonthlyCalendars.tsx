@@ -681,8 +681,18 @@ export default function MonthlyCalendars() {
         {/* Active Assignments */}
         {assignments.length > 0 && (
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Active Calendar Assignments</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => generateNow.mutate()}
+                disabled={generateNow.isPending}
+              >
+                <Play className="h-3 w-3" />
+                {generateNow.isPending ? "Generating..." : "Generate Next Month Now"}
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>

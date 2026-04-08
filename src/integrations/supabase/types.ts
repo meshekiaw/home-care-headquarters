@@ -1029,6 +1029,260 @@ export type Database = {
           },
         ]
       }
+      lms_assignments: {
+        Row: {
+          assigned_by: string | null
+          attempts: number
+          caregiver_id: string
+          completed_at: string | null
+          course_id: string
+          created_at: string
+          due_date: string | null
+          id: string
+          score: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          attempts?: number
+          caregiver_id: string
+          completed_at?: string | null
+          course_id: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          attempts?: number
+          caregiver_id?: string
+          completed_at?: string | null
+          course_id?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_assignments_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_assignments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "lms_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_courses: {
+        Row: {
+          category: string | null
+          content_body: string | null
+          content_type: string
+          content_url: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean
+          is_required: boolean
+          passing_score: number | null
+          required_for_role: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content_body?: string | null
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          passing_score?: number | null
+          required_for_role?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content_body?: string | null
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          passing_score?: number | null
+          required_for_role?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lms_policies: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          description: string | null
+          effective_date: string
+          id: string
+          is_active: boolean
+          requires_acknowledgment: boolean
+          title: string
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          description?: string | null
+          effective_date?: string
+          id?: string
+          is_active?: boolean
+          requires_acknowledgment?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          description?: string | null
+          effective_date?: string
+          id?: string
+          is_active?: boolean
+          requires_acknowledgment?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      lms_policy_acknowledgments: {
+        Row: {
+          acknowledged_at: string
+          caregiver_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          notes: string | null
+          policy_id: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          caregiver_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          policy_id: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          caregiver_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          policy_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_policy_acknowledgments_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_policy_acknowledgments_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "lms_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_quiz_questions: {
+        Row: {
+          correct_answer: string
+          course_id: string
+          created_at: string
+          id: string
+          options: Json
+          points: number
+          question_text: string
+          question_type: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          correct_answer: string
+          course_id: string
+          created_at?: string
+          id?: string
+          options?: Json
+          points?: number
+          question_text: string
+          question_type?: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          correct_answer?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          options?: Json
+          points?: number
+          question_text?: string
+          question_type?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_quiz_questions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "lms_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_history: {
         Row: {
           client_id: string

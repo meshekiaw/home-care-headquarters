@@ -295,11 +295,15 @@ export default function MonthlyCalendars() {
                         {format(day, "d")}
                       </span>
                     </div>
-                    {isWorkday && (
+                    {isWorkday && (() => {
+                      const dayKey = format(day, "yyyy-MM-dd");
+                      const dayHours = dailyHoursMap.get(dayKey) || 0;
+                      return (
                       <div className="space-y-1">
                         <div className="rounded-md bg-primary/10 border border-primary/20 px-2 py-1">
                           <p className="text-xs font-semibold text-primary">
-                            {hoursPerDay} hrs
+                            {dayHours} hrs
+                          </p>
                           </p>
                           {selectedClient && (
                             <p className="text-[10px] text-muted-foreground truncate">
@@ -308,7 +312,8 @@ export default function MonthlyCalendars() {
                           )}
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
                     {weekend && inMonth && (
                       <p className="text-[10px] text-muted-foreground/50 italic">
                         Off
@@ -319,14 +324,10 @@ export default function MonthlyCalendars() {
               })}
             </div>
 
-            {/* Remainder notice */}
-            {remainderHours !== 0 && (
-              <div className="mt-3 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
-                <strong>Note:</strong> {Math.abs(remainderHours)} hour(s){" "}
-                {remainderHours > 0 ? "remaining" : "over"} after even distribution.
-                Adjust as needed.
-              </div>
-            )}
+            {/* Exact distribution confirmation */}
+            <div className="mt-3 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+              <strong>Total:</strong> {totalHours} hours distributed exactly across {weekdays.length} weekdays.
+            </div>
           </CardContent>
         </Card>
       </div>

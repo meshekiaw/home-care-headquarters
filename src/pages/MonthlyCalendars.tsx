@@ -463,12 +463,40 @@ export default function MonthlyCalendars() {
                 <Badge variant="secondary" className="ml-2 text-xs">ARChoices</Badge>
               )}
             </CardTitle>
-            {selectedCaregiver && (
-              <Badge variant="outline" className="gap-1">
-                <Users className="h-3 w-3" />
-                {selectedCaregiver.first_name} {selectedCaregiver.last_name}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {selectedCaregiver && (
+                <Badge variant="outline" className="gap-1">
+                  <Users className="h-3 w-3" />
+                  {selectedCaregiver.first_name} {selectedCaregiver.last_name}
+                </Badge>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() =>
+                  generateMonthlyCalendarPdf({
+                    currentMonth,
+                    isARChoices,
+                    personalCareHours,
+                    attendantCareHours,
+                    standardHours,
+                    totalHours,
+                    weekdayCount: weekdays.length,
+                    clientName: selectedClient
+                      ? `${selectedClient.first_name} ${selectedClient.last_name}`
+                      : undefined,
+                    caregiverName: selectedCaregiver
+                      ? `${selectedCaregiver.first_name} ${selectedCaregiver.last_name}`
+                      : undefined,
+                    dailySchedule,
+                  })
+                }
+              >
+                <Download className="h-4 w-4" />
+                Export PDF
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {/* Weekday headers */}

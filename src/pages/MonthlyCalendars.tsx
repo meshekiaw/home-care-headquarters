@@ -66,16 +66,26 @@ export default function MonthlyCalendars() {
     );
   }, [monthStart.getTime(), monthEnd.getTime()]);
 
-  const hoursPerDay = useMemo(() => {
-    if (weekdays.length === 0) return 0;
-    const raw = totalHours / weekdays.length;
-    return Math.round(raw * 4) / 4; // round to nearest quarter-hour
-  }, [totalHours, weekdays.length]);
+  // Distribute hours exactly: no rounding, total always equals totalHours
+  const dailyHoursMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (weekdays.length === 0) return map;
+    const baseHours = Math.floor((totalHours * 100) / weekdays.length) / 100;
+    const totalBase = Math.round(baseHours * weekdays.length * 100) / 100;
+    const remainder = Math.round((totalHours - totalBase) * 100) / 100;
+    // Convert remainder to cents to distribute 1 cent at a time
+    const extraCents = Math.round(remainder * 100);
+    weekdays.forEach((day, idx) => {
+      const extra = idx < extraCents ? 0.01 : 0;
+      const hrs = Math.round((baseHours + extra) * 100) / 100;
+      map.set(format(day, "yyyy-MM-dd"), hrs);
+    });
+    return map;
+  }, [totalHours, weekdays]);
 
-  const remainderHours = useMemo(() => {
-    const distributed = hoursPerDay * weekdays.length;
-    return Math.round((totalHours - distributed) * 100) / 100;
-  }, [totalHours, hoursPerDay, weekdays.length]);
+  const baseHoursPerDay = weekdays.length > 0
+    ? Math.floor((totalHours * 100) / weekdays.length) / 100
+    : 0;
 
   // Build calendar grid (6 weeks max)
   const calendarDays = useMemo(() => {
@@ -206,7 +216,7 @@ export default function MonthlyCalendars() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Hours/Day</p>
-                <p className="text-xl font-bold">{hoursPerDay}</p>
+                <p className="text-xl font-bold">~{baseHoursPerDay}</p>
               </div>
             </CardContent>
           </Card>
@@ -285,11 +295,14 @@ export default function MonthlyCalendars() {
                         {format(day, "d")}
                       </span>
                     </div>
-                    {isWorkday && (
+                    {isWorkday && (() => {
+                      const dayKey = format(day, "yyyy-MM-dd");
+                      const dayHours = dailyHoursMap.get(dayKey) || 0;
+                      return (
                       <div className="space-y-1">
                         <div className="rounded-md bg-primary/10 border border-primary/20 px-2 py-1">
                           <p className="text-xs font-semibold text-primary">
-                            {hoursPerDay} hrs
+                            {dayHours} hrs
                           </p>
                           {selectedClient && (
                             <p className="text-[10px] text-muted-foreground truncate">
@@ -298,7 +311,8 @@ export default function MonthlyCalendars() {
                           )}
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
                     {weekend && inMonth && (
                       <p className="text-[10px] text-muted-foreground/50 italic">
                         Off
@@ -309,14 +323,10 @@ export default function MonthlyCalendars() {
               })}
             </div>
 
-            {/* Remainder notice */}
-            {remainderHours !== 0 && (
-              <div className="mt-3 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
-                <strong>Note:</strong> {Math.abs(remainderHours)} hour(s){" "}
-                {remainderHours > 0 ? "remaining" : "over"} after even distribution.
-                Adjust as needed.
-              </div>
-            )}
+            {/* Exact distribution confirmation */}
+            <div className="mt-3 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+              <strong>Total:</strong> {totalHours} hours distributed exactly across {weekdays.length} weekdays.
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -69,6 +69,15 @@ export default function MonthlyCalendars() {
   const [attendantCareHours, setAttendantCareHours] = useState<number>(4);
   const [isCustomAC, setIsCustomAC] = useState(false);
   const [standardHours, setStandardHours] = useState<number>(64);
+  const [viewingCalendarId, setViewingCalendarId] = useState<string | null>(null);
+
+  const {
+    assignments,
+    saveAssignment,
+    deleteAssignment,
+    toggleAssignment,
+  } = useCalendarAssignments();
+  const { data: generatedCalendars = [] } = useGeneratedCalendars();
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients", user?.id],

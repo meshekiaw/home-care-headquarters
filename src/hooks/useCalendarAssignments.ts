@@ -163,7 +163,7 @@ export function useGeneratedCalendars(assignmentId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as GeneratedCalendar[];
+      return data as unknown as GeneratedCalendar[];
     },
     enabled: !!user,
   });

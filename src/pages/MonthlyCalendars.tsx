@@ -76,6 +76,7 @@ export default function MonthlyCalendars() {
     saveAssignment,
     deleteAssignment,
     toggleAssignment,
+    generateNow,
   } = useCalendarAssignments();
   const { data: generatedCalendars = [] } = useGeneratedCalendars();
 

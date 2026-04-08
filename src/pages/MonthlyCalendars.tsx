@@ -288,15 +288,23 @@ export default function MonthlyCalendars() {
                     <HandHelping className="h-4 w-4 text-blue-500" />
                     Attendant Care Hours (used last)
                   </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={744}
-                    value={attendantCareHours}
-                    onChange={(e) => setAttendantCareHours(Number(e.target.value) || 0)}
-                  />
+                  <Select
+                    value={String(attendantCareHours)}
+                    onValueChange={(v) => setAttendantCareHours(Number(v))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[4, 10, 12, 18, 21, 22, 24].map((h) => (
+                        <SelectItem key={h} value={String(h)}>
+                          {h} hours
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-muted-foreground">
-                    Typically 4–22 hours; distributed after personal care
+                    Distributed across the last weekdays after PC hours are used
                   </p>
                 </div>
               </div>

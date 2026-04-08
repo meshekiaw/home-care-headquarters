@@ -18,6 +18,8 @@ import {
   ChevronLeft,
   Bell,
   Stethoscope,
+  GraduationCap,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +37,8 @@ const navItems = [
   { icon: MessageSquare, label: "Communications", path: "/communications" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
   { icon: FileCheck, label: "Compliance", path: "/compliance" },
+  { icon: GraduationCap, label: "LMS Training", path: "/lms/training" },
+  { icon: BookOpen, label: "LMS Policies", path: "/lms/policies" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

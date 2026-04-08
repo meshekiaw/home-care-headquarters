@@ -289,21 +289,55 @@ export default function MonthlyCalendars() {
                     <HandHelping className="h-4 w-4 text-blue-500" />
                     Attendant Care Hours (used last)
                   </Label>
-                  <Select
-                    value={String(attendantCareHours)}
-                    onValueChange={(v) => setAttendantCareHours(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[4, 10, 12, 18, 21, 22, 24].map((h) => (
-                        <SelectItem key={h} value={String(h)}>
-                          {h} hours
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {isCustomAC ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={0.25}
+                        max={744}
+                        step={0.25}
+                        value={attendantCareHours}
+                        onChange={(e) => setAttendantCareHours(Number(e.target.value) || 0)}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIsCustomAC(false);
+                          const presets = [4, 10, 12, 18, 21, 22, 24];
+                          if (!presets.includes(attendantCareHours)) {
+                            setAttendantCareHours(4);
+                          }
+                        }}
+                      >
+                        Presets
+                      </Button>
+                    </div>
+                  ) : (
+                    <Select
+                      value={String(attendantCareHours)}
+                      onValueChange={(v) => {
+                        if (v === "custom") {
+                          setIsCustomAC(true);
+                        } else {
+                          setAttendantCareHours(Number(v));
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[4, 10, 12, 18, 21, 22, 24].map((h) => (
+                          <SelectItem key={h} value={String(h)}>
+                            {h} hours
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="custom">Custom...</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Distributed across the last weekdays after PC hours are used
                   </p>

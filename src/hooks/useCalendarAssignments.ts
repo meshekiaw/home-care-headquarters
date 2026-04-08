@@ -134,12 +134,28 @@ export function useCalendarAssignments() {
     },
   });
 
+  const generateNow = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("generate-monthly-calendars");
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["generated-calendars"] });
+      toast.success(data?.message || "Calendars generated successfully!");
+    },
+    onError: (err) => {
+      toast.error("Failed to generate calendars: " + (err as Error).message);
+    },
+  });
+
   return {
     assignments,
     loadingAssignments,
     saveAssignment,
     deleteAssignment,
     toggleAssignment,
+    generateNow,
   };
 }
 

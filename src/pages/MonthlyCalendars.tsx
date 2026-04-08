@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping, Download, Save, Trash2, Power, Eye } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping, Download, Save, Trash2, Power, Eye, Play } from "lucide-react";
 import { generateMonthlyCalendarPdf } from "@/utils/monthlyCalendarPdf";
 import { useCalendarAssignments, useGeneratedCalendars } from "@/hooks/useCalendarAssignments";
 
@@ -76,6 +76,7 @@ export default function MonthlyCalendars() {
     saveAssignment,
     deleteAssignment,
     toggleAssignment,
+    generateNow,
   } = useCalendarAssignments();
   const { data: generatedCalendars = [] } = useGeneratedCalendars();
 
@@ -681,8 +682,18 @@ export default function MonthlyCalendars() {
         {/* Active Assignments */}
         {assignments.length > 0 && (
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Active Calendar Assignments</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => generateNow.mutate()}
+                disabled={generateNow.isPending}
+              >
+                <Play className="h-3 w-3" />
+                {generateNow.isPending ? "Generating..." : "Generate Next Month Now"}
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>

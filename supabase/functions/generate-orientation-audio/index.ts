@@ -1,4 +1,7 @@
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 

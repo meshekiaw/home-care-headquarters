@@ -26,6 +26,8 @@ import Notifications from "./pages/Notifications";
 import LmsTraining from "./pages/LmsTraining";
 import LmsPolicies from "./pages/LmsPolicies";
 import MonthlyCalendars from "./pages/MonthlyCalendars";
+import OrientationManagement from "./pages/OrientationManagement";
+import OrientationViewer from "./pages/OrientationViewer";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +62,8 @@ const App = () => (
             <Route path="/lms/training" element={<ProtectedRoute><LmsTraining /></ProtectedRoute>} />
             <Route path="/lms/policies" element={<ProtectedRoute><LmsPolicies /></ProtectedRoute>} />
             <Route path="/monthly-calendars" element={<ProtectedRoute><MonthlyCalendars /></ProtectedRoute>} />
+            <Route path="/lms/orientation" element={<ProtectedRoute><OrientationManagement /></ProtectedRoute>} />
+            <Route path="/lms/orientation/:id" element={<ProtectedRoute><OrientationViewer /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

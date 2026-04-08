@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
-  Search, Plus, Users, TrendingUp, BarChart3,
+  Search, Plus, Users, TrendingUp, BarChart3, FileText,
 } from "lucide-react";
 import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
@@ -17,6 +18,7 @@ import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
 
 export default function LmsTraining() {
+  const navigate = useNavigate();
   const { courses, loading: coursesLoading } = useLmsCourses();
   const { assignments, loading: assignmentsLoading } = useLmsAssignments();
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,6 +174,22 @@ export default function LmsTraining() {
             </CardContent>
           </Card>
         )}
+
+        {/* Orientation Card */}
+        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/lms/orientation")}>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10">
+                <FileText className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold">New Hire Orientation</h3>
+                <p className="text-sm text-muted-foreground">Interactive orientation with voiceover, quizzes, and completion tracking</p>
+              </div>
+              <Button variant="outline" size="sm">Manage →</Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs */}
         <Tabs defaultValue="assignments">

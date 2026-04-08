@@ -11,3 +11,6 @@ project_id = "iljmedelpqwzwyecvksa"
  
  [functions.resend-notification]
  verify_jwt = false
+
+ [functions.generate-orientation-audio]
+ verify_jwt = false

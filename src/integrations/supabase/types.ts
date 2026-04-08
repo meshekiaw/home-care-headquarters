@@ -1715,6 +1715,128 @@ export type Database = {
         }
         Relationships: []
       }
+      orientation_modules: {
+        Row: {
+          audio_url: string | null
+          content: string
+          created_at: string
+          id: string
+          section_number: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          section_number: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          section_number?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orientation_progress: {
+        Row: {
+          caregiver_id: string
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          current_section: number
+          id: string
+          quiz_scores: Json
+          sections_completed: Json
+          signature_data: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caregiver_id: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          current_section?: number
+          id?: string
+          quiz_scores?: Json
+          sections_completed?: Json
+          signature_data?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caregiver_id?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          current_section?: number
+          id?: string
+          quiz_scores?: Json
+          sections_completed?: Json
+          signature_data?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orientation_progress_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orientation_quizzes: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          id: string
+          options: Json
+          points: number
+          question_text: string
+          section_number: number
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          id?: string
+          options?: Json
+          points?: number
+          question_text: string
+          section_number: number
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          id?: string
+          options?: Json
+          points?: number
+          question_text?: string
+          section_number?: number
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       state_regulations: {
         Row: {
           category: string | null

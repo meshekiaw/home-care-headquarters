@@ -304,7 +304,6 @@ export default function MonthlyCalendars() {
                           <p className="text-xs font-semibold text-primary">
                             {dayHours} hrs
                           </p>
-                          </p>
                           {selectedClient && (
                             <p className="text-[10px] text-muted-foreground truncate">
                               {selectedClient.first_name} {selectedClient.last_name}

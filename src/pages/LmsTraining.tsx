@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
-  Search, Plus, Users, TrendingUp, BarChart3,
+  Search, Plus, Users, TrendingUp, BarChart3, FileText,
 } from "lucide-react";
 import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
@@ -17,6 +18,7 @@ import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
 
 export default function LmsTraining() {
+  const navigate = useNavigate();
   const { courses, loading: coursesLoading } = useLmsCourses();
   const { assignments, loading: assignmentsLoading } = useLmsAssignments();
   const [searchQuery, setSearchQuery] = useState("");

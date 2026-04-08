@@ -17,6 +17,7 @@ import CredentialsTab from "@/components/caregivers/CredentialsTab";
 import AvailabilityTab from "@/components/caregivers/AvailabilityTab";
 import SkillsTab from "@/components/caregivers/SkillsTab";
 import CaregiverOverviewTab from "@/components/caregivers/CaregiverOverviewTab";
+import UpcomingCalendarTab from "@/components/caregivers/UpcomingCalendarTab";
 import {
   ArrowLeft,
   UserCheck,
@@ -247,7 +248,7 @@ export default function CaregiverProfile() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="credentials">
               Credentials
@@ -266,6 +267,7 @@ export default function CaregiverProfile() {
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -529,6 +531,15 @@ export default function CaregiverProfile() {
               onUpdate={updateSkill}
               onDelete={deleteSkill}
             />
+          </TabsContent>
+
+          <TabsContent value="calendar" className="mt-6">
+            {caregiver && id && (
+              <UpcomingCalendarTab
+                caregiverId={id}
+                caregiverName={`${caregiver.first_name} ${caregiver.last_name}`}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>

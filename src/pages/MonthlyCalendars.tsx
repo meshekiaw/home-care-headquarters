@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, User, Users, Heart, HandHelping } from "lucide-react";
 import { useCaregivers } from "@/hooks/useCaregivers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +23,6 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  getDay,
   addMonths,
   subMonths,
   isWeekend,
@@ -33,13 +33,30 @@ import {
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/**
+ * Distribute totalHours across days in quarter-hour (.25) increments,
+ * summing to exactly totalHours. Extra quarters go to earlier days.
+ */
+function distributeQuarterHours(totalHours: number, numDays: number): number[] {
+  if (numDays === 0) return [];
+  const totalQuarters = Math.round(totalHours * 4);
+  const baseQ = Math.floor(totalQuarters / numDays);
+  const extraDays = totalQuarters % numDays;
+  return Array.from({ length: numDays }, (_, i) =>
+    (baseQ + (i < extraDays ? 1 : 0)) / 4
+  );
+}
+
 export default function MonthlyCalendars() {
   const { user } = useAuth();
   const { caregivers } = useCaregivers();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [selectedCaregiverId, setSelectedCaregiverId] = useState<string>("");
-  const [totalHours, setTotalHours] = useState<number>(64);
+  const [isARChoices, setIsARChoices] = useState(true);
+  const [personalCareHours, setPersonalCareHours] = useState<number>(64);
+  const [attendantCareHours, setAttendantCareHours] = useState<number>(16);
+  const [standardHours, setStandardHours] = useState<number>(64);
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients", user?.id],
@@ -66,26 +83,36 @@ export default function MonthlyCalendars() {
     );
   }, [monthStart.getTime(), monthEnd.getTime()]);
 
-  // Distribute hours in quarter-hour increments (.25) that sum to exactly totalHours
-  const dailyHoursMap = useMemo(() => {
-    const map = new Map<string, number>();
+  // ARChoices: distribute Personal Care first, then Attendant Care fills remaining days
+  const dailySchedule = useMemo(() => {
+    const map = new Map<string, { pc: number; ac: number }>();
     if (weekdays.length === 0) return map;
-    // Convert to quarter-hour blocks
-    const totalQuarters = Math.round(totalHours * 4);
-    const baseQuarters = Math.floor(totalQuarters / weekdays.length);
-    const extraDays = totalQuarters % weekdays.length;
-    weekdays.forEach((day, idx) => {
-      const quarters = baseQuarters + (idx < extraDays ? 1 : 0);
-      map.set(format(day, "yyyy-MM-dd"), quarters / 4);
-    });
+
+    if (isARChoices) {
+      // Personal Care: distributed across ALL weekdays (used first)
+      const pcDaily = distributeQuarterHours(personalCareHours, weekdays.length);
+      // Attendant Care: distributed across ALL weekdays (used last / added after PC)
+      const acDaily = distributeQuarterHours(attendantCareHours, weekdays.length);
+
+      weekdays.forEach((day, idx) => {
+        map.set(format(day, "yyyy-MM-dd"), {
+          pc: pcDaily[idx],
+          ac: acDaily[idx],
+        });
+      });
+    } else {
+      const daily = distributeQuarterHours(standardHours, weekdays.length);
+      weekdays.forEach((day, idx) => {
+        map.set(format(day, "yyyy-MM-dd"), { pc: daily[idx], ac: 0 });
+      });
+    }
     return map;
-  }, [totalHours, weekdays]);
+  }, [isARChoices, personalCareHours, attendantCareHours, standardHours, weekdays]);
 
-  const baseHoursPerDay = weekdays.length > 0
-    ? Math.floor(Math.round(totalHours * 4) / weekdays.length) / 4
-    : 0;
+  const totalHours = isARChoices
+    ? personalCareHours + attendantCareHours
+    : standardHours;
 
-  // Build calendar grid (6 weeks max)
   const calendarDays = useMemo(() => {
     const gridStart = startOfWeek(monthStart);
     const gridEnd = endOfWeek(monthEnd);
@@ -110,7 +137,7 @@ export default function MonthlyCalendars() {
           <CardHeader>
             <CardTitle className="text-lg">Schedule Configuration</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label>Client</Label>
@@ -145,17 +172,6 @@ export default function MonthlyCalendars() {
               </div>
 
               <div className="space-y-2">
-                <Label>Total Monthly Hours</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  max={744}
-                  value={totalHours}
-                  onChange={(e) => setTotalHours(Number(e.target.value) || 0)}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label>Month</Label>
                 <div className="flex items-center gap-1">
                   <Button
@@ -179,20 +195,122 @@ export default function MonthlyCalendars() {
                   </Button>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>ARChoices Client</Label>
+                <div className="flex items-center gap-2 h-10">
+                  <Switch
+                    checked={isARChoices}
+                    onCheckedChange={setIsARChoices}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {isARChoices ? "Yes" : "No"}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* Hours configuration */}
+            {isARChoices ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Heart className="h-4 w-4 text-rose-500" />
+                    Personal Care Hours (used first)
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={744}
+                    value={personalCareHours}
+                    onChange={(e) => setPersonalCareHours(Number(e.target.value) || 0)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    These hours are distributed and used before attendant care
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <HandHelping className="h-4 w-4 text-blue-500" />
+                    Attendant Care Hours (used last)
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={744}
+                    value={attendantCareHours}
+                    onChange={(e) => setAttendantCareHours(Number(e.target.value) || 0)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Typically 4–22 hours; distributed after personal care
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                <div className="space-y-2">
+                  <Label>Total Monthly Hours</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={744}
+                    value={standardHours}
+                    onChange={(e) => setStandardHours(Number(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className={`grid gap-4 ${isARChoices ? "grid-cols-2 md:grid-cols-5" : "grid-cols-2 md:grid-cols-4"}`}>
+          {isARChoices ? (
+            <>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                    <Heart className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Personal Care</p>
+                    <p className="text-xl font-bold">{personalCareHours} hrs</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <HandHelping className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Attendant Care</p>
+                    <p className="text-xl font-bold">{attendantCareHours} hrs</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Hours</p>
+                  <p className="text-xl font-bold">{totalHours}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Clock className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Hours</p>
-                <p className="text-xl font-bold">{totalHours}</p>
+                <p className="text-sm text-muted-foreground">Combined Total</p>
+                <p className="text-xl font-bold">{totalHours} hrs</p>
               </div>
             </CardContent>
           </Card>
@@ -204,17 +322,6 @@ export default function MonthlyCalendars() {
               <div>
                 <p className="text-sm text-muted-foreground">Weekdays</p>
                 <p className="text-xl font-bold">{weekdays.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-accent/50 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Hours/Day</p>
-                <p className="text-xl font-bold">~{baseHoursPerDay}</p>
               </div>
             </CardContent>
           </Card>
@@ -235,11 +342,28 @@ export default function MonthlyCalendars() {
           </Card>
         </div>
 
+        {/* Legend for ARChoices */}
+        {isARChoices && (
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-rose-500/15 border border-rose-500/30" />
+              <span className="text-muted-foreground">Personal Care (used first)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-blue-500/15 border border-blue-500/30" />
+              <span className="text-muted-foreground">Attendant Care (used last)</span>
+            </div>
+          </div>
+        )}
+
         {/* Calendar grid */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg">
               {format(currentMonth, "MMMM yyyy")} Schedule
+              {isARChoices && (
+                <Badge variant="secondary" className="ml-2 text-xs">ARChoices</Badge>
+              )}
             </CardTitle>
             {selectedCaregiver && (
               <Badge variant="outline" className="gap-1">
@@ -267,12 +391,11 @@ export default function MonthlyCalendars() {
                 const inMonth = isSameMonth(day, currentMonth);
                 const weekend = isWeekend(day);
                 const isWorkday = inMonth && !weekend;
-                const dayNum = getDay(day);
 
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-[90px] p-2 transition-colors ${
+                    className={`min-h-[100px] p-1.5 transition-colors ${
                       !inMonth
                         ? "bg-muted/30"
                         : weekend
@@ -295,20 +418,47 @@ export default function MonthlyCalendars() {
                     </div>
                     {isWorkday && (() => {
                       const dayKey = format(day, "yyyy-MM-dd");
-                      const dayHours = dailyHoursMap.get(dayKey) || 0;
-                      return (
-                      <div className="space-y-1">
-                        <div className="rounded-md bg-primary/10 border border-primary/20 px-2 py-1">
-                          <p className="text-xs font-semibold text-primary">
-                            {dayHours} hrs
-                          </p>
-                          {selectedClient && (
-                            <p className="text-[10px] text-muted-foreground truncate">
-                              {selectedClient.first_name} {selectedClient.last_name}
+                      const schedule = dailySchedule.get(dayKey);
+                      if (!schedule) return null;
+                      const { pc, ac } = schedule;
+
+                      if (isARChoices) {
+                        return (
+                          <div className="space-y-0.5">
+                            {pc > 0 && (
+                              <div className="rounded bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5">
+                                <p className="text-[11px] font-semibold text-rose-600">
+                                  PC: {pc} hrs
+                                </p>
+                              </div>
+                            )}
+                            {ac > 0 && (
+                              <div className="rounded bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5">
+                                <p className="text-[11px] font-semibold text-blue-600">
+                                  AC: {ac} hrs
+                                </p>
+                              </div>
+                            )}
+                            <p className="text-[10px] text-muted-foreground font-medium">
+                              {pc + ac} hrs total
                             </p>
-                          )}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-1">
+                          <div className="rounded-md bg-primary/10 border border-primary/20 px-2 py-1">
+                            <p className="text-xs font-semibold text-primary">
+                              {pc} hrs
+                            </p>
+                            {selectedClient && (
+                              <p className="text-[10px] text-muted-foreground truncate">
+                                {selectedClient.first_name} {selectedClient.last_name}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
                       );
                     })()}
                     {weekend && inMonth && (
@@ -321,9 +471,25 @@ export default function MonthlyCalendars() {
               })}
             </div>
 
-            {/* Exact distribution confirmation */}
-            <div className="mt-3 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
-              <strong>Total:</strong> {totalHours} hours distributed exactly across {weekdays.length} weekdays.
+            {/* Summary footer */}
+            <div className="mt-3 text-sm bg-muted/50 rounded-md px-3 py-2 space-y-1">
+              {isARChoices ? (
+                <>
+                  <p className="text-muted-foreground">
+                    <strong className="text-rose-600">Personal Care:</strong> {personalCareHours} hrs distributed exactly across {weekdays.length} weekdays
+                  </p>
+                  <p className="text-muted-foreground">
+                    <strong className="text-blue-600">Attendant Care:</strong> {attendantCareHours} hrs distributed exactly across {weekdays.length} weekdays
+                  </p>
+                  <p className="text-foreground font-medium">
+                    Combined Total: {totalHours} hrs/month
+                  </p>
+                </>
+              ) : (
+                <p className="text-muted-foreground">
+                  <strong>Total:</strong> {totalHours} hours distributed exactly across {weekdays.length} weekdays.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

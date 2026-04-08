@@ -56,6 +56,7 @@ export default function MonthlyCalendars() {
   const [isARChoices, setIsARChoices] = useState(true);
   const [personalCareHours, setPersonalCareHours] = useState<number>(64);
   const [attendantCareHours, setAttendantCareHours] = useState<number>(4);
+  const [isCustomAC, setIsCustomAC] = useState(false);
   const [standardHours, setStandardHours] = useState<number>(64);
 
   const { data: clients = [] } = useQuery({

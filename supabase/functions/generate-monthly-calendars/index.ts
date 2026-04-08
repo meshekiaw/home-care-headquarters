@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.93.2/cors";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 function distributeQuarterHours(totalHours: number, numDays: number): number[] {
   if (numDays === 0) return [];

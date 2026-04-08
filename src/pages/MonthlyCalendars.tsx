@@ -66,16 +66,26 @@ export default function MonthlyCalendars() {
     );
   }, [monthStart.getTime(), monthEnd.getTime()]);
 
-  const hoursPerDay = useMemo(() => {
-    if (weekdays.length === 0) return 0;
-    const raw = totalHours / weekdays.length;
-    return Math.round(raw * 4) / 4; // round to nearest quarter-hour
-  }, [totalHours, weekdays.length]);
+  // Distribute hours exactly: no rounding, total always equals totalHours
+  const dailyHoursMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (weekdays.length === 0) return map;
+    const baseHours = Math.floor((totalHours * 100) / weekdays.length) / 100;
+    const totalBase = Math.round(baseHours * weekdays.length * 100) / 100;
+    const remainder = Math.round((totalHours - totalBase) * 100) / 100;
+    // Convert remainder to cents to distribute 1 cent at a time
+    const extraCents = Math.round(remainder * 100);
+    weekdays.forEach((day, idx) => {
+      const extra = idx < extraCents ? 0.01 : 0;
+      const hrs = Math.round((baseHours + extra) * 100) / 100;
+      map.set(format(day, "yyyy-MM-dd"), hrs);
+    });
+    return map;
+  }, [totalHours, weekdays]);
 
-  const remainderHours = useMemo(() => {
-    const distributed = hoursPerDay * weekdays.length;
-    return Math.round((totalHours - distributed) * 100) / 100;
-  }, [totalHours, hoursPerDay, weekdays.length]);
+  const baseHoursPerDay = weekdays.length > 0
+    ? Math.floor((totalHours * 100) / weekdays.length) / 100
+    : 0;
 
   // Build calendar grid (6 weeks max)
   const calendarDays = useMemo(() => {
@@ -206,7 +216,7 @@ export default function MonthlyCalendars() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Hours/Day</p>
-                <p className="text-xl font-bold">{hoursPerDay}</p>
+                <p className="text-xl font-bold">~{baseHoursPerDay}</p>
               </div>
             </CardContent>
           </Card>

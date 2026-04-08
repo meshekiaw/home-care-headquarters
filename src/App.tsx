@@ -25,6 +25,7 @@ import NotFound from "./pages/NotFound";
 import Notifications from "./pages/Notifications";
 import LmsTraining from "./pages/LmsTraining";
 import LmsPolicies from "./pages/LmsPolicies";
+import MonthlyCalendars from "./pages/MonthlyCalendars";
 
 const queryClient = new QueryClient();
 

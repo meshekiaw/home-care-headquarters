@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Award } from "lucide-react";
-import SignaturePad from "@/components/forms/SignaturePad";
+import { SignaturePad } from "@/components/forms/SignaturePad";
 
 interface OrientationConfirmationProps {
   caregiverName: string;
@@ -50,10 +50,7 @@ export default function OrientationConfirmation({ caregiverName, totalSections, 
 
         <div>
           <p className="text-sm font-medium mb-2">Digital Signature</p>
-          <SignaturePad
-            onSave={(data) => setSignature(data)}
-            onClear={() => setSignature(null)}
-          />
+          <SignaturePad onSignature={(data) => setSignature(data)} />
         </div>
 
         <Button

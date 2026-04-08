@@ -66,25 +66,23 @@ export default function MonthlyCalendars() {
     );
   }, [monthStart.getTime(), monthEnd.getTime()]);
 
-  // Distribute hours exactly: no rounding, total always equals totalHours
+  // Distribute hours in quarter-hour increments (.25) that sum to exactly totalHours
   const dailyHoursMap = useMemo(() => {
     const map = new Map<string, number>();
     if (weekdays.length === 0) return map;
-    const baseHours = Math.floor((totalHours * 100) / weekdays.length) / 100;
-    const totalBase = Math.round(baseHours * weekdays.length * 100) / 100;
-    const remainder = Math.round((totalHours - totalBase) * 100) / 100;
-    // Convert remainder to cents to distribute 1 cent at a time
-    const extraCents = Math.round(remainder * 100);
+    // Convert to quarter-hour blocks
+    const totalQuarters = Math.round(totalHours * 4);
+    const baseQuarters = Math.floor(totalQuarters / weekdays.length);
+    const extraDays = totalQuarters % weekdays.length;
     weekdays.forEach((day, idx) => {
-      const extra = idx < extraCents ? 0.01 : 0;
-      const hrs = Math.round((baseHours + extra) * 100) / 100;
-      map.set(format(day, "yyyy-MM-dd"), hrs);
+      const quarters = baseQuarters + (idx < extraDays ? 1 : 0);
+      map.set(format(day, "yyyy-MM-dd"), quarters / 4);
     });
     return map;
   }, [totalHours, weekdays]);
 
   const baseHoursPerDay = weekdays.length > 0
-    ? Math.floor((totalHours * 100) / weekdays.length) / 100
+    ? Math.floor(Math.round(totalHours * 4) / weekdays.length) / 4
     : 0;
 
   // Build calendar grid (6 weeks max)

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
@@ -17,14 +18,16 @@ export default function Login() {
   const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
 
-  // Redirect if already logged in
+  // Redirect if already logged in, based on role
   useEffect(() => {
-    if (user) {
-      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/dashboard";
+    if (user && !roleLoading && role) {
+      const defaultPath = role === "caregiver" ? "/my-dashboard" : "/dashboard";
+      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || defaultPath;
       navigate(from, { replace: true });
     }
-  }, [user, navigate, location]);
+  }, [user, role, roleLoading, navigate, location]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

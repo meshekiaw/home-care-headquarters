@@ -386,6 +386,7 @@ export type Database = {
       caregivers: {
         Row: {
           address: string | null
+          auth_user_id: string | null
           city: string | null
           created_at: string
           email: string | null
@@ -404,6 +405,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          auth_user_id?: string | null
           city?: string | null
           created_at?: string
           email?: string | null
@@ -422,6 +424,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          auth_user_id?: string | null
           city?: string | null
           created_at?: string
           email?: string | null
@@ -1917,7 +1920,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "caregiver"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2045,7 +2048,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "caregiver"],
     },
   },
 } as const

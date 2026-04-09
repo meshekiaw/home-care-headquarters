@@ -18,6 +18,7 @@ import AvailabilityTab from "@/components/caregivers/AvailabilityTab";
 import SkillsTab from "@/components/caregivers/SkillsTab";
 import CaregiverOverviewTab from "@/components/caregivers/CaregiverOverviewTab";
 import UpcomingCalendarTab from "@/components/caregivers/UpcomingCalendarTab";
+import ApplicationFormFiller from "@/components/caregivers/ApplicationFormFiller";
 import {
   ArrowLeft,
   UserCheck,
@@ -29,6 +30,7 @@ import {
   MapPin,
   DollarSign,
   Navigation,
+  ClipboardList,
 } from "lucide-react";
 import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 
@@ -248,7 +250,7 @@ export default function CaregiverProfile() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="credentials">
               Credentials
@@ -268,6 +270,7 @@ export default function CaregiverProfile() {
               )}
             </TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="application">Application</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -539,6 +542,27 @@ export default function CaregiverProfile() {
                 caregiverId={id}
                 caregiverName={`${caregiver.first_name} ${caregiver.last_name}`}
               />
+            )}
+          </TabsContent>
+
+          <TabsContent value="application" className="mt-6">
+            {caregiver && id && (
+              <div className="min-h-[700px]">
+                <ApplicationFormFiller
+                  fileUrl="/templates/HCN_Application.pdf"
+                  caregiverId={id}
+                  caregiverData={{
+                    first_name: caregiver.first_name,
+                    last_name: caregiver.last_name,
+                    email: caregiver.email || "",
+                    phone: caregiver.phone || "",
+                    address: caregiver.address || "",
+                    city: caregiver.city || "",
+                    state: caregiver.state || "",
+                    zip_code: caregiver.zip_code || "",
+                  }}
+                />
+              </div>
             )}
           </TabsContent>
         </Tabs>

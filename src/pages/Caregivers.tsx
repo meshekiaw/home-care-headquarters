@@ -11,7 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import AddCaregiverDialog from "@/components/caregivers/AddCaregiverDialog";
 import BulkImportDialog from "@/components/caregivers/BulkImportDialog";
-import { UserCheck, Plus, Search, Phone, Mail, Upload, Download } from "lucide-react";
+import CreateLoginDialog from "@/components/caregivers/CreateLoginDialog";
+import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
@@ -24,6 +25,7 @@ export default function Caregivers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [loginDialog, setLoginDialog] = useState<{ open: boolean; caregiver: any }>({ open: false, caregiver: null });
   const navigate = useNavigate();
 
   const filteredCaregivers = caregivers.filter((caregiver) => {

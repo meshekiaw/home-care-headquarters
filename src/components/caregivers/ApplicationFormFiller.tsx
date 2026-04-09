@@ -257,7 +257,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       });
 
       const filledBytes = await pdfDoc.save();
-      const blob = new Blob([filledBytes], { type: "application/pdf" });
+      const blob = new Blob([filledBytes as unknown as BlobPart], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

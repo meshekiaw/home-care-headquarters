@@ -1,18 +1,53 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Award } from "lucide-react";
+import { CheckCircle2, Award, Download } from "lucide-react";
 import { SignaturePad } from "@/components/forms/SignaturePad";
+import { downloadOrientationCertificate } from "@/utils/orientationCertificatePdf";
+import { format } from "date-fns";
 
 interface OrientationConfirmationProps {
   caregiverName: string;
   totalSections: number;
   onConfirm: (signatureData: string) => void;
   isConfirmed: boolean;
+  confirmedAt?: string | null;
+  signatureData?: string | null;
 }
 
-export default function OrientationConfirmation({ caregiverName, totalSections, onConfirm, isConfirmed }: OrientationConfirmationProps) {
+export default function OrientationConfirmation({
+  caregiverName,
+  totalSections,
+  onConfirm,
+  isConfirmed,
+  confirmedAt,
+  signatureData,
+}: OrientationConfirmationProps) {
   const [signature, setSignature] = useState<string | null>(null);
+
+  const handleDownloadCertificate = () => {
+    downloadOrientationCertificate({
+      caregiverName,
+      completionDate: confirmedAt
+        ? format(new Date(confirmedAt), "MMMM d, yyyy")
+        : format(new Date(), "MMMM d, yyyy"),
+      totalSections,
+      signatureData: signatureData || signature,
+    });
+  };
+
+  const handleConfirm = () => {
+    if (signature) {
+      onConfirm(signature);
+      // Auto-download certificate
+      downloadOrientationCertificate({
+        caregiverName,
+        completionDate: format(new Date(), "MMMM d, yyyy"),
+        totalSections,
+        signatureData: signature,
+      });
+    }
+  };
 
   if (isConfirmed) {
     return (
@@ -23,6 +58,10 @@ export default function OrientationConfirmation({ caregiverName, totalSections, 
           <p className="text-muted-foreground">
             All {totalSections} sections have been reviewed, quizzes passed, and acknowledgment confirmed.
           </p>
+          <Button onClick={handleDownloadCertificate} variant="outline" className="gap-2">
+            <Download className="w-4 h-4" />
+            Download Certificate
+          </Button>
         </CardContent>
       </Card>
     );
@@ -56,7 +95,7 @@ export default function OrientationConfirmation({ caregiverName, totalSections, 
         <Button
           className="w-full"
           disabled={!signature}
-          onClick={() => signature && onConfirm(signature)}
+          onClick={handleConfirm}
         >
           Confirm Orientation Completion
         </Button>

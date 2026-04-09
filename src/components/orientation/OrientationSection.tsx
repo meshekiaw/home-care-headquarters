@@ -33,10 +33,18 @@ function useFemaleVoice() {
     const pick = () => {
       const voices = window.speechSynthesis.getVoices();
       const usVoices = voices.filter((v) => v.lang === "en-US" || v.lang === "en_US");
-      const keywords = ["samantha", "zira", "victoria", "google us english", "female", "tessa"];
-      const femaleUS = usVoices.find((v) => keywords.some((k) => v.name.toLowerCase().includes(k)));
-      const picked = femaleUS || usVoices[0] || null;
-      if (picked) setVoice(picked);
+      const priority = ["samantha", "zira", "google us english"];
+      let picked: SpeechSynthesisVoice | undefined;
+      for (const kw of priority) {
+        picked = usVoices.find((v) => v.name.toLowerCase().includes(kw));
+        if (picked) break;
+      }
+      if (!picked) {
+        const soft = ["victoria", "female", "tessa"];
+        picked = usVoices.find((v) => soft.some((k) => v.name.toLowerCase().includes(k)));
+      }
+      const final = picked || usVoices[0] || null;
+      if (final) setVoice(final);
     };
 
     pick();
@@ -74,7 +82,9 @@ export default function OrientationSection({ title, content, onAudioComplete, au
 
   const createUtterance = useCallback(() => {
     const utt = new SpeechSynthesisUtterance(textRef.current);
-    utt.rate = 0.95;
+    utt.rate = 0.9;
+    utt.pitch = 1.05;
+    utt.volume = 0.85;
     if (femaleVoice) utt.voice = femaleVoice;
     utt.onboundary = (e) => {
       if (e.charIndex && textRef.current.length) {

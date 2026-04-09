@@ -554,6 +554,9 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
                           <span className="ml-1 text-primary text-[10px]">(fills all date fields)</span>
                         )}
                       </Label>
+                      {field.instructions && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5 mb-1">{field.instructions}</p>
+                      )}
                       {field.type === "checkbox" ? (
                         <div className="flex items-center gap-2 mt-1">
                           <Checkbox
@@ -562,6 +565,17 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
                             onCheckedChange={(checked) => handleFieldChange(field.id, checked ? "true" : "")}
                           />
                           <label htmlFor={field.id} className="text-xs text-muted-foreground">{field.label}</label>
+                        </div>
+                      ) : field.type === "signature" ? (
+                        <div className="mt-1">
+                          <Input
+                            id={field.id}
+                            value={formValues[field.id] || ""}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            placeholder="Type full name as signature"
+                            className="h-8 text-sm italic"
+                          />
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Type your full legal name as your electronic signature</p>
                         </div>
                       ) : (
                         <Input

@@ -104,14 +104,22 @@ export default function OrientationViewer() {
     );
   }
 
-  const canProceed = audioCompleted[currentSection] && (quizPassed[currentSection] || sectionsCompleted.includes(currentSection));
+  const canProceed = isPreview
+    ? audioCompleted[currentSection]
+    : audioCompleted[currentSection] && (quizPassed[currentSection] || sectionsCompleted.includes(currentSection));
 
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
         <div>
-          <h2 className="text-2xl font-bold">New Hire Orientation</h2>
-          <p className="text-muted-foreground">Complete all sections, pass each quiz, and confirm to finish.</p>
+          <h2 className="text-2xl font-bold">
+            {isPreview ? "Orientation Preview" : "New Hire Orientation"}
+          </h2>
+          <p className="text-muted-foreground">
+            {isPreview
+              ? "Preview mode — progress is not saved."
+              : "Complete all sections, pass each quiz, and confirm to finish."}
+          </p>
         </div>
 
         <OrientationProgressBar

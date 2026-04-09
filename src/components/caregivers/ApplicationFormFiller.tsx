@@ -218,9 +218,11 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
   const [containerWidth, setContainerWidth] = useState(0);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ---- Load PDF ----
   useEffect(() => {

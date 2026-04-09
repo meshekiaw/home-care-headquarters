@@ -1,39 +1,41 @@
 
 
-# Inline Orientation Editing (Sections + Quizzes)
+# Restrict Orientation Management to Administrators
 
 ## Summary
 
-You already have an Edit button on each section card that lets you change the title and HTML content. This plan enhances that experience by also letting you add new sections, manage quiz questions per section, and preview content — all without deleting or resyncing.
+The Orientation Management page (adding, editing, deleting sections and quizzes) should only be accessible to administrators. Employees/caregivers should only be able to view and complete the orientation, not modify it. This project does not yet have a roles system, so one needs to be created.
 
 ## Changes
 
-### 1. Add "Add Section" capability
-- Add an "Add Section" button to the top of the Sections tab in `OrientationManagement.tsx`
-- Create `src/components/orientation/AddSectionDialog.tsx` with fields for section number, title, and content
-- Uses the existing `addModule` hook function
+### 1. Create user_roles table and helper function (database migration)
+- Create `app_role` enum with values: `admin`, `user`
+- Create `user_roles` table with `user_id` and `role` columns, RLS enabled
+- Create `has_role()` security-definer function to check roles without RLS recursion
+- RLS policy: authenticated users can read their own roles
 
-### 2. Show and manage quiz questions per section
-- Expand each section card to show its quiz questions in a collapsible list
-- Add "Add Question" and "Delete" buttons per question
-- Create `src/components/orientation/AddQuizQuestionDialog.tsx` with fields: question text, 4 options, correct answer selector, points
-- Add `updateQuiz` function to `useOrientationQuizzes` hook for editing existing questions
+### 2. Create a useUserRole hook
+- New file: `src/hooks/useUserRole.ts`
+- Queries `user_roles` table for the current user
+- Exposes `isAdmin` boolean and `loading` state
 
-### 3. Enhance EditSectionDialog with preview
-- Add a "Preview" tab next to the HTML editor so you can see what the rendered content looks like before saving
+### 3. Protect the Orientation Management route
+- In `OrientationManagement.tsx`, use the `useUserRole` hook
+- If the user is not an admin, show a "not authorized" message or redirect to the orientation viewer instead
+- The `/lms/orientation/:id` route (viewer) remains accessible to all authenticated users
 
-### 4. Add edit capability for quiz questions
-- Add an "Edit" button per quiz question that opens an inline editor or dialog
-- Reuses the AddQuizQuestionDialog in edit mode
+### 4. Assign admin role
+- After migration, the first logged-in user (you) will need to be assigned the admin role
+- A one-time migration will insert your user into `user_roles` with `role = 'admin'`
+- Alternatively, provide a simple way to assign roles from the Settings page later
 
 ## Files
-- `src/pages/OrientationManagement.tsx` — add "Add Section" button, expand section cards with quiz list
-- `src/hooks/useOrientation.ts` — add `updateQuiz` function
-- `src/components/orientation/EditSectionDialog.tsx` — add preview tab
-- `src/components/orientation/AddSectionDialog.tsx` — new
-- `src/components/orientation/AddQuizQuestionDialog.tsx` — new
+- **Database migration** -- create `app_role` enum, `user_roles` table, `has_role()` function, RLS policies
+- `src/hooks/useUserRole.ts` -- new hook
+- `src/pages/OrientationManagement.tsx` -- add admin check, show unauthorized state for non-admins
 
 ## Notes
-- No database changes needed — existing tables already support full CRUD
-- Caregiver progress is preserved since section IDs don't change when editing
+- The orientation viewer (`/lms/orientation/:id`) stays open to all authenticated users so employees can complete their orientation
+- No changes to the orientation content or quiz CRUD logic itself
+- This roles infrastructure can be reused later for other admin-only features
 

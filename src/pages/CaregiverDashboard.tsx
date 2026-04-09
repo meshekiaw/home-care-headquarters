@@ -1,0 +1,142 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import CaregiverLayout from "@/components/layout/CaregiverLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { BookOpen, User, MessageSquare, CheckCircle2, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+export default function CaregiverDashboard() {
+  const { user } = useAuth();
+  const [caregiver, setCaregiver] = useState<any>(null);
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      // Get caregiver record linked to this auth user
+      const { data: cg } = await supabase
+        .from("caregivers")
+        .select("*")
+        .eq("auth_user_id", user.id)
+        .maybeSingle();
+
+      setCaregiver(cg);
+
+      if (cg) {
+        const { data: prog } = await supabase
+          .from("orientation_progress")
+          .select("*")
+          .eq("caregiver_id", cg.id)
+          .maybeSingle();
+        setProgress(prog);
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <CaregiverLayout>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-muted rounded" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => <div key={i} className="h-32 bg-muted rounded-lg" />)}
+          </div>
+        </div>
+      </CaregiverLayout>
+    );
+  }
+
+  const orientationComplete = !!progress?.confirmed_at;
+  const sectionsCompleted = (progress?.sections_completed as number[])?.length || 0;
+
+  return (
+    <CaregiverLayout>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold">
+            Welcome{caregiver ? `, ${caregiver.first_name}` : ""}!
+          </h2>
+          <p className="text-muted-foreground">Here's an overview of your tasks and progress.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Orientation Status */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                Orientation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {orientationComplete ? (
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-success/10 text-success border-success/20">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Completed
+                  </Badge>
+                </div>
+              ) : sectionsCompleted > 0 ? (
+                <div className="space-y-2">
+                  <Badge className="bg-warning/10 text-warning border-warning/20">
+                    <Clock className="w-3 h-3 mr-1" /> In Progress
+                  </Badge>
+                  <p className="text-sm text-muted-foreground">{sectionsCompleted} sections completed</p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not started yet</p>
+              )}
+              <Button asChild size="sm" className="mt-3 w-full">
+                <Link to="/my-orientation">
+                  {orientationComplete ? "Review Orientation" : "Continue Orientation"}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Profile */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="w-5 h-5 text-primary" />
+                My Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {caregiver?.email || "No email on file"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {caregiver?.phone || "No phone on file"}
+              </p>
+              <Button asChild size="sm" variant="outline" className="mt-3 w-full">
+                <Link to="/my-profile">View Profile</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Communications */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" />
+                Communications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">View messages from the office.</p>
+              <Button asChild size="sm" variant="outline" className="mt-3 w-full">
+                <Link to="/my-communications">Open Messages</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </CaregiverLayout>
+  );
+}

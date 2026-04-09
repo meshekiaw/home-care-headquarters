@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2,
+  Upload, GraduationCap, Volume2, Eye,
 } from "lucide-react";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
 import { orientationSections } from "@/data/orientationContent";
@@ -78,12 +79,22 @@ export default function OrientationManagement() {
             <h2 className="text-2xl font-bold">Orientation Management</h2>
             <p className="text-muted-foreground">Manage orientation content, quizzes, and track completions</p>
           </div>
-          {modules.length === 0 && (
-            <Button onClick={handleSeedContent} loading={seeding}>
-              <Upload className="w-4 h-4 mr-2" />
-              Load Orientation Content
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {modules.length === 0 && (
+              <Button onClick={handleSeedContent} loading={seeding}>
+                <Upload className="w-4 h-4 mr-2" />
+                Load Orientation Content
+              </Button>
+            )}
+            {modules.length > 0 && (
+              <Button asChild>
+                <Link to="/lms/orientation/preview">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview Orientation
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
@@ -222,7 +233,9 @@ export default function OrientationManagement() {
                       return (
                         <TableRow key={p.id}>
                           <TableCell className="font-medium">
-                            {p.caregiver ? `${p.caregiver.first_name} ${p.caregiver.last_name}` : "Unknown"}
+                            <Link to={`/lms/orientation/${p.caregiver_id}`} className="text-primary hover:underline">
+                              {p.caregiver ? `${p.caregiver.first_name} ${p.caregiver.last_name}` : "Unknown"}
+                            </Link>
                           </TableCell>
                           <TableCell>{completed}/{modules.length} sections</TableCell>
                           <TableCell>

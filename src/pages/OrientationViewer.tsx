@@ -12,22 +12,23 @@ import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } 
 
 export default function OrientationViewer() {
   const { id: caregiverId } = useParams<{ id: string }>();
+  const isPreview = caregiverId === "preview";
   const { modules, loading: modulesLoading } = useOrientationModules();
   const { quizzes, loading: quizzesLoading } = useOrientationQuizzes();
   const { progressList, upsertProgress } = useOrientationProgress();
 
-  const progress = progressList.find((p) => p.caregiver_id === caregiverId);
+  const progress = isPreview ? undefined : progressList.find((p) => p.caregiver_id === caregiverId);
   const [currentSection, setCurrentSection] = useState(progress?.current_section || 1);
   const [audioCompleted, setAudioCompleted] = useState<Record<number, boolean>>({});
   const [quizPassed, setQuizPassed] = useState<Record<number, boolean>>({});
 
   const totalSections = modules.length;
-  const sectionsCompleted: number[] = (progress?.sections_completed as number[]) || [];
-  const quizScores: Record<string, number> = (progress?.quiz_scores as Record<string, number>) || {};
+  const sectionsCompleted: number[] = isPreview ? [] : (progress?.sections_completed as number[]) || [];
+  const quizScores: Record<string, number> = isPreview ? {} : (progress?.quiz_scores as Record<string, number>) || {};
 
   // Initialize from saved progress
   useState(() => {
-    if (progress) {
+    if (progress && !isPreview) {
       setCurrentSection(progress.current_section);
       const completed: Record<number, boolean> = {};
       const passed: Record<number, boolean> = {};
@@ -48,6 +49,7 @@ export default function OrientationViewer() {
 
   const handleQuizPass = async (score: number) => {
     setQuizPassed((prev) => ({ ...prev, [currentSection]: true }));
+    if (isPreview) return;
     const newCompleted = [...new Set([...sectionsCompleted, currentSection])];
     const newScores = { ...quizScores, [currentSection.toString()]: score };
     if (caregiverId) {
@@ -69,7 +71,7 @@ export default function OrientationViewer() {
     if (currentSection < totalSections) {
       const next = currentSection + 1;
       setCurrentSection(next);
-      if (caregiverId) {
+      if (!isPreview && caregiverId) {
         upsertProgress(caregiverId, { current_section: next });
       }
     }
@@ -80,7 +82,7 @@ export default function OrientationViewer() {
   };
 
   const handleConfirm = async (signatureData: string) => {
-    if (caregiverId) {
+    if (!isPreview && caregiverId) {
       await upsertProgress(caregiverId, {
         confirmed_at: new Date().toISOString(),
         signature_data: signatureData,
@@ -102,14 +104,22 @@ export default function OrientationViewer() {
     );
   }
 
-  const canProceed = audioCompleted[currentSection] && (quizPassed[currentSection] || sectionsCompleted.includes(currentSection));
+  const canProceed = isPreview
+    ? audioCompleted[currentSection]
+    : audioCompleted[currentSection] && (quizPassed[currentSection] || sectionsCompleted.includes(currentSection));
 
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl mx-auto">
         <div>
-          <h2 className="text-2xl font-bold">New Hire Orientation</h2>
-          <p className="text-muted-foreground">Complete all sections, pass each quiz, and confirm to finish.</p>
+          <h2 className="text-2xl font-bold">
+            {isPreview ? "Orientation Preview" : "New Hire Orientation"}
+          </h2>
+          <p className="text-muted-foreground">
+            {isPreview
+              ? "Preview mode — progress is not saved."
+              : "Complete all sections, pass each quiz, and confirm to finish."}
+          </p>
         </div>
 
         <OrientationProgressBar

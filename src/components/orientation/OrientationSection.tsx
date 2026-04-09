@@ -32,9 +32,11 @@ function useFemaleVoice() {
 
     const pick = () => {
       const voices = window.speechSynthesis.getVoices();
-      const keywords = ["female", "samantha", "zira", "google uk english female", "google us english", "karen", "moira", "fiona", "victoria", "tessa"];
-      const found = voices.find((v) => keywords.some((k) => v.name.toLowerCase().includes(k)));
-      if (found) setVoice(found);
+      const usVoices = voices.filter((v) => v.lang === "en-US" || v.lang === "en_US");
+      const keywords = ["samantha", "zira", "victoria", "google us english", "female", "tessa"];
+      const femaleUS = usVoices.find((v) => keywords.some((k) => v.name.toLowerCase().includes(k)));
+      const picked = femaleUS || usVoices[0] || null;
+      if (picked) setVoice(picked);
     };
 
     pick();
@@ -136,7 +138,7 @@ export default function OrientationSection({ title, content, onAudioComplete, au
       <CardHeader className={`bg-gradient-to-r ${theme.gradient}`}>
         <CardTitle className="text-xl text-white drop-shadow-sm">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 pt-6">
+      <CardContent className={`space-y-4 pt-6 ${theme.light}`}>
         <div className={`${theme.light} rounded-lg p-4 space-y-3`}>
           <div className="flex items-center gap-3">
             <Volume2 className={`w-5 h-5 ${theme.accent}`} />

@@ -236,6 +236,47 @@ export type Database = {
           },
         ]
       }
+      caregiver_applications: {
+        Row: {
+          caregiver_id: string
+          created_at: string
+          form_data: Json
+          id: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          caregiver_id: string
+          created_at?: string
+          form_data?: Json
+          id?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          caregiver_id?: string
+          created_at?: string
+          form_data?: Json
+          id?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_applications_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: true
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caregiver_availability: {
         Row: {
           caregiver_id: string

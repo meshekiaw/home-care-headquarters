@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   BookOpen,
+  ClipboardList,
   User,
   MessageSquare,
   LogOut,
@@ -12,6 +13,7 @@ import {
 
 const navItems = [
   { label: "Home", icon: Home, path: "/my-dashboard" },
+  { label: "My Application", icon: ClipboardList, path: "/my-application" },
   { label: "My Orientation", icon: BookOpen, path: "/my-orientation" },
   { label: "My Profile", icon: User, path: "/my-profile" },
   { label: "Communications", icon: MessageSquare, path: "/my-communications" },

@@ -49,6 +49,7 @@ export default function OrientationViewer() {
 
   const handleQuizPass = async (score: number) => {
     setQuizPassed((prev) => ({ ...prev, [currentSection]: true }));
+    if (isPreview) return;
     const newCompleted = [...new Set([...sectionsCompleted, currentSection])];
     const newScores = { ...quizScores, [currentSection.toString()]: score };
     if (caregiverId) {
@@ -70,7 +71,7 @@ export default function OrientationViewer() {
     if (currentSection < totalSections) {
       const next = currentSection + 1;
       setCurrentSection(next);
-      if (caregiverId) {
+      if (!isPreview && caregiverId) {
         upsertProgress(caregiverId, { current_section: next });
       }
     }
@@ -81,7 +82,7 @@ export default function OrientationViewer() {
   };
 
   const handleConfirm = async (signatureData: string) => {
-    if (caregiverId) {
+    if (!isPreview && caregiverId) {
       await upsertProgress(caregiverId, {
         confirmed_at: new Date().toISOString(),
         signature_data: signatureData,

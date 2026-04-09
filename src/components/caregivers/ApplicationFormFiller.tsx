@@ -258,6 +258,9 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       if (f.profileField === "full_name") initial[f.id] = fullName;
       else if (f.profileField === "full_address") initial[f.id] = fullAddress;
       else if (f.profileField === "city_state_zip") initial[f.id] = cityStateZip;
+      else if (f.profileField === "date_of_birth" && caregiverData.date_of_birth) {
+        initial[f.id] = format(new Date(caregiverData.date_of_birth + "T00:00:00"), "MM/dd/yyyy");
+      }
       else if (f.profileField && caregiverData[f.profileField]) initial[f.id] = caregiverData[f.profileField];
 
       // Name mirrors

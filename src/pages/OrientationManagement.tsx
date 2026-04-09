@@ -25,7 +25,7 @@ export default function OrientationManagement() {
   const [editSection, setEditSection] = useState<{ id: string; title: string; content: string } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [seeding, setSeeding] = useState(false);
-  const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
+  
 
   const loading = modulesLoading || quizzesLoading || progressLoading;
 
@@ -52,35 +52,6 @@ export default function OrientationManagement() {
     }
   };
 
-  const handleGenerateAudio = async (moduleId: string, content: string) => {
-    setGeneratingAudio(moduleId);
-    try {
-      const textContent = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-orientation-audio`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: textContent, moduleId }),
-        }
-      );
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Failed to generate audio");
-      }
-      const { audioUrl } = await response.json();
-      await updateModule(moduleId, { audio_url: audioUrl } as any);
-      toast({ title: "Audio generated successfully" });
-    } catch (error: any) {
-      toast({ title: "Error generating audio", description: error.message, variant: "destructive" });
-    } finally {
-      setGeneratingAudio(null);
-    }
-  };
 
   const handleEditSave = (id: string, title: string, content: string) => {
     updateModule(id, { title, content });
@@ -201,15 +172,9 @@ export default function OrientationManagement() {
                             {mod.audio_url && " • Audio ready"}
                           </p>
                         </div>
-                        <div className="flex gap-1">
-                          {mod.audio_url ? (
-                            <Badge className="bg-success/10 text-success border-success/20 text-xs">
-                              <Volume2 className="w-3 h-3 mr-1" /> Audio
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="text-xs">No Audio</Badge>
-                          )}
-                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          <Volume2 className="w-3 h-3 mr-1" /> Browser TTS
+                        </Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -220,15 +185,6 @@ export default function OrientationManagement() {
                           onClick={() => { setEditSection({ id: mod.id, title: mod.title, content: mod.content }); setEditOpen(true); }}
                         >
                           <Edit className="w-3 h-3 mr-1" /> Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleGenerateAudio(mod.id, mod.content)}
-                          loading={generatingAudio === mod.id}
-                        >
-                          <RefreshCw className="w-3 h-3 mr-1" />
-                          {mod.audio_url ? "Regenerate Audio" : "Generate Audio"}
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => deleteModule(mod.id)}>
                           <Trash2 className="w-3 h-3" />

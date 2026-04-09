@@ -215,12 +215,12 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
   const [numPages, setNumPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(1);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const baseScaleRef = useRef(0);
 
   // ---- Load PDF ----
   useEffect(() => {
@@ -229,6 +229,19 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       .then((buf) => setPdfBytes(buf.slice(0)))
       .catch(() => toast({ title: "Failed to load application PDF", variant: "destructive" }));
   }, [fileUrl]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateWidth = () => setContainerWidth(container.clientWidth);
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, []);
 
   // ---- Pre-populate from caregiver profile ----
   useEffect(() => {
@@ -294,12 +307,9 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       const page = await pdf.getPage(currentPage);
       const viewport = page.getViewport({ scale: 1 });
 
-      const containerWidth = containerRef.current?.clientWidth || 800;
-      if (baseScaleRef.current === 0) {
-        baseScaleRef.current = (containerWidth - 40) / viewport.width;
-      }
-
-      const scale = baseScaleRef.current * zoom;
+      const availableWidth = Math.max((containerWidth || containerRef.current?.clientWidth || 800) - 32, 320);
+      const fitScale = Math.max(availableWidth / viewport.width, 0.35);
+      const scale = fitScale * zoom;
       const scaledViewport = page.getViewport({ scale });
 
       const canvas = canvasRef.current;
@@ -312,7 +322,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
     };
 
     render();
-  }, [pdfBytes, currentPage, zoom]);
+  }, [pdfBytes, currentPage, zoom, containerWidth]);
 
   // ---- Field change handler with mirroring ----
   const handleFieldChange = (fieldId: string, value: string) => {
@@ -420,9 +430,9 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
   };
 
   return (
-    <div className={cn("flex h-full min-h-0", className)}>
+    <div className={cn("flex h-full min-h-0 w-full overflow-hidden", className)}>
       {/* PDF Viewer */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Toolbar */}
         <div className="flex items-center gap-2 p-2 border-b bg-card shrink-0 flex-wrap">
           <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}>
@@ -455,20 +465,20 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
         </div>
 
         {/* Canvas */}
-        <div ref={containerRef} className="flex-1 overflow-auto bg-muted/30 flex justify-center p-4">
+        <div ref={containerRef} className="flex flex-1 justify-center overflow-auto bg-muted/30 p-3 sm:p-4">
           <canvas ref={canvasRef} className="shadow-md" />
         </div>
       </div>
 
       {/* Side Panel */}
-      <div className="w-80 border-l flex flex-col min-h-0 bg-card">
+      <div className="flex w-80 shrink-0 flex-col overflow-hidden border-l bg-card">
         <div className="p-3 border-b shrink-0">
           <h3 className="font-semibold text-sm">Application Fields</h3>
           <p className="text-xs text-muted-foreground mt-1">
             Employee name &amp; date auto-populate across all pages. Profile data is pre-filled.
           </p>
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="p-3 space-y-4">
             {Object.entries(sectionGroups).map(([section, fields]) => (
               <div key={section}>

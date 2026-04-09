@@ -321,12 +321,13 @@ export default function OrientationManagement() {
             <Card>
               <Table>
                 <TableHeader>
-                  <TableRow>
+                   <TableRow>
                     <TableHead>Caregiver</TableHead>
                     <TableHead>Progress</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Confirmed</TableHead>
-                  </TableRow>
+                    <TableHead>Certificate</TableHead>
+                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {progressList.length === 0 ? (

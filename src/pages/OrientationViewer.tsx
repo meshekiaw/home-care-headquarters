@@ -134,8 +134,6 @@ export default function OrientationViewer() {
             totalSections={totalSections}
             onConfirm={handleConfirm}
             isConfirmed={!!progress?.confirmed_at}
-            confirmedAt={progress?.confirmed_at}
-            signatureData={progress?.signature_data}
           />
         ) : currentModule ? (
           <div className="space-y-6">

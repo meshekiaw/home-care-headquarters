@@ -176,6 +176,17 @@ export function useOrientationQuizzes() {
     }
   };
 
+  const updateQuiz = async (id: string, updates: Partial<OrientationQuiz>) => {
+    try {
+      const { error } = await supabase.from("orientation_quizzes").update(updates as any).eq("id", id);
+      if (error) throw error;
+      toast({ title: "Question updated" });
+      fetchQuizzes();
+    } catch (error: any) {
+      toast({ title: "Error updating question", description: error.message, variant: "destructive" });
+    }
+  };
+
   const deleteQuiz = async (id: string) => {
     try {
       const { error } = await supabase.from("orientation_quizzes").delete().eq("id", id);
@@ -187,7 +198,7 @@ export function useOrientationQuizzes() {
     }
   };
 
-  return { quizzes, loading, seedQuizzes, addQuiz, deleteQuiz, refetch: fetchQuizzes };
+  return { quizzes, loading, seedQuizzes, addQuiz, updateQuiz, deleteQuiz, refetch: fetchQuizzes };
 }
 
 export function useOrientationProgress() {

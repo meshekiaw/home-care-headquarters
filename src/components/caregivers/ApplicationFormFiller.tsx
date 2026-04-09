@@ -102,98 +102,98 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.35, yPct: 0.82, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
   { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.72, yPct: 0.82, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 11 - Job Description Signature ============
-  { id: "p11_date", label: "Date", type: "date", page: 11, xPct: 0.60, yPct: 0.56, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 12 - Job Description Signature ============
+  { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.60, yPct: 0.56, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 12 - Employee Handbook Receipt ============
-  { id: "p12_name", label: "Employee Name", type: "text", page: 12, xPct: 0.30, yPct: 0.77, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p12_printed_name", label: "Applicant's Printed Name", type: "text", page: 12, xPct: 0.26, yPct: 0.175, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p12_date", label: "Date", type: "date", page: 12, xPct: 0.52, yPct: 0.14, section: "Handbook Receipt", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 13 - Employee Handbook Receipt ============
+  { id: "p12_name", label: "Employee Name", type: "text", page: 13, xPct: 0.30, yPct: 0.77, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p12_printed_name", label: "Applicant's Printed Name", type: "text", page: 13, xPct: 0.26, yPct: 0.175, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p12_date", label: "Date", type: "date", page: 13, xPct: 0.52, yPct: 0.14, section: "Handbook Receipt", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 13 - Practitioner ID Request ============
-  { id: "p13_name", label: "Practitioner Name", type: "text", page: 13, xPct: 0.05, yPct: 0.615, section: "Practitioner ID", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p13_ssn", label: "Social Security Number", type: "text", page: 13, xPct: 0.05, yPct: 0.535, section: "Practitioner ID", fontSize: 10 },
-  { id: "p13_dob", label: "Date of Birth", type: "text", page: 13, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", fontSize: 10 },
-  { id: "p13_mail_address", label: "Mail to Address", type: "text", page: 13, xPct: 0.05, yPct: 0.34, section: "Practitioner ID", profileField: "address", fontSize: 9 },
-  { id: "p13_mail_city", label: "City", type: "text", page: 13, xPct: 0.05, yPct: 0.30, section: "Practitioner ID", profileField: "city", fontSize: 9 },
-  { id: "p13_mail_state", label: "State", type: "text", page: 13, xPct: 0.05, yPct: 0.26, section: "Practitioner ID", profileField: "state", fontSize: 9 },
-  { id: "p13_mail_zip", label: "ZIP+4", type: "text", page: 13, xPct: 0.05, yPct: 0.22, section: "Practitioner ID", profileField: "zip_code", fontSize: 9 },
-  { id: "p13_phone", label: "Phone Number", type: "text", page: 13, xPct: 0.05, yPct: 0.18, section: "Practitioner ID", profileField: "phone", fontSize: 9 },
-  { id: "p13_email", label: "Email Address", type: "text", page: 13, xPct: 0.05, yPct: 0.14, section: "Practitioner ID", profileField: "email", fontSize: 9 },
-  { id: "p13_date", label: "Date", type: "date", page: 13, xPct: 0.55, yPct: 0.075, section: "Practitioner ID", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 14 - Practitioner ID Request ============
+  { id: "p13_name", label: "Practitioner Name", type: "text", page: 14, xPct: 0.05, yPct: 0.615, section: "Practitioner ID", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p13_ssn", label: "Social Security Number", type: "text", page: 14, xPct: 0.05, yPct: 0.535, section: "Practitioner ID", fontSize: 10 },
+  { id: "p13_dob", label: "Date of Birth", type: "text", page: 14, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", fontSize: 10 },
+  { id: "p13_mail_address", label: "Mail to Address", type: "text", page: 14, xPct: 0.05, yPct: 0.34, section: "Practitioner ID", profileField: "address", fontSize: 9 },
+  { id: "p13_mail_city", label: "City", type: "text", page: 14, xPct: 0.05, yPct: 0.30, section: "Practitioner ID", profileField: "city", fontSize: 9 },
+  { id: "p13_mail_state", label: "State", type: "text", page: 14, xPct: 0.05, yPct: 0.26, section: "Practitioner ID", profileField: "state", fontSize: 9 },
+  { id: "p13_mail_zip", label: "ZIP+4", type: "text", page: 14, xPct: 0.05, yPct: 0.22, section: "Practitioner ID", profileField: "zip_code", fontSize: 9 },
+  { id: "p13_phone", label: "Phone Number", type: "text", page: 14, xPct: 0.05, yPct: 0.18, section: "Practitioner ID", profileField: "phone", fontSize: 9 },
+  { id: "p13_email", label: "Email Address", type: "text", page: 14, xPct: 0.05, yPct: 0.14, section: "Practitioner ID", profileField: "email", fontSize: 9 },
+  { id: "p13_date", label: "Date", type: "date", page: 14, xPct: 0.55, yPct: 0.075, section: "Practitioner ID", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 14 - Direct Deposit ============
-  { id: "p14_employee_name", label: "Employee/Worker Name", type: "text", page: 14, xPct: 0.28, yPct: 0.845, section: "Direct Deposit", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p14_account_name", label: "Accountholder's Name", type: "text", page: 14, xPct: 0.30, yPct: 0.665, section: "Direct Deposit", tags: ["name_mirror"], fontSize: 9 },
-  { id: "p14_routing", label: "Routing/Transit Number", type: "text", page: 14, xPct: 0.30, yPct: 0.64, section: "Direct Deposit", fontSize: 9 },
-  { id: "p14_account_num", label: "Account Number", type: "text", page: 14, xPct: 0.30, yPct: 0.615, section: "Direct Deposit", fontSize: 9 },
-  { id: "p14_bank_name", label: "Bank Name", type: "text", page: 14, xPct: 0.30, yPct: 0.59, section: "Direct Deposit", fontSize: 9 },
-  { id: "p14_date", label: "Date", type: "date", page: 14, xPct: 0.72, yPct: 0.195, section: "Direct Deposit", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 15 - Direct Deposit ============
+  { id: "p14_employee_name", label: "Employee/Worker Name", type: "text", page: 15, xPct: 0.28, yPct: 0.845, section: "Direct Deposit", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p14_account_name", label: "Accountholder's Name", type: "text", page: 15, xPct: 0.30, yPct: 0.665, section: "Direct Deposit", tags: ["name_mirror"], fontSize: 9 },
+  { id: "p14_routing", label: "Routing/Transit Number", type: "text", page: 15, xPct: 0.30, yPct: 0.64, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_account_num", label: "Account Number", type: "text", page: 15, xPct: 0.30, yPct: 0.615, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_bank_name", label: "Bank Name", type: "text", page: 15, xPct: 0.30, yPct: 0.59, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_date", label: "Date", type: "date", page: 15, xPct: 0.72, yPct: 0.195, section: "Direct Deposit", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 15 - W-4 Form ============
-  { id: "w4_first_name", label: "First Name & Middle Initial", type: "text", page: 15, xPct: 0.06, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
-  { id: "w4_last_name", label: "Last Name", type: "text", page: 15, xPct: 0.38, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
-  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 15, xPct: 0.72, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
-  { id: "w4_address", label: "Address", type: "text", page: 15, xPct: 0.06, yPct: 0.755, section: "W-4 Form", profileField: "address", fontSize: 9 },
-  { id: "w4_city_state_zip", label: "City, State, ZIP", type: "text", page: 15, xPct: 0.06, yPct: 0.725, section: "W-4 Form", profileField: "city_state_zip", fontSize: 9 },
-  { id: "w4_date", label: "Date", type: "date", page: 15, xPct: 0.72, yPct: 0.075, section: "W-4 Form", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 16 - W-4 Form ============
+  { id: "w4_first_name", label: "First Name & Middle Initial", type: "text", page: 16, xPct: 0.06, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_last_name", label: "Last Name", type: "text", page: 16, xPct: 0.38, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 16, xPct: 0.72, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_address", label: "Address", type: "text", page: 16, xPct: 0.06, yPct: 0.755, section: "W-4 Form", profileField: "address", fontSize: 9 },
+  { id: "w4_city_state_zip", label: "City, State, ZIP", type: "text", page: 16, xPct: 0.06, yPct: 0.725, section: "W-4 Form", profileField: "city_state_zip", fontSize: 9 },
+  { id: "w4_date", label: "Date", type: "date", page: 16, xPct: 0.72, yPct: 0.075, section: "W-4 Form", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 18 - I-9 Section 1 ============
-  { id: "i9_last_name", label: "Last Name", type: "text", page: 18, xPct: 0.05, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_first_name", label: "First Name", type: "text", page: 18, xPct: 0.28, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_middle", label: "Middle Initial", type: "text", page: 18, xPct: 0.50, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_other_names", label: "Other Last Names Used", type: "text", page: 18, xPct: 0.64, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_address", label: "Address", type: "text", page: 18, xPct: 0.05, yPct: 0.69, section: "I-9 Form", profileField: "address", fontSize: 9 },
-  { id: "i9_apt", label: "Apt. Number", type: "text", page: 18, xPct: 0.28, yPct: 0.69, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_city", label: "City", type: "text", page: 18, xPct: 0.38, yPct: 0.69, section: "I-9 Form", profileField: "city", fontSize: 9 },
-  { id: "i9_state", label: "State", type: "text", page: 18, xPct: 0.62, yPct: 0.69, section: "I-9 Form", profileField: "state", fontSize: 9 },
-  { id: "i9_zip", label: "ZIP Code", type: "text", page: 18, xPct: 0.72, yPct: 0.69, section: "I-9 Form", profileField: "zip_code", fontSize: 9 },
-  { id: "i9_dob", label: "Date of Birth", type: "text", page: 18, xPct: 0.05, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_ssn", label: "SSN", type: "text", page: 18, xPct: 0.28, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_email", label: "Email", type: "text", page: 18, xPct: 0.48, yPct: 0.66, section: "I-9 Form", profileField: "email", fontSize: 9 },
-  { id: "i9_phone", label: "Phone", type: "text", page: 18, xPct: 0.72, yPct: 0.66, section: "I-9 Form", profileField: "phone", fontSize: 9 },
-  { id: "i9_date", label: "Date (Employee)", type: "date", page: 18, xPct: 0.72, yPct: 0.42, section: "I-9 Form", tags: ["date_mirror"], fontSize: 9 },
+  // ============ PAGE 19 - I-9 Section 1 ============
+  { id: "i9_last_name", label: "Last Name", type: "text", page: 19, xPct: 0.05, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_first_name", label: "First Name", type: "text", page: 19, xPct: 0.28, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_middle", label: "Middle Initial", type: "text", page: 19, xPct: 0.50, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_other_names", label: "Other Last Names Used", type: "text", page: 19, xPct: 0.64, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_address", label: "Address", type: "text", page: 19, xPct: 0.05, yPct: 0.69, section: "I-9 Form", profileField: "address", fontSize: 9 },
+  { id: "i9_apt", label: "Apt. Number", type: "text", page: 19, xPct: 0.28, yPct: 0.69, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_city", label: "City", type: "text", page: 19, xPct: 0.38, yPct: 0.69, section: "I-9 Form", profileField: "city", fontSize: 9 },
+  { id: "i9_state", label: "State", type: "text", page: 19, xPct: 0.62, yPct: 0.69, section: "I-9 Form", profileField: "state", fontSize: 9 },
+  { id: "i9_zip", label: "ZIP Code", type: "text", page: 19, xPct: 0.72, yPct: 0.69, section: "I-9 Form", profileField: "zip_code", fontSize: 9 },
+  { id: "i9_dob", label: "Date of Birth", type: "text", page: 19, xPct: 0.05, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_ssn", label: "SSN", type: "text", page: 19, xPct: 0.28, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_email", label: "Email", type: "text", page: 19, xPct: 0.48, yPct: 0.66, section: "I-9 Form", profileField: "email", fontSize: 9 },
+  { id: "i9_phone", label: "Phone", type: "text", page: 19, xPct: 0.72, yPct: 0.66, section: "I-9 Form", profileField: "phone", fontSize: 9 },
+  { id: "i9_date", label: "Date (Employee)", type: "date", page: 19, xPct: 0.72, yPct: 0.42, section: "I-9 Form", tags: ["date_mirror"], fontSize: 9 },
 
-  // ============ PAGE 20-21 - Background Check ============
-  { id: "bg_last_name", label: "Last Name", type: "text", page: 21, xPct: 0.22, yPct: 0.725, section: "Background Check", fontSize: 9 },
-  { id: "bg_first_name", label: "First Name", type: "text", page: 21, xPct: 0.22, yPct: 0.695, section: "Background Check", fontSize: 9 },
-  { id: "bg_middle", label: "Middle Name", type: "text", page: 21, xPct: 0.22, yPct: 0.665, section: "Background Check", fontSize: 9 },
-  { id: "bg_maiden", label: "Maiden Name", type: "text", page: 21, xPct: 0.22, yPct: 0.635, section: "Background Check", fontSize: 9 },
-  { id: "bg_dob", label: "Date of Birth", type: "text", page: 21, xPct: 0.22, yPct: 0.595, section: "Background Check", fontSize: 9 },
-  { id: "bg_race", label: "Race", type: "text", page: 21, xPct: 0.22, yPct: 0.565, section: "Background Check", fontSize: 9 },
-  { id: "bg_sex", label: "Sex", type: "text", page: 21, xPct: 0.22, yPct: 0.535, section: "Background Check", fontSize: 9 },
-  { id: "bg_ssn", label: "Social Security Number", type: "text", page: 21, xPct: 0.22, yPct: 0.505, section: "Background Check", fontSize: 9 },
-  { id: "bg_dl", label: "Driver's License #", type: "text", page: 21, xPct: 0.22, yPct: 0.475, section: "Background Check", fontSize: 9 },
-  { id: "bg_dl_state", label: "State of Issue", type: "text", page: 21, xPct: 0.22, yPct: 0.445, section: "Background Check", fontSize: 9 },
-  { id: "bg_address", label: "Mailing Address", type: "text", page: 21, xPct: 0.22, yPct: 0.405, section: "Background Check", profileField: "address", fontSize: 9 },
-  { id: "bg_city", label: "City", type: "text", page: 21, xPct: 0.22, yPct: 0.375, section: "Background Check", profileField: "city", fontSize: 9 },
-  { id: "bg_state", label: "State", type: "text", page: 21, xPct: 0.22, yPct: 0.345, section: "Background Check", profileField: "state", fontSize: 9 },
-  { id: "bg_zip", label: "ZIP Code", type: "text", page: 21, xPct: 0.22, yPct: 0.315, section: "Background Check", profileField: "zip_code", fontSize: 9 },
+  // ============ PAGE 21-22 - Background Check ============
+  { id: "bg_last_name", label: "Last Name", type: "text", page: 22, xPct: 0.22, yPct: 0.725, section: "Background Check", fontSize: 9 },
+  { id: "bg_first_name", label: "First Name", type: "text", page: 22, xPct: 0.22, yPct: 0.695, section: "Background Check", fontSize: 9 },
+  { id: "bg_middle", label: "Middle Name", type: "text", page: 22, xPct: 0.22, yPct: 0.665, section: "Background Check", fontSize: 9 },
+  { id: "bg_maiden", label: "Maiden Name", type: "text", page: 22, xPct: 0.22, yPct: 0.635, section: "Background Check", fontSize: 9 },
+  { id: "bg_dob", label: "Date of Birth", type: "text", page: 22, xPct: 0.22, yPct: 0.595, section: "Background Check", fontSize: 9 },
+  { id: "bg_race", label: "Race", type: "text", page: 22, xPct: 0.22, yPct: 0.565, section: "Background Check", fontSize: 9 },
+  { id: "bg_sex", label: "Sex", type: "text", page: 22, xPct: 0.22, yPct: 0.535, section: "Background Check", fontSize: 9 },
+  { id: "bg_ssn", label: "Social Security Number", type: "text", page: 22, xPct: 0.22, yPct: 0.505, section: "Background Check", fontSize: 9 },
+  { id: "bg_dl", label: "Driver's License #", type: "text", page: 22, xPct: 0.22, yPct: 0.475, section: "Background Check", fontSize: 9 },
+  { id: "bg_dl_state", label: "State of Issue", type: "text", page: 22, xPct: 0.22, yPct: 0.445, section: "Background Check", fontSize: 9 },
+  { id: "bg_address", label: "Mailing Address", type: "text", page: 22, xPct: 0.22, yPct: 0.405, section: "Background Check", profileField: "address", fontSize: 9 },
+  { id: "bg_city", label: "City", type: "text", page: 22, xPct: 0.22, yPct: 0.375, section: "Background Check", profileField: "city", fontSize: 9 },
+  { id: "bg_state", label: "State", type: "text", page: 22, xPct: 0.22, yPct: 0.345, section: "Background Check", profileField: "state", fontSize: 9 },
+  { id: "bg_zip", label: "ZIP Code", type: "text", page: 22, xPct: 0.22, yPct: 0.315, section: "Background Check", profileField: "zip_code", fontSize: 9 },
 
-  // ============ PAGE 22 - Background Check Signatures ============
-  { id: "p22_sig_date_1", label: "Date (Privacy Statement)", type: "date", page: 22, xPct: 0.40, yPct: 0.595, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
-  { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 22, xPct: 0.40, yPct: 0.215, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 23 - Background Check Signatures ============
+  { id: "p22_sig_date_1", label: "Date (Privacy Statement)", type: "date", page: 23, xPct: 0.40, yPct: 0.595, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 23, xPct: 0.40, yPct: 0.215, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 23 - Medication Policy ============
-  { id: "p23_date", label: "Date", type: "date", page: 23, xPct: 0.52, yPct: 0.11, section: "Medication Policy", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 24 - Medication Policy ============
+  { id: "p23_date", label: "Date", type: "date", page: 24, xPct: 0.52, yPct: 0.11, section: "Medication Policy", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 24 - Lifting Restrictions ============
-  { id: "p24_date", label: "Date", type: "date", page: 24, xPct: 0.55, yPct: 0.42, section: "Lifting Restrictions", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 25 - Lifting Restrictions ============
+  { id: "p24_date", label: "Date", type: "date", page: 25, xPct: 0.55, yPct: 0.42, section: "Lifting Restrictions", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 25 - Documentation/Orientation Checklist ============
-  { id: "p25_position", label: "Position Applied For", type: "text", page: 25, xPct: 0.32, yPct: 0.73, section: "Orientation Checklist", fontSize: 10 },
-  { id: "p25_printed_name", label: "Applicant's Printed Name", type: "text", page: 25, xPct: 0.27, yPct: 0.115, section: "Orientation Checklist", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p25_alias", label: "Applicant's Alias", type: "text", page: 25, xPct: 0.20, yPct: 0.09, section: "Orientation Checklist", fontSize: 10 },
-  { id: "p25_date", label: "Date", type: "date", page: 25, xPct: 0.75, yPct: 0.065, section: "Orientation Checklist", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 26 - Documentation/Orientation Checklist ============
+  { id: "p25_position", label: "Position Applied For", type: "text", page: 26, xPct: 0.32, yPct: 0.73, section: "Orientation Checklist", fontSize: 10 },
+  { id: "p25_printed_name", label: "Applicant's Printed Name", type: "text", page: 26, xPct: 0.27, yPct: 0.115, section: "Orientation Checklist", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p25_alias", label: "Applicant's Alias", type: "text", page: 26, xPct: 0.20, yPct: 0.09, section: "Orientation Checklist", fontSize: 10 },
+  { id: "p25_date", label: "Date", type: "date", page: 26, xPct: 0.75, yPct: 0.065, section: "Orientation Checklist", tags: ["date_mirror"], fontSize: 10 },
 
-  // ============ PAGE 26 - TB Risk Assessment ============
-  { id: "tb_name", label: "Employee Name", type: "text", page: 26, xPct: 0.28, yPct: 0.86, section: "TB Assessment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "tb_dob", label: "Date of Birth", type: "text", page: 26, xPct: 0.20, yPct: 0.835, section: "TB Assessment", fontSize: 10 },
-  { id: "tb_date", label: "Date", type: "date", page: 26, xPct: 0.55, yPct: 0.835, section: "TB Assessment", tags: ["date_mirror"], fontSize: 10 },
-  { id: "tb_job_title", label: "Job Title", type: "text", page: 26, xPct: 0.18, yPct: 0.81, section: "TB Assessment", fontSize: 10 },
+  // ============ PAGE 27 - TB Risk Assessment ============
+  { id: "tb_name", label: "Employee Name", type: "text", page: 27, xPct: 0.28, yPct: 0.86, section: "TB Assessment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "tb_dob", label: "Date of Birth", type: "text", page: 27, xPct: 0.20, yPct: 0.835, section: "TB Assessment", fontSize: 10 },
+  { id: "tb_date", label: "Date", type: "date", page: 27, xPct: 0.55, yPct: 0.835, section: "TB Assessment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "tb_job_title", label: "Job Title", type: "text", page: 27, xPct: 0.18, yPct: 0.81, section: "TB Assessment", fontSize: 10 },
 
-  // ============ PAGE 27 - TB Assessment Results ============
-  { id: "p27_emp_date", label: "Employee Signature Date", type: "date", page: 27, xPct: 0.65, yPct: 0.58, section: "TB Results", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 28 - TB Assessment Results ============
+  { id: "p27_emp_date", label: "Employee Signature Date", type: "date", page: 28, xPct: 0.65, yPct: 0.58, section: "TB Results", tags: ["date_mirror"], fontSize: 10 },
 ];
 
 // ========================================

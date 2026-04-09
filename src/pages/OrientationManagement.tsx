@@ -7,26 +7,34 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2, Eye,
+  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle,
 } from "lucide-react";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
 import { orientationSections } from "@/data/orientationContent";
 import EditSectionDialog from "@/components/orientation/EditSectionDialog";
+import AddSectionDialog from "@/components/orientation/AddSectionDialog";
+import AddQuizQuestionDialog from "@/components/orientation/AddQuizQuestionDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 export default function OrientationManagement() {
-  const { modules, loading: modulesLoading, seedModules, updateModule, deleteModule } = useOrientationModules();
-  const { quizzes, loading: quizzesLoading, seedQuizzes } = useOrientationQuizzes();
+  const { modules, loading: modulesLoading, seedModules, addModule, updateModule, deleteModule } = useOrientationModules();
+  const { quizzes, loading: quizzesLoading, seedQuizzes, addQuiz, updateQuiz, deleteQuiz } = useOrientationQuizzes();
   const { progressList, loading: progressLoading } = useOrientationProgress();
   const { toast } = useToast();
 
   const [editSection, setEditSection] = useState<{ id: string; title: string; content: string } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [seeding, setSeeding] = useState(false);
-  
+
+  // Quiz question dialog state
+  const [quizDialogOpen, setQuizDialogOpen] = useState(false);
+  const [quizDialogSection, setQuizDialogSection] = useState(1);
+  const [editingQuiz, setEditingQuiz] = useState<any>(null);
 
   const loading = modulesLoading || quizzesLoading || progressLoading;
 
@@ -53,13 +61,32 @@ export default function OrientationManagement() {
     }
   };
 
-
   const handleEditSave = (id: string, title: string, content: string) => {
     updateModule(id, { title, content });
   };
 
+  const handleAddSection = (sectionNumber: number, title: string, content: string) => {
+    addModule({ section_number: sectionNumber, title, content });
+  };
+
+  const handleAddQuizQuestion = (data: { question_text: string; options: string[]; correct_answer: string; points: number }) => {
+    if (editingQuiz) {
+      updateQuiz(editingQuiz.id, data);
+    } else {
+      addQuiz({
+        section_number: quizDialogSection,
+        question_text: data.question_text,
+        options: data.options,
+        correct_answer: data.correct_answer,
+        points: data.points,
+        sort_order: quizzes.filter((q) => q.section_number === quizDialogSection).length,
+      });
+    }
+  };
+
   const completedCount = progressList.filter((p) => p.confirmed_at).length;
   const inProgressCount = progressList.filter((p) => !p.confirmed_at && (p.sections_completed as number[]).length > 0).length;
+  const nextSectionNumber = modules.length > 0 ? Math.max(...modules.map((m) => m.section_number)) + 1 : 1;
 
   if (loading) {
     return (
@@ -160,6 +187,13 @@ export default function OrientationManagement() {
           </TabsList>
 
           <TabsContent value="sections" className="space-y-4">
+            <div className="flex justify-end">
+              <Button onClick={() => setAddSectionOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Section
+              </Button>
+            </div>
+
             {modules.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
@@ -183,24 +217,78 @@ export default function OrientationManagement() {
                             {mod.audio_url && " • Audio ready"}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
-                          <Volume2 className="w-3 h-3 mr-1" /> Browser TTS
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            <Volume2 className="w-3 h-3 mr-1" /> Browser TTS
+                          </Badge>
+                        </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => { setEditSection({ id: mod.id, title: mod.title, content: mod.content }); setEditOpen(true); }}
                         >
-                          <Edit className="w-3 h-3 mr-1" /> Edit
+                          <Edit className="w-3 h-3 mr-1" /> Edit Section
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => deleteModule(mod.id)}>
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
+
+                      {/* Quiz questions collapsible */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="w-full justify-between">
+                            <span className="flex items-center gap-1">
+                              <HelpCircle className="w-3 h-3" />
+                              Quiz Questions ({sectionQuizzes.length})
+                            </span>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          {sectionQuizzes.map((q, qi) => (
+                            <div key={q.id} className="flex items-start justify-between border rounded-md p-3 bg-muted/30">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">{qi + 1}. {q.question_text}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {(q.options as string[]).join(" • ")} — Answer: {q.correct_answer} ({q.points} pts)
+                                </p>
+                              </div>
+                              <div className="flex gap-1 ml-2 shrink-0">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setQuizDialogSection(mod.section_number);
+                                    setEditingQuiz(q);
+                                    setQuizDialogOpen(true);
+                                  }}
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => deleteQuiz(q.id)}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setQuizDialogSection(mod.section_number);
+                              setEditingQuiz(null);
+                              setQuizDialogOpen(true);
+                            }}
+                          >
+                            <Plus className="w-3 h-3 mr-1" /> Add Question
+                          </Button>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </CardContent>
                   </Card>
                 );
@@ -266,6 +354,21 @@ export default function OrientationManagement() {
         onOpenChange={setEditOpen}
         section={editSection}
         onSave={handleEditSave}
+      />
+
+      <AddSectionDialog
+        open={addSectionOpen}
+        onOpenChange={setAddSectionOpen}
+        onSave={handleAddSection}
+        nextSectionNumber={nextSectionNumber}
+      />
+
+      <AddQuizQuestionDialog
+        open={quizDialogOpen}
+        onOpenChange={setQuizDialogOpen}
+        sectionNumber={quizDialogSection}
+        onSave={handleAddQuizQuestion}
+        editQuestion={editingQuiz}
       />
     </DashboardLayout>
   );

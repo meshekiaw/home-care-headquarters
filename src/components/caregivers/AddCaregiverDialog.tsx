@@ -185,6 +185,24 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
               />
             </div>
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Social Security Number</Label>
+              <Input
+                value={formData.ssn}
+                onChange={(e) => setFormData((f) => ({ ...f, ssn: e.target.value }))}
+                placeholder="123-45-6789"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Date of Birth</Label>
+              <Input
+                type="date"
+                value={formData.date_of_birth}
+                onChange={(e) => setFormData((f) => ({ ...f, date_of_birth: e.target.value }))}
+              />
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Specializations</Label>
             {formData.specializations.length > 0 && (

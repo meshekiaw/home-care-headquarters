@@ -218,9 +218,11 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
   const [containerWidth, setContainerWidth] = useState(0);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ---- Load PDF ----
   useEffect(() => {
@@ -293,11 +295,52 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
           } else {
             setFormValues(initial);
           }
+          setInitialized(true);
         });
     } else {
       setFormValues(initial);
+      setInitialized(true);
     }
   }, [caregiverData, caregiverId]);
+
+  // ---- Auto-save on field changes (debounced) ----
+  useEffect(() => {
+    if (!initialized || !caregiverId || !user) return;
+
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+
+    autoSaveTimerRef.current = setTimeout(async () => {
+      try {
+        const { data: existing } = await supabase
+          .from("caregiver_applications")
+          .select("id")
+          .eq("caregiver_id", caregiverId)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase
+            .from("caregiver_applications")
+            .update({ form_data: formValues as any, updated_at: new Date().toISOString() })
+            .eq("id", existing.id);
+        } else {
+          await supabase
+            .from("caregiver_applications")
+            .insert({
+              caregiver_id: caregiverId,
+              user_id: user.id,
+              form_data: formValues as any,
+              status: "draft",
+            });
+        }
+      } catch {
+        // Silent auto-save failure; manual save still available
+      }
+    }, 2000);
+
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [formValues, initialized, caregiverId, user]);
 
   // ---- Render current page on canvas ----
   useEffect(() => {

@@ -332,7 +332,7 @@ export default function OrientationManagement() {
                 <TableBody>
                   {progressList.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                         <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         No orientation progress yet.
                       </TableCell>
@@ -359,6 +359,27 @@ export default function OrientationManagement() {
                           </TableCell>
                           <TableCell>
                             {p.confirmed_at ? format(new Date(p.confirmed_at), "MMM d, yyyy") : "—"}
+                          </TableCell>
+                          <TableCell>
+                            {p.confirmed_at && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const name = p.caregiver
+                                    ? `${p.caregiver.first_name} ${p.caregiver.last_name}`
+                                    : "Unknown";
+                                  downloadOrientationCertificate({
+                                    caregiverName: name,
+                                    completionDate: format(new Date(p.confirmed_at!), "MMMM d, yyyy"),
+                                    totalSections: modules.length,
+                                    signatureData: p.signature_data,
+                                  });
+                                }}
+                              >
+                                <Download className="w-4 h-4 mr-1" /> PDF
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       );

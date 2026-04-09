@@ -143,6 +143,7 @@ export default function OrientationViewer() {
               audioUrl={currentModule.audio_url}
               onAudioComplete={handleAudioComplete}
               audioCompleted={!!audioCompleted[currentSection]}
+              sectionNumber={currentSection}
             />
 
             {audioCompleted[currentSection] && currentQuizQuestions.length > 0 && !sectionsCompleted.includes(currentSection) && (

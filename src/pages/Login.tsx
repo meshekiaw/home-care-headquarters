@@ -45,9 +45,7 @@ export default function Login() {
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
-      
-      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/dashboard";
-      navigate(from, { replace: true });
+      // Role-based redirect will happen via useEffect after auth state updates
     } catch (error: any) {
       toast({
         title: "Login failed",

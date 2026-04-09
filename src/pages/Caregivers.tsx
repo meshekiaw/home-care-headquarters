@@ -258,6 +258,17 @@ export default function Caregivers() {
           return { success, failed };
         }}
       />
+
+      {loginDialog.caregiver && (
+        <CreateLoginDialog
+          open={loginDialog.open}
+          onOpenChange={(open) => setLoginDialog({ ...loginDialog, open })}
+          caregiverId={loginDialog.caregiver.id}
+          caregiverName={`${loginDialog.caregiver.first_name} ${loginDialog.caregiver.last_name}`}
+          caregiverEmail={loginDialog.caregiver.email}
+          onSuccess={refetch}
+        />
+      )}
     </DashboardLayout>
   );
 }

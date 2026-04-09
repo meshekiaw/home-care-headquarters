@@ -47,9 +47,9 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "home_phone", label: "Home Phone", type: "text", page: 1, xPct: 0.17, yPct: 0.585, section: "Application", profileField: "phone", fontSize: 10 },
   { id: "cell_phone", label: "Cell Phone", type: "text", page: 1, xPct: 0.42, yPct: 0.585, section: "Application", profileField: "phone", fontSize: 10 },
   { id: "p1_email", label: "Email", type: "text", page: 1, xPct: 0.68, yPct: 0.585, section: "Application", profileField: "email", fontSize: 10 },
-  { id: "ssn", label: "Social Security Number", type: "text", page: 1, xPct: 0.26, yPct: 0.545, section: "Application", fontSize: 10 },
+  { id: "ssn", label: "Social Security Number", type: "text", page: 1, xPct: 0.26, yPct: 0.545, section: "Application", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 10 },
   { id: "dl_number", label: "DL/State ID Number", type: "text", page: 1, xPct: 0.62, yPct: 0.545, section: "Application", fontSize: 10 },
-  { id: "dob", label: "Date of Birth", type: "text", page: 1, xPct: 0.17, yPct: 0.515, section: "Application", fontSize: 10 },
+  { id: "dob", label: "Date of Birth", type: "text", page: 1, xPct: 0.17, yPct: 0.515, section: "Application", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
   { id: "certifications", label: "Certifications", type: "text", page: 1, xPct: 0.56, yPct: 0.485, section: "Application", fontSize: 10 },
   { id: "hours_sunday", label: "Hours NOT Available - Sunday", type: "text", page: 1, xPct: 0.42, yPct: 0.435, section: "Availability", fontSize: 9 },
   { id: "hours_monday", label: "Monday", type: "text", page: 1, xPct: 0.68, yPct: 0.435, section: "Availability", fontSize: 9 },
@@ -112,8 +112,8 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
 
   // ============ PAGE 14 - Practitioner ID Request ============
   { id: "p13_name", label: "Practitioner Name", type: "text", page: 14, xPct: 0.05, yPct: 0.615, section: "Practitioner ID", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p13_ssn", label: "Social Security Number", type: "text", page: 14, xPct: 0.05, yPct: 0.535, section: "Practitioner ID", fontSize: 10 },
-  { id: "p13_dob", label: "Date of Birth", type: "text", page: 14, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", fontSize: 10 },
+  { id: "p13_ssn", label: "Social Security Number", type: "text", page: 14, xPct: 0.05, yPct: 0.535, section: "Practitioner ID", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 10 },
+  { id: "p13_dob", label: "Date of Birth", type: "text", page: 14, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
   { id: "p13_mail_address", label: "Mail to Address", type: "text", page: 14, xPct: 0.05, yPct: 0.34, section: "Practitioner ID", profileField: "address", fontSize: 9 },
   { id: "p13_mail_city", label: "City", type: "text", page: 14, xPct: 0.05, yPct: 0.30, section: "Practitioner ID", profileField: "city", fontSize: 9 },
   { id: "p13_mail_state", label: "State", type: "text", page: 14, xPct: 0.05, yPct: 0.26, section: "Practitioner ID", profileField: "state", fontSize: 9 },
@@ -133,7 +133,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   // ============ PAGE 16 - W-4 Form ============
   { id: "w4_first_name", label: "First Name & Middle Initial", type: "text", page: 16, xPct: 0.06, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
   { id: "w4_last_name", label: "Last Name", type: "text", page: 16, xPct: 0.38, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
-  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 16, xPct: 0.72, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 16, xPct: 0.72, yPct: 0.785, section: "W-4 Form", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 9 },
   { id: "w4_address", label: "Address", type: "text", page: 16, xPct: 0.06, yPct: 0.755, section: "W-4 Form", profileField: "address", fontSize: 9 },
   { id: "w4_city_state_zip", label: "City, State, ZIP", type: "text", page: 16, xPct: 0.06, yPct: 0.725, section: "W-4 Form", profileField: "city_state_zip", fontSize: 9 },
   { id: "w4_date", label: "Date", type: "date", page: 16, xPct: 0.72, yPct: 0.075, section: "W-4 Form", tags: ["date_mirror"], fontSize: 10 },
@@ -148,8 +148,8 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "i9_city", label: "City", type: "text", page: 19, xPct: 0.38, yPct: 0.69, section: "I-9 Form", profileField: "city", fontSize: 9 },
   { id: "i9_state", label: "State", type: "text", page: 19, xPct: 0.62, yPct: 0.69, section: "I-9 Form", profileField: "state", fontSize: 9 },
   { id: "i9_zip", label: "ZIP Code", type: "text", page: 19, xPct: 0.72, yPct: 0.69, section: "I-9 Form", profileField: "zip_code", fontSize: 9 },
-  { id: "i9_dob", label: "Date of Birth", type: "text", page: 19, xPct: 0.05, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
-  { id: "i9_ssn", label: "SSN", type: "text", page: 19, xPct: 0.28, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_dob", label: "Date of Birth", type: "text", page: 19, xPct: 0.05, yPct: 0.66, section: "I-9 Form", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 9 },
+  { id: "i9_ssn", label: "SSN", type: "text", page: 19, xPct: 0.28, yPct: 0.66, section: "I-9 Form", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 9 },
   { id: "i9_email", label: "Email", type: "text", page: 19, xPct: 0.48, yPct: 0.66, section: "I-9 Form", profileField: "email", fontSize: 9 },
   { id: "i9_phone", label: "Phone", type: "text", page: 19, xPct: 0.72, yPct: 0.66, section: "I-9 Form", profileField: "phone", fontSize: 9 },
   { id: "i9_date", label: "Date (Employee)", type: "date", page: 19, xPct: 0.72, yPct: 0.42, section: "I-9 Form", tags: ["date_mirror"], fontSize: 9 },
@@ -159,10 +159,10 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "bg_first_name", label: "First Name", type: "text", page: 22, xPct: 0.22, yPct: 0.695, section: "Background Check", fontSize: 9 },
   { id: "bg_middle", label: "Middle Name", type: "text", page: 22, xPct: 0.22, yPct: 0.665, section: "Background Check", fontSize: 9 },
   { id: "bg_maiden", label: "Maiden Name", type: "text", page: 22, xPct: 0.22, yPct: 0.635, section: "Background Check", fontSize: 9 },
-  { id: "bg_dob", label: "Date of Birth", type: "text", page: 22, xPct: 0.22, yPct: 0.595, section: "Background Check", fontSize: 9 },
+  { id: "bg_dob", label: "Date of Birth", type: "text", page: 22, xPct: 0.22, yPct: 0.595, section: "Background Check", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 9 },
   { id: "bg_race", label: "Race", type: "text", page: 22, xPct: 0.22, yPct: 0.565, section: "Background Check", fontSize: 9 },
   { id: "bg_sex", label: "Sex", type: "text", page: 22, xPct: 0.22, yPct: 0.535, section: "Background Check", fontSize: 9 },
-  { id: "bg_ssn", label: "Social Security Number", type: "text", page: 22, xPct: 0.22, yPct: 0.505, section: "Background Check", fontSize: 9 },
+  { id: "bg_ssn", label: "Social Security Number", type: "text", page: 22, xPct: 0.22, yPct: 0.505, section: "Background Check", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 9 },
   { id: "bg_dl", label: "Driver's License #", type: "text", page: 22, xPct: 0.22, yPct: 0.475, section: "Background Check", fontSize: 9 },
   { id: "bg_dl_state", label: "State of Issue", type: "text", page: 22, xPct: 0.22, yPct: 0.445, section: "Background Check", fontSize: 9 },
   { id: "bg_address", label: "Mailing Address", type: "text", page: 22, xPct: 0.22, yPct: 0.405, section: "Background Check", profileField: "address", fontSize: 9 },
@@ -258,6 +258,9 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       if (f.profileField === "full_name") initial[f.id] = fullName;
       else if (f.profileField === "full_address") initial[f.id] = fullAddress;
       else if (f.profileField === "city_state_zip") initial[f.id] = cityStateZip;
+      else if (f.profileField === "date_of_birth" && caregiverData.date_of_birth) {
+        initial[f.id] = format(new Date(caregiverData.date_of_birth + "T00:00:00"), "MM/dd/yyyy");
+      }
       else if (f.profileField && caregiverData[f.profileField]) initial[f.id] = caregiverData[f.profileField];
 
       // Name mirrors

@@ -1,0 +1,1 @@
+ALTER TABLE public.caregivers ADD COLUMN IF NOT EXISTS ssn text, ADD COLUMN IF NOT EXISTS date_of_birth date;

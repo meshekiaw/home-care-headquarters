@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Download, Save, ZoomIn, ZoomOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,15 +16,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
-// Configure worker
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 // ========================================
 // FIELD DEFINITIONS
 // ========================================
-// These will be fully mapped once the actual PDF is uploaded.
-// Coordinates are percentage-based (0-1), measured from BOTTOM-LEFT of PDF page.
-// Fields tagged with "mirror" propagate their value automatically.
+// Coordinates: percentage-based (0-1), measured from BOTTOM-LEFT of PDF page (PDF native coords).
+// yPct: 0 = bottom edge, 1 = top edge.
 
 interface FormFieldDef {
   id: string;
@@ -31,32 +30,162 @@ interface FormFieldDef {
   type: "text" | "date" | "checkbox" | "textarea";
   page: number;
   xPct: number;
-  yPct: number; // 0 = bottom, 1 = top
+  yPct: number;
   widthPct?: number;
   fontSize?: number;
   section?: string;
-  /** Tags for auto-propagation: "name_mirror", "date_mirror" */
   tags?: string[];
-  /** Which caregiver profile field to pre-populate from */
   profileField?: string;
 }
 
-// Placeholder field definitions — will be replaced with exact coordinates
-// once the JotForm PDF is uploaded and inspected.
+// Full HCN Application field mapping across all 27 pages
 const APPLICATION_FIELDS: FormFieldDef[] = [
-  // Section 1 — Employee Information
-  { id: "employee_name", label: "Employee Name (Full)", type: "text", page: 1, xPct: 0.05, yPct: 0.85, section: "Employee Information", tags: ["name_primary"], profileField: "full_name", fontSize: 10 },
-  { id: "application_date", label: "Date", type: "date", page: 1, xPct: 0.65, yPct: 0.85, section: "Employee Information", tags: ["date_primary"], fontSize: 10 },
-  { id: "address", label: "Address", type: "text", page: 1, xPct: 0.05, yPct: 0.80, section: "Employee Information", profileField: "address", fontSize: 10 },
-  { id: "city", label: "City", type: "text", page: 1, xPct: 0.05, yPct: 0.75, section: "Employee Information", profileField: "city", fontSize: 10 },
-  { id: "state", label: "State", type: "text", page: 1, xPct: 0.40, yPct: 0.75, section: "Employee Information", profileField: "state", fontSize: 10 },
-  { id: "zip_code", label: "Zip Code", type: "text", page: 1, xPct: 0.60, yPct: 0.75, section: "Employee Information", profileField: "zip_code", fontSize: 10 },
-  { id: "phone", label: "Phone", type: "text", page: 1, xPct: 0.05, yPct: 0.70, section: "Employee Information", profileField: "phone", fontSize: 10 },
-  { id: "email", label: "Email", type: "text", page: 1, xPct: 0.40, yPct: 0.70, section: "Employee Information", profileField: "email", fontSize: 10 },
+  // ============ PAGE 1 - Application for Employment ============
+  { id: "legal_name", label: "Legal Name", type: "text", page: 1, xPct: 0.16, yPct: 0.645, section: "Application", tags: ["name_primary"], profileField: "full_name", fontSize: 10 },
+  { id: "aliases", label: "Aliases", type: "text", page: 1, xPct: 0.56, yPct: 0.645, section: "Application", fontSize: 10 },
+  { id: "p1_address", label: "Address", type: "text", page: 1, xPct: 0.12, yPct: 0.615, section: "Application", profileField: "full_address", fontSize: 10 },
+  { id: "home_phone", label: "Home Phone", type: "text", page: 1, xPct: 0.17, yPct: 0.585, section: "Application", profileField: "phone", fontSize: 10 },
+  { id: "cell_phone", label: "Cell Phone", type: "text", page: 1, xPct: 0.42, yPct: 0.585, section: "Application", profileField: "phone", fontSize: 10 },
+  { id: "p1_email", label: "Email", type: "text", page: 1, xPct: 0.68, yPct: 0.585, section: "Application", profileField: "email", fontSize: 10 },
+  { id: "ssn", label: "Social Security Number", type: "text", page: 1, xPct: 0.26, yPct: 0.545, section: "Application", fontSize: 10 },
+  { id: "dl_number", label: "DL/State ID Number", type: "text", page: 1, xPct: 0.62, yPct: 0.545, section: "Application", fontSize: 10 },
+  { id: "dob", label: "Date of Birth", type: "text", page: 1, xPct: 0.17, yPct: 0.515, section: "Application", fontSize: 10 },
+  { id: "certifications", label: "Certifications", type: "text", page: 1, xPct: 0.56, yPct: 0.485, section: "Application", fontSize: 10 },
+  { id: "hours_sunday", label: "Hours NOT Available - Sunday", type: "text", page: 1, xPct: 0.42, yPct: 0.435, section: "Availability", fontSize: 9 },
+  { id: "hours_monday", label: "Monday", type: "text", page: 1, xPct: 0.68, yPct: 0.435, section: "Availability", fontSize: 9 },
+  { id: "hours_tuesday", label: "Tuesday", type: "text", page: 1, xPct: 0.14, yPct: 0.41, section: "Availability", fontSize: 9 },
+  { id: "hours_wednesday", label: "Wednesday", type: "text", page: 1, xPct: 0.42, yPct: 0.41, section: "Availability", fontSize: 9 },
+  { id: "hours_thursday", label: "Thursday", type: "text", page: 1, xPct: 0.68, yPct: 0.41, section: "Availability", fontSize: 9 },
+  { id: "hours_friday", label: "Friday", type: "text", page: 1, xPct: 0.14, yPct: 0.385, section: "Availability", fontSize: 9 },
+  { id: "hours_saturday", label: "Saturday", type: "text", page: 1, xPct: 0.42, yPct: 0.385, section: "Availability", fontSize: 9 },
+  { id: "related_employees", label: "Related to current/former employees?", type: "text", page: 1, xPct: 0.05, yPct: 0.34, section: "Application", fontSize: 9 },
+  { id: "how_heard", label: "How did you hear about HCN?", type: "text", page: 1, xPct: 0.45, yPct: 0.305, section: "Application", fontSize: 9 },
+  { id: "p1_date", label: "Date (Page 1)", type: "date", page: 1, xPct: 0.62, yPct: 0.075, section: "Application", tags: ["date_primary"], fontSize: 10 },
 
-  // Mirrored name fields on other pages (examples — will be mapped to actual positions)
-  { id: "employee_name_p2", label: "Employee Name (Page 2)", type: "text", page: 2, xPct: 0.05, yPct: 0.92, section: "Employee Information", tags: ["name_mirror"], fontSize: 9 },
-  { id: "date_p2", label: "Date (Page 2)", type: "date", page: 2, xPct: 0.65, yPct: 0.92, section: "Employee Information", tags: ["date_mirror"], fontSize: 9 },
+  // ============ PAGE 2 - Policy Acknowledgments ============
+  { id: "p2_name_sig_1", label: "Printed Name (P&P Manual)", type: "text", page: 2, xPct: 0.30, yPct: 0.79, section: "P&P Manual Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_date_1", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.72, section: "P&P Manual Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p2_name_sig_2", label: "Printed Name (Medication Policy)", type: "text", page: 2, xPct: 0.30, yPct: 0.555, section: "Medication Policy Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_date_2", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.49, section: "Medication Policy Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p2_name_sig_3", label: "Printed Name (Confidentiality)", type: "text", page: 2, xPct: 0.30, yPct: 0.36, section: "Confidentiality Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_date_3", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.295, section: "Confidentiality Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p2_position", label: "Position Title", type: "text", page: 2, xPct: 0.52, yPct: 0.215, section: "Job Description Acknowledgment", fontSize: 10 },
+  { id: "p2_name_sig_4", label: "Printed Name (Job Description)", type: "text", page: 2, xPct: 0.30, yPct: 0.10, section: "Job Description Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_date_4", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.035, section: "Job Description Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 3 - Business Reference 1 ============
+  { id: "ref1_company", label: "Company Name", type: "text", page: 3, xPct: 0.05, yPct: 0.72, section: "Reference 1", fontSize: 10 },
+  { id: "ref1_address", label: "Company Address/Phone/Fax/Email", type: "text", page: 3, xPct: 0.05, yPct: 0.66, section: "Reference 1", fontSize: 9 },
+
+  // ============ PAGE 4 - Business Reference 2 ============
+  { id: "ref2_company", label: "Company Name", type: "text", page: 4, xPct: 0.05, yPct: 0.72, section: "Reference 2", fontSize: 10 },
+  { id: "ref2_address", label: "Company Address/Phone/Fax/Email", type: "text", page: 4, xPct: 0.05, yPct: 0.66, section: "Reference 2", fontSize: 9 },
+
+  // ============ PAGE 5 - Employment Agreement ============
+  { id: "p5_day", label: "Day", type: "text", page: 5, xPct: 0.38, yPct: 0.72, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_month", label: "Month", type: "text", page: 5, xPct: 0.52, yPct: 0.72, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_year", label: "Year (20__)", type: "text", page: 5, xPct: 0.68, yPct: 0.72, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_employee_name", label: "Employee Name", type: "text", page: 5, xPct: 0.33, yPct: 0.695, section: "Employment Agreement", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p5_employee_address", label: "Employee Address", type: "text", page: 5, xPct: 0.65, yPct: 0.695, section: "Employment Agreement", profileField: "full_address", fontSize: 9 },
+  { id: "p5_position_title", label: "Position Title", type: "text", page: 5, xPct: 0.10, yPct: 0.42, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_rate", label: "Compensation Rate", type: "text", page: 5, xPct: 0.55, yPct: 0.30, section: "Employment Agreement", fontSize: 10 },
+
+  // ============ PAGE 8 - Agreement Signatures ============
+  { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.05, yPct: 0.62, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.55, yPct: 0.62, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 11 - Job Description Signature ============
+  { id: "p11_date", label: "Date", type: "date", page: 11, xPct: 0.60, yPct: 0.56, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 12 - Employee Handbook Receipt ============
+  { id: "p12_name", label: "Employee Name", type: "text", page: 12, xPct: 0.30, yPct: 0.77, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p12_printed_name", label: "Applicant's Printed Name", type: "text", page: 12, xPct: 0.26, yPct: 0.175, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p12_date", label: "Date", type: "date", page: 12, xPct: 0.52, yPct: 0.14, section: "Handbook Receipt", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 13 - Practitioner ID Request ============
+  { id: "p13_name", label: "Practitioner Name", type: "text", page: 13, xPct: 0.05, yPct: 0.615, section: "Practitioner ID", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p13_ssn", label: "Social Security Number", type: "text", page: 13, xPct: 0.05, yPct: 0.535, section: "Practitioner ID", fontSize: 10 },
+  { id: "p13_dob", label: "Date of Birth", type: "text", page: 13, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", fontSize: 10 },
+  { id: "p13_mail_address", label: "Mail to Address", type: "text", page: 13, xPct: 0.05, yPct: 0.34, section: "Practitioner ID", profileField: "address", fontSize: 9 },
+  { id: "p13_mail_city", label: "City", type: "text", page: 13, xPct: 0.05, yPct: 0.30, section: "Practitioner ID", profileField: "city", fontSize: 9 },
+  { id: "p13_mail_state", label: "State", type: "text", page: 13, xPct: 0.05, yPct: 0.26, section: "Practitioner ID", profileField: "state", fontSize: 9 },
+  { id: "p13_mail_zip", label: "ZIP+4", type: "text", page: 13, xPct: 0.05, yPct: 0.22, section: "Practitioner ID", profileField: "zip_code", fontSize: 9 },
+  { id: "p13_phone", label: "Phone Number", type: "text", page: 13, xPct: 0.05, yPct: 0.18, section: "Practitioner ID", profileField: "phone", fontSize: 9 },
+  { id: "p13_email", label: "Email Address", type: "text", page: 13, xPct: 0.05, yPct: 0.14, section: "Practitioner ID", profileField: "email", fontSize: 9 },
+  { id: "p13_date", label: "Date", type: "date", page: 13, xPct: 0.55, yPct: 0.075, section: "Practitioner ID", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 14 - Direct Deposit ============
+  { id: "p14_employee_name", label: "Employee/Worker Name", type: "text", page: 14, xPct: 0.28, yPct: 0.845, section: "Direct Deposit", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p14_account_name", label: "Accountholder's Name", type: "text", page: 14, xPct: 0.30, yPct: 0.665, section: "Direct Deposit", tags: ["name_mirror"], fontSize: 9 },
+  { id: "p14_routing", label: "Routing/Transit Number", type: "text", page: 14, xPct: 0.30, yPct: 0.64, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_account_num", label: "Account Number", type: "text", page: 14, xPct: 0.30, yPct: 0.615, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_bank_name", label: "Bank Name", type: "text", page: 14, xPct: 0.30, yPct: 0.59, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_date", label: "Date", type: "date", page: 14, xPct: 0.72, yPct: 0.195, section: "Direct Deposit", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 15 - W-4 Form ============
+  { id: "w4_first_name", label: "First Name & Middle Initial", type: "text", page: 15, xPct: 0.06, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_last_name", label: "Last Name", type: "text", page: 15, xPct: 0.38, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 15, xPct: 0.72, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
+  { id: "w4_address", label: "Address", type: "text", page: 15, xPct: 0.06, yPct: 0.755, section: "W-4 Form", profileField: "address", fontSize: 9 },
+  { id: "w4_city_state_zip", label: "City, State, ZIP", type: "text", page: 15, xPct: 0.06, yPct: 0.725, section: "W-4 Form", profileField: "city_state_zip", fontSize: 9 },
+  { id: "w4_date", label: "Date", type: "date", page: 15, xPct: 0.72, yPct: 0.075, section: "W-4 Form", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 18 - I-9 Section 1 ============
+  { id: "i9_last_name", label: "Last Name", type: "text", page: 18, xPct: 0.05, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_first_name", label: "First Name", type: "text", page: 18, xPct: 0.28, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_middle", label: "Middle Initial", type: "text", page: 18, xPct: 0.50, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_other_names", label: "Other Last Names Used", type: "text", page: 18, xPct: 0.64, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_address", label: "Address", type: "text", page: 18, xPct: 0.05, yPct: 0.69, section: "I-9 Form", profileField: "address", fontSize: 9 },
+  { id: "i9_apt", label: "Apt. Number", type: "text", page: 18, xPct: 0.28, yPct: 0.69, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_city", label: "City", type: "text", page: 18, xPct: 0.38, yPct: 0.69, section: "I-9 Form", profileField: "city", fontSize: 9 },
+  { id: "i9_state", label: "State", type: "text", page: 18, xPct: 0.62, yPct: 0.69, section: "I-9 Form", profileField: "state", fontSize: 9 },
+  { id: "i9_zip", label: "ZIP Code", type: "text", page: 18, xPct: 0.72, yPct: 0.69, section: "I-9 Form", profileField: "zip_code", fontSize: 9 },
+  { id: "i9_dob", label: "Date of Birth", type: "text", page: 18, xPct: 0.05, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_ssn", label: "SSN", type: "text", page: 18, xPct: 0.28, yPct: 0.66, section: "I-9 Form", fontSize: 9 },
+  { id: "i9_email", label: "Email", type: "text", page: 18, xPct: 0.48, yPct: 0.66, section: "I-9 Form", profileField: "email", fontSize: 9 },
+  { id: "i9_phone", label: "Phone", type: "text", page: 18, xPct: 0.72, yPct: 0.66, section: "I-9 Form", profileField: "phone", fontSize: 9 },
+  { id: "i9_date", label: "Date (Employee)", type: "date", page: 18, xPct: 0.72, yPct: 0.42, section: "I-9 Form", tags: ["date_mirror"], fontSize: 9 },
+
+  // ============ PAGE 20-21 - Background Check ============
+  { id: "bg_last_name", label: "Last Name", type: "text", page: 21, xPct: 0.22, yPct: 0.725, section: "Background Check", fontSize: 9 },
+  { id: "bg_first_name", label: "First Name", type: "text", page: 21, xPct: 0.22, yPct: 0.695, section: "Background Check", fontSize: 9 },
+  { id: "bg_middle", label: "Middle Name", type: "text", page: 21, xPct: 0.22, yPct: 0.665, section: "Background Check", fontSize: 9 },
+  { id: "bg_maiden", label: "Maiden Name", type: "text", page: 21, xPct: 0.22, yPct: 0.635, section: "Background Check", fontSize: 9 },
+  { id: "bg_dob", label: "Date of Birth", type: "text", page: 21, xPct: 0.22, yPct: 0.595, section: "Background Check", fontSize: 9 },
+  { id: "bg_race", label: "Race", type: "text", page: 21, xPct: 0.22, yPct: 0.565, section: "Background Check", fontSize: 9 },
+  { id: "bg_sex", label: "Sex", type: "text", page: 21, xPct: 0.22, yPct: 0.535, section: "Background Check", fontSize: 9 },
+  { id: "bg_ssn", label: "Social Security Number", type: "text", page: 21, xPct: 0.22, yPct: 0.505, section: "Background Check", fontSize: 9 },
+  { id: "bg_dl", label: "Driver's License #", type: "text", page: 21, xPct: 0.22, yPct: 0.475, section: "Background Check", fontSize: 9 },
+  { id: "bg_dl_state", label: "State of Issue", type: "text", page: 21, xPct: 0.22, yPct: 0.445, section: "Background Check", fontSize: 9 },
+  { id: "bg_address", label: "Mailing Address", type: "text", page: 21, xPct: 0.22, yPct: 0.405, section: "Background Check", profileField: "address", fontSize: 9 },
+  { id: "bg_city", label: "City", type: "text", page: 21, xPct: 0.22, yPct: 0.375, section: "Background Check", profileField: "city", fontSize: 9 },
+  { id: "bg_state", label: "State", type: "text", page: 21, xPct: 0.22, yPct: 0.345, section: "Background Check", profileField: "state", fontSize: 9 },
+  { id: "bg_zip", label: "ZIP Code", type: "text", page: 21, xPct: 0.22, yPct: 0.315, section: "Background Check", profileField: "zip_code", fontSize: 9 },
+
+  // ============ PAGE 22 - Background Check Signatures ============
+  { id: "p22_sig_date_1", label: "Date (Privacy Statement)", type: "date", page: 22, xPct: 0.40, yPct: 0.595, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 22, xPct: 0.40, yPct: 0.215, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 23 - Medication Policy ============
+  { id: "p23_date", label: "Date", type: "date", page: 23, xPct: 0.52, yPct: 0.11, section: "Medication Policy", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 24 - Lifting Restrictions ============
+  { id: "p24_date", label: "Date", type: "date", page: 24, xPct: 0.55, yPct: 0.42, section: "Lifting Restrictions", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 25 - Documentation/Orientation Checklist ============
+  { id: "p25_position", label: "Position Applied For", type: "text", page: 25, xPct: 0.32, yPct: 0.73, section: "Orientation Checklist", fontSize: 10 },
+  { id: "p25_printed_name", label: "Applicant's Printed Name", type: "text", page: 25, xPct: 0.27, yPct: 0.115, section: "Orientation Checklist", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p25_alias", label: "Applicant's Alias", type: "text", page: 25, xPct: 0.20, yPct: 0.09, section: "Orientation Checklist", fontSize: 10 },
+  { id: "p25_date", label: "Date", type: "date", page: 25, xPct: 0.75, yPct: 0.065, section: "Orientation Checklist", tags: ["date_mirror"], fontSize: 10 },
+
+  // ============ PAGE 26 - TB Risk Assessment ============
+  { id: "tb_name", label: "Employee Name", type: "text", page: 26, xPct: 0.28, yPct: 0.86, section: "TB Assessment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "tb_dob", label: "Date of Birth", type: "text", page: 26, xPct: 0.20, yPct: 0.835, section: "TB Assessment", fontSize: 10 },
+  { id: "tb_date", label: "Date", type: "date", page: 26, xPct: 0.55, yPct: 0.835, section: "TB Assessment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "tb_job_title", label: "Job Title", type: "text", page: 26, xPct: 0.18, yPct: 0.81, section: "TB Assessment", fontSize: 10 },
+
+  // ============ PAGE 27 - TB Assessment Results ============
+  { id: "p27_emp_date", label: "Employee Signature Date", type: "date", page: 27, xPct: 0.65, yPct: 0.58, section: "TB Results", tags: ["date_mirror"], fontSize: 10 },
 ];
 
 // ========================================
@@ -83,15 +212,13 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const baseScaleRef = useRef(1);
+  const baseScaleRef = useRef(0);
 
   // ---- Load PDF ----
   useEffect(() => {
     fetch(fileUrl)
       .then((r) => r.arrayBuffer())
-      .then((buf) => {
-        setPdfBytes(buf.slice(0));
-      })
+      .then((buf) => setPdfBytes(buf.slice(0)))
       .catch(() => toast({ title: "Failed to load application PDF", variant: "destructive" }));
   }, [fileUrl]);
 
@@ -102,14 +229,32 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
     const initial: Record<string, string> = {};
     const fullName = `${caregiverData.first_name || ""} ${caregiverData.last_name || ""}`.trim();
     const today = format(new Date(), "MM/dd/yyyy");
+    const cityStateZip = [caregiverData.city, caregiverData.state, caregiverData.zip_code].filter(Boolean).join(", ");
+    const fullAddress = [caregiverData.address, caregiverData.city, caregiverData.state, caregiverData.zip_code].filter(Boolean).join(", ");
 
     APPLICATION_FIELDS.forEach((f) => {
+      // Profile pre-population
       if (f.profileField === "full_name") initial[f.id] = fullName;
+      else if (f.profileField === "full_address") initial[f.id] = fullAddress;
+      else if (f.profileField === "city_state_zip") initial[f.id] = cityStateZip;
       else if (f.profileField && caregiverData[f.profileField]) initial[f.id] = caregiverData[f.profileField];
-      if (f.type === "date") initial[f.id] = today;
+
+      // Name mirrors
       if (f.tags?.includes("name_mirror")) initial[f.id] = fullName;
-      if (f.tags?.includes("date_mirror")) initial[f.id] = today;
+
+      // Date fields
+      if (f.type === "date" || f.tags?.includes("date_mirror") || f.tags?.includes("date_primary")) {
+        initial[f.id] = today;
+      }
     });
+
+    // Also pre-populate W-4 name fields from caregiver data
+    if (caregiverData.first_name) initial["w4_first_name"] = caregiverData.first_name;
+    if (caregiverData.last_name) initial["w4_last_name"] = caregiverData.last_name;
+    if (caregiverData.last_name) initial["i9_last_name"] = caregiverData.last_name;
+    if (caregiverData.first_name) initial["i9_first_name"] = caregiverData.first_name;
+    if (caregiverData.last_name) initial["bg_last_name"] = caregiverData.last_name;
+    if (caregiverData.first_name) initial["bg_first_name"] = caregiverData.first_name;
 
     // Load saved data from DB (overrides defaults)
     if (caregiverId) {
@@ -141,9 +286,8 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       const page = await pdf.getPage(currentPage);
       const viewport = page.getViewport({ scale: 1 });
 
-      // Calculate base scale to fit container width
       const containerWidth = containerRef.current?.clientWidth || 800;
-      if (baseScaleRef.current === 1) {
+      if (baseScaleRef.current === 0) {
         baseScaleRef.current = (containerWidth - 40) / viewport.width;
       }
 
@@ -167,15 +311,15 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
     const field = APPLICATION_FIELDS.find((f) => f.id === fieldId);
     const updated = { ...formValues, [fieldId]: value };
 
+    // Name propagation
     if (field?.tags?.includes("name_primary")) {
-      // Propagate to all name_mirror fields
       APPLICATION_FIELDS.forEach((f) => {
         if (f.tags?.includes("name_mirror")) updated[f.id] = value;
       });
     }
 
+    // Date propagation
     if (field?.tags?.includes("date_primary")) {
-      // Propagate to all date_mirror fields
       APPLICATION_FIELDS.forEach((f) => {
         if (f.tags?.includes("date_mirror")) updated[f.id] = value;
       });
@@ -185,9 +329,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
   };
 
   // ---- Fields for current page ----
-  const pageFields = useMemo(() => {
-    return APPLICATION_FIELDS.filter((f) => f.page === currentPage);
-  }, [currentPage]);
+  const pageFields = useMemo(() => APPLICATION_FIELDS.filter((f) => f.page === currentPage), [currentPage]);
 
   const sectionGroups = useMemo(() => {
     const groups: Record<string, FormFieldDef[]> = {};
@@ -261,7 +403,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Caregiver_Application_Filled.pdf";
+      a.download = "HCN_Application_Filled.pdf";
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
@@ -274,11 +416,11 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       {/* PDF Viewer */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-2 p-2 border-b bg-card shrink-0">
+        <div className="flex items-center gap-2 p-2 border-b bg-card shrink-0 flex-wrap">
           <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setCurrentPage((p) => p - 1)}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
             Page {currentPage} of {numPages || "..."}
           </span>
           <Button variant="outline" size="sm" disabled={currentPage >= numPages} onClick={() => setCurrentPage((p) => p + 1)}>
@@ -315,7 +457,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
         <div className="p-3 border-b shrink-0">
           <h3 className="font-semibold text-sm">Application Fields</h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Fields auto-populate from your profile. Name and date propagate to all pages.
+            Employee name &amp; date auto-populate across all pages. Profile data is pre-filled.
           </p>
         </div>
         <ScrollArea className="flex-1">
@@ -330,18 +472,25 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
                     <div key={field.id}>
                       <Label htmlFor={field.id} className="text-xs">
                         {field.label}
+                        {field.tags?.includes("name_primary") && (
+                          <span className="ml-1 text-primary text-[10px]">(fills all name fields)</span>
+                        )}
+                        {field.tags?.includes("date_primary") && (
+                          <span className="ml-1 text-primary text-[10px]">(fills all date fields)</span>
+                        )}
                       </Label>
-                      {field.type === "textarea" ? (
-                        <textarea
-                          id={field.id}
-                          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[60px]"
-                          value={formValues[field.id] || ""}
-                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                        />
+                      {field.type === "checkbox" ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <Checkbox
+                            id={field.id}
+                            checked={formValues[field.id] === "true"}
+                            onCheckedChange={(checked) => handleFieldChange(field.id, checked ? "true" : "")}
+                          />
+                          <label htmlFor={field.id} className="text-xs text-muted-foreground">{field.label}</label>
+                        </div>
                       ) : (
                         <Input
                           id={field.id}
-                          type={field.type === "date" ? "text" : "text"}
                           value={formValues[field.id] || ""}
                           onChange={(e) => handleFieldChange(field.id, e.target.value)}
                           placeholder={field.type === "date" ? "MM/DD/YYYY" : ""}
@@ -355,9 +504,14 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
             ))}
 
             {pageFields.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                No mapped fields on this page.
-              </p>
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground">
+                  No fillable fields on this page.
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This page contains read-only content.
+                </p>
+              </div>
             )}
           </div>
         </ScrollArea>

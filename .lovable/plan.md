@@ -1,33 +1,18 @@
 
 
-# Female Voice + Colorful Orientation Slides
+# American English Voice + Colorful Slide Backgrounds
 
 ## Changes
 
-### 1. Female voice preference (`OrientationSection.tsx`)
-In `createUtterance`, after creating the utterance, search `window.speechSynthesis.getVoices()` for a female voice. Most browsers label female voices with names containing "Female", "Samantha", "Zira", "Google UK English Female", etc. Pick the first match; fall back to default if none found. Load voices on `voiceschanged` event since they load asynchronously.
+### 1. American English voice preference (`OrientationSection.tsx`)
+Update the `useFemaleVoice` hook to prioritize American English voices. Change the keyword list to favor US English voices and add a `lang` filter for `en-US`:
+- First try: voices where `lang === "en-US"` and name matches female keywords ("samantha", "google us english", "zira", "victoria")
+- Fallback: any `en-US` voice
+- Remove UK-specific entries ("google uk english female", "moira", "fiona", "karen")
 
-### 2. Colorful section cards (`OrientationSection.tsx`)
-Add a `sectionNumber` prop and use it to pick from a rotating palette of gradient backgrounds for each section card. Each section gets a distinct, attractive color theme:
-- Section 1: Blue gradient header
-- Section 2: Purple gradient
-- Section 3: Teal/cyan gradient
-- Section 4: Rose/pink gradient
-- Section 5: Amber/orange gradient
-- Section 6: Emerald/green gradient
-- Section 7: Indigo gradient
-- Section 8: Sky blue gradient
-
-The card header gets the gradient background with white text, the narration player gets a lighter tinted background, and the content area stays clean white for readability.
-
-### 3. Pass section number from viewer (`OrientationViewer.tsx`)
-Add `sectionNumber={currentSection}` prop to `<OrientationSection>`.
-
-### 4. Progress bar color enhancement (`OrientationProgressBar.tsx`)
-Use the same color palette for each step dot/bar segment so the progress bar is colorful and matches the section themes.
+### 2. Colorful content background (`OrientationSection.tsx`)
+The card headers already have gradient colors. Add a subtle colored background to the **entire card content area** (not just the narration player) using each section's `theme.light` class on the `<CardContent>` wrapper, so the whole slide feels colorful rather than plain white.
 
 ## Files Modified
-- `src/components/orientation/OrientationSection.tsx` — female voice selection + gradient card styling
-- `src/pages/OrientationViewer.tsx` — pass `sectionNumber` prop
-- `src/components/orientation/OrientationProgressBar.tsx` — colorful step indicators
+- `src/components/orientation/OrientationSection.tsx` — voice filter update + content area background color
 

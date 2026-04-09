@@ -545,9 +545,9 @@ export default function CaregiverProfile() {
             )}
           </TabsContent>
 
-          <TabsContent value="application" className="mt-6">
+           <TabsContent value="application" className="mt-6">
             {caregiver && id && (
-              <div className="min-h-[700px]">
+              <div className="h-[calc(100vh-14rem)] min-h-[500px]">
                 <ApplicationFormFiller
                   fileUrl="/templates/HCN_Application.pdf"
                   caregiverId={id}

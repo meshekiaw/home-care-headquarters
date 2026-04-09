@@ -12,22 +12,23 @@ import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } 
 
 export default function OrientationViewer() {
   const { id: caregiverId } = useParams<{ id: string }>();
+  const isPreview = caregiverId === "preview";
   const { modules, loading: modulesLoading } = useOrientationModules();
   const { quizzes, loading: quizzesLoading } = useOrientationQuizzes();
   const { progressList, upsertProgress } = useOrientationProgress();
 
-  const progress = progressList.find((p) => p.caregiver_id === caregiverId);
+  const progress = isPreview ? undefined : progressList.find((p) => p.caregiver_id === caregiverId);
   const [currentSection, setCurrentSection] = useState(progress?.current_section || 1);
   const [audioCompleted, setAudioCompleted] = useState<Record<number, boolean>>({});
   const [quizPassed, setQuizPassed] = useState<Record<number, boolean>>({});
 
   const totalSections = modules.length;
-  const sectionsCompleted: number[] = (progress?.sections_completed as number[]) || [];
-  const quizScores: Record<string, number> = (progress?.quiz_scores as Record<string, number>) || {};
+  const sectionsCompleted: number[] = isPreview ? [] : (progress?.sections_completed as number[]) || [];
+  const quizScores: Record<string, number> = isPreview ? {} : (progress?.quiz_scores as Record<string, number>) || {};
 
   // Initialize from saved progress
   useState(() => {
-    if (progress) {
+    if (progress && !isPreview) {
       setCurrentSection(progress.current_section);
       const completed: Record<number, boolean> = {};
       const passed: Record<number, boolean> = {};

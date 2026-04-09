@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2,
+  Upload, GraduationCap, Volume2, Eye,
 } from "lucide-react";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
 import { orientationSections } from "@/data/orientationContent";

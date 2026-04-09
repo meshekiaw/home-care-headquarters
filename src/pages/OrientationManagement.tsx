@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle, ShieldAlert,
+  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle, ShieldAlert, Download,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
@@ -20,6 +20,7 @@ import AddSectionDialog from "@/components/orientation/AddSectionDialog";
 import AddQuizQuestionDialog from "@/components/orientation/AddQuizQuestionDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { downloadOrientationCertificate } from "@/utils/orientationCertificatePdf";
 
 export default function OrientationManagement() {
   const { isAdmin, loading: roleLoading } = useUserRole();

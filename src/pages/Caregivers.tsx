@@ -195,6 +195,18 @@ export default function Caregivers() {
                       <Mail className="w-4 h-4 mr-1" />
                       Email
                     </Button>
+                    {!(caregiver as any).auth_user_id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLoginDialog({ open: true, caregiver });
+                        }}
+                      >
+                        <KeyRound className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

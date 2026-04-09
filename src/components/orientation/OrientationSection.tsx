@@ -13,6 +13,12 @@ const SECTION_THEMES = [
   { gradient: "from-emerald-500 to-emerald-700", light: "bg-emerald-50 dark:bg-emerald-950/30", accent: "text-emerald-600 dark:text-emerald-400", progressBg: "bg-emerald-200", progressFill: "bg-emerald-500" },
   { gradient: "from-indigo-500 to-indigo-700", light: "bg-indigo-50 dark:bg-indigo-950/30", accent: "text-indigo-600 dark:text-indigo-400", progressBg: "bg-indigo-200", progressFill: "bg-indigo-500" },
   { gradient: "from-sky-500 to-sky-700", light: "bg-sky-50 dark:bg-sky-950/30", accent: "text-sky-600 dark:text-sky-400", progressBg: "bg-sky-200", progressFill: "bg-sky-500" },
+  { gradient: "from-orange-500 to-orange-700", light: "bg-orange-50 dark:bg-orange-950/30", accent: "text-orange-600 dark:text-orange-400", progressBg: "bg-orange-200", progressFill: "bg-orange-500" },
+  { gradient: "from-cyan-500 to-cyan-700", light: "bg-cyan-50 dark:bg-cyan-950/30", accent: "text-cyan-600 dark:text-cyan-400", progressBg: "bg-cyan-200", progressFill: "bg-cyan-500" },
+  { gradient: "from-fuchsia-500 to-fuchsia-700", light: "bg-fuchsia-50 dark:bg-fuchsia-950/30", accent: "text-fuchsia-600 dark:text-fuchsia-400", progressBg: "bg-fuchsia-200", progressFill: "bg-fuchsia-500" },
+  { gradient: "from-lime-500 to-lime-700", light: "bg-lime-50 dark:bg-lime-950/30", accent: "text-lime-600 dark:text-lime-400", progressBg: "bg-lime-200", progressFill: "bg-lime-500" },
+  { gradient: "from-violet-500 to-violet-700", light: "bg-violet-50 dark:bg-violet-950/30", accent: "text-violet-600 dark:text-violet-400", progressBg: "bg-violet-200", progressFill: "bg-violet-500" },
+  { gradient: "from-pink-500 to-pink-700", light: "bg-pink-50 dark:bg-pink-950/30", accent: "text-pink-600 dark:text-pink-400", progressBg: "bg-pink-200", progressFill: "bg-pink-500" },
 ];
 
 interface OrientationSectionProps {

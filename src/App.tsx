@@ -15,8 +15,8 @@ import ClientProfile from "./pages/ClientProfile";
 import Scheduling from "./pages/Scheduling";
 import Caregivers from "./pages/Caregivers";
 import CaregiverProfile from "./pages/CaregiverProfile";
- import Nurses from "./pages/Nurses";
- import NurseProfile from "./pages/NurseProfile";
+import Nurses from "./pages/Nurses";
+import NurseProfile from "./pages/NurseProfile";
 import Communications from "./pages/Communications";
 import Analytics from "./pages/Analytics";
 import Compliance from "./pages/Compliance";
@@ -28,6 +28,9 @@ import LmsPolicies from "./pages/LmsPolicies";
 import MonthlyCalendars from "./pages/MonthlyCalendars";
 import OrientationManagement from "./pages/OrientationManagement";
 import OrientationViewer from "./pages/OrientationViewer";
+import CaregiverDashboard from "./pages/CaregiverDashboard";
+import CaregiverOrientation from "./pages/CaregiverOrientation";
+import CaregiverMyProfile from "./pages/CaregiverMyProfile";
 
 const queryClient = new QueryClient();
 
@@ -44,26 +47,32 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
-            {/* Protected routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-            <Route path="/clients/new" element={<ProtectedRoute><ClientNew /></ProtectedRoute>} />
-            <Route path="/clients/:id" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
-            <Route path="/scheduling" element={<ProtectedRoute><Scheduling /></ProtectedRoute>} />
-            <Route path="/caregivers" element={<ProtectedRoute><Caregivers /></ProtectedRoute>} />
-            <Route path="/caregivers/:id" element={<ProtectedRoute><CaregiverProfile /></ProtectedRoute>} />
-             <Route path="/nurses" element={<ProtectedRoute><Nurses /></ProtectedRoute>} />
-             <Route path="/nurses/:id" element={<ProtectedRoute><NurseProfile /></ProtectedRoute>} />
-            <Route path="/communications" element={<ProtectedRoute><Communications /></ProtectedRoute>} />
-            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/compliance" element={<ProtectedRoute><Compliance /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/lms/training" element={<ProtectedRoute><LmsTraining /></ProtectedRoute>} />
-            <Route path="/lms/policies" element={<ProtectedRoute><LmsPolicies /></ProtectedRoute>} />
-            <Route path="/monthly-calendars" element={<ProtectedRoute><MonthlyCalendars /></ProtectedRoute>} />
-            <Route path="/lms/orientation" element={<ProtectedRoute><OrientationManagement /></ProtectedRoute>} />
-            <Route path="/lms/orientation/:id" element={<ProtectedRoute><OrientationViewer /></ProtectedRoute>} />
+            {/* Admin-only routes */}
+            <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><Dashboard /></ProtectedRoute>} />
+            <Route path="/clients" element={<ProtectedRoute allowedRoles={["admin"]}><Clients /></ProtectedRoute>} />
+            <Route path="/clients/new" element={<ProtectedRoute allowedRoles={["admin"]}><ClientNew /></ProtectedRoute>} />
+            <Route path="/clients/:id" element={<ProtectedRoute allowedRoles={["admin"]}><ClientProfile /></ProtectedRoute>} />
+            <Route path="/scheduling" element={<ProtectedRoute allowedRoles={["admin"]}><Scheduling /></ProtectedRoute>} />
+            <Route path="/caregivers" element={<ProtectedRoute allowedRoles={["admin"]}><Caregivers /></ProtectedRoute>} />
+            <Route path="/caregivers/:id" element={<ProtectedRoute allowedRoles={["admin"]}><CaregiverProfile /></ProtectedRoute>} />
+            <Route path="/nurses" element={<ProtectedRoute allowedRoles={["admin"]}><Nurses /></ProtectedRoute>} />
+            <Route path="/nurses/:id" element={<ProtectedRoute allowedRoles={["admin"]}><NurseProfile /></ProtectedRoute>} />
+            <Route path="/communications" element={<ProtectedRoute allowedRoles={["admin"]}><Communications /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><Analytics /></ProtectedRoute>} />
+            <Route path="/compliance" element={<ProtectedRoute allowedRoles={["admin"]}><Compliance /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute allowedRoles={["admin"]}><Settings /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute allowedRoles={["admin"]}><Notifications /></ProtectedRoute>} />
+            <Route path="/lms/training" element={<ProtectedRoute allowedRoles={["admin"]}><LmsTraining /></ProtectedRoute>} />
+            <Route path="/lms/policies" element={<ProtectedRoute allowedRoles={["admin"]}><LmsPolicies /></ProtectedRoute>} />
+            <Route path="/monthly-calendars" element={<ProtectedRoute allowedRoles={["admin"]}><MonthlyCalendars /></ProtectedRoute>} />
+            <Route path="/lms/orientation" element={<ProtectedRoute allowedRoles={["admin"]}><OrientationManagement /></ProtectedRoute>} />
+            <Route path="/lms/orientation/:id" element={<ProtectedRoute allowedRoles={["admin"]}><OrientationViewer /></ProtectedRoute>} />
+            
+            {/* Caregiver routes */}
+            <Route path="/my-dashboard" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverDashboard /></ProtectedRoute>} />
+            <Route path="/my-orientation" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverOrientation /></ProtectedRoute>} />
+            <Route path="/my-profile" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverMyProfile /></ProtectedRoute>} />
+            <Route path="/my-communications" element={<ProtectedRoute allowedRoles={["caregiver"]}><Communications /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

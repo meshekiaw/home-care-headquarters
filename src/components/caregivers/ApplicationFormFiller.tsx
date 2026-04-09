@@ -27,7 +27,7 @@ import { format } from "date-fns";
 interface FormFieldDef {
   id: string;
   label: string;
-  type: "text" | "date" | "checkbox" | "textarea";
+  type: "text" | "date" | "checkbox" | "textarea" | "signature";
   page: number;
   xPct: number;
   yPct: number;
@@ -36,6 +36,7 @@ interface FormFieldDef {
   section?: string;
   tags?: string[];
   profileField?: string;
+  instructions?: string;
 }
 
 // Full HCN Application field mapping across all 27 pages

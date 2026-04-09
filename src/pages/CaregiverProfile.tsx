@@ -249,7 +249,7 @@ export default function CaregiverProfile() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="min-h-0">
           <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="credentials">
@@ -545,9 +545,9 @@ export default function CaregiverProfile() {
             )}
           </TabsContent>
 
-           <TabsContent value="application" className="mt-6">
+           <TabsContent value="application" className="mt-6 overflow-hidden">
             {caregiver && id && (
-              <div className="h-[calc(100vh-14rem)] min-h-[500px]">
+               <div className="h-[calc(100vh-14rem)] min-h-[500px] overflow-hidden">
                 <ApplicationFormFiller
                   fileUrl="/templates/HCN_Application.pdf"
                   caregiverId={id}

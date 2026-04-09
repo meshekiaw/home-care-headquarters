@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, RefreshCw, GraduationCap, Volume2,
+  Upload, GraduationCap, Volume2,
 } from "lucide-react";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
 import { orientationSections } from "@/data/orientationContent";

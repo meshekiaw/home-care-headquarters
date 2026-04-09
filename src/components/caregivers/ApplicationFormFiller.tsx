@@ -27,7 +27,7 @@ import { format } from "date-fns";
 interface FormFieldDef {
   id: string;
   label: string;
-  type: "text" | "date" | "checkbox" | "textarea";
+  type: "text" | "date" | "checkbox" | "textarea" | "signature";
   page: number;
   xPct: number;
   yPct: number;
@@ -36,6 +36,7 @@ interface FormFieldDef {
   section?: string;
   tags?: string[];
   profileField?: string;
+  instructions?: string;
 }
 
 // Full HCN Application field mapping across all 27 pages
@@ -127,12 +128,26 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p14_date", label: "Date", type: "date", page: 15, xPct: 0.72, yPct: 0.195, section: "Direct Deposit", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 16 - W-4 Form ============
-  { id: "w4_first_name", label: "First Name & Middle Initial", type: "text", page: 16, xPct: 0.06, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
-  { id: "w4_last_name", label: "Last Name", type: "text", page: 16, xPct: 0.38, yPct: 0.785, section: "W-4 Form", fontSize: 9 },
-  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 16, xPct: 0.72, yPct: 0.785, section: "W-4 Form", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 9 },
-  { id: "w4_address", label: "Address", type: "text", page: 16, xPct: 0.06, yPct: 0.755, section: "W-4 Form", profileField: "address", fontSize: 9 },
-  { id: "w4_city_state_zip", label: "City, State, ZIP", type: "text", page: 16, xPct: 0.06, yPct: 0.725, section: "W-4 Form", profileField: "city_state_zip", fontSize: 9 },
-  { id: "w4_date", label: "Date", type: "date", page: 16, xPct: 0.72, yPct: 0.075, section: "W-4 Form", tags: ["date_mirror"], fontSize: 10 },
+  // Step 1: Personal Information
+  { id: "w4_first_name", label: "First Name & Middle Initial", type: "text", page: 16, xPct: 0.06, yPct: 0.785, section: "W-4 Form – Step 1: Personal Info", fontSize: 9 },
+  { id: "w4_last_name", label: "Last Name", type: "text", page: 16, xPct: 0.38, yPct: 0.785, section: "W-4 Form – Step 1: Personal Info", fontSize: 9 },
+  { id: "w4_ssn", label: "Social Security Number", type: "text", page: 16, xPct: 0.72, yPct: 0.785, section: "W-4 Form – Step 1: Personal Info", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 9 },
+  { id: "w4_address", label: "Address", type: "text", page: 16, xPct: 0.06, yPct: 0.755, section: "W-4 Form – Step 1: Personal Info", profileField: "address", fontSize: 9 },
+  { id: "w4_city_state_zip", label: "City, State, ZIP", type: "text", page: 16, xPct: 0.06, yPct: 0.725, section: "W-4 Form – Step 1: Personal Info", profileField: "city_state_zip", fontSize: 9 },
+  { id: "w4_filing_status", label: "Filing Status (Single / Married filing jointly / Head of household)", type: "text", page: 16, xPct: 0.06, yPct: 0.66, section: "W-4 Form – Step 1: Personal Info", fontSize: 9, instructions: "Enter one: Single, Married filing jointly, or Head of household" },
+  // Step 2: Multiple Jobs or Spouse Works
+  { id: "w4_step2_checkbox", label: "Step 2(c) – Two jobs total checkbox (enter X if applicable)", type: "text", page: 16, xPct: 0.06, yPct: 0.46, section: "W-4 Form – Step 2: Multiple Jobs", fontSize: 9, instructions: "If there are only two jobs total, enter X. Otherwise leave blank." },
+  // Step 3: Claim Dependents and Other Credits
+  { id: "w4_step3a", label: "3(a) Qualifying children under 17 × $2,200", type: "text", page: 16, xPct: 0.82, yPct: 0.345, section: "W-4 Form – Step 3: Dependents", fontSize: 9, instructions: "Multiply number of qualifying children under 17 by $2,200" },
+  { id: "w4_step3b", label: "3(b) Other dependents × $500", type: "text", page: 16, xPct: 0.82, yPct: 0.32, section: "W-4 Form – Step 3: Dependents", fontSize: 9, instructions: "Multiply number of other dependents by $500" },
+  { id: "w4_step3_total", label: "Step 3 Total (3a + 3b + other credits)", type: "text", page: 16, xPct: 0.82, yPct: 0.29, section: "W-4 Form – Step 3: Dependents", fontSize: 9, instructions: "Add 3(a) and 3(b) plus any other credits" },
+  // Step 4: Other Adjustments
+  { id: "w4_step4a", label: "4(a) Other income (not from jobs)", type: "text", page: 16, xPct: 0.82, yPct: 0.225, section: "W-4 Form – Step 4: Other Adjustments", fontSize: 9, instructions: "Interest, dividends, retirement income, etc." },
+  { id: "w4_step4b", label: "4(b) Deductions", type: "text", page: 16, xPct: 0.82, yPct: 0.185, section: "W-4 Form – Step 4: Other Adjustments", fontSize: 9, instructions: "Use Deductions Worksheet on page 4 if applicable" },
+  { id: "w4_step4c", label: "4(c) Extra withholding per pay period", type: "text", page: 16, xPct: 0.82, yPct: 0.145, section: "W-4 Form – Step 4: Other Adjustments", fontSize: 9, instructions: "Additional tax to withhold each pay period" },
+  // Step 5: Sign
+  { id: "w4_signature", label: "Employee Signature", type: "signature", page: 16, xPct: 0.15, yPct: 0.075, section: "W-4 Form – Step 5: Sign", fontSize: 10 },
+  { id: "w4_date", label: "Date", type: "date", page: 16, xPct: 0.72, yPct: 0.075, section: "W-4 Form – Step 5: Sign", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 19 - I-9 Section 1 ============
   { id: "i9_last_name", label: "Last Name", type: "text", page: 19, xPct: 0.05, yPct: 0.72, section: "I-9 Form", fontSize: 9 },
@@ -539,6 +554,9 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
                           <span className="ml-1 text-primary text-[10px]">(fills all date fields)</span>
                         )}
                       </Label>
+                      {field.instructions && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5 mb-1">{field.instructions}</p>
+                      )}
                       {field.type === "checkbox" ? (
                         <div className="flex items-center gap-2 mt-1">
                           <Checkbox
@@ -547,6 +565,17 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
                             onCheckedChange={(checked) => handleFieldChange(field.id, checked ? "true" : "")}
                           />
                           <label htmlFor={field.id} className="text-xs text-muted-foreground">{field.label}</label>
+                        </div>
+                      ) : field.type === "signature" ? (
+                        <div className="mt-1">
+                          <Input
+                            id={field.id}
+                            value={formValues[field.id] || ""}
+                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                            placeholder="Type full name as signature"
+                            className="h-8 text-sm italic"
+                          />
+                          <p className="text-[10px] text-muted-foreground mt-0.5">Type your full legal name as your electronic signature</p>
                         </div>
                       ) : (
                         <Input

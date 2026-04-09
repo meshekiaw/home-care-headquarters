@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,16 +14,15 @@ interface EditSectionDialogProps {
 }
 
 export default function EditSectionDialog({ open, onOpenChange, section, onSave }: EditSectionDialogProps) {
-  const [title, setTitle] = useState(section?.title || "");
-  const [content, setContent] = useState(section?.content || "");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
-  const handleOpen = (isOpen: boolean) => {
-    if (isOpen && section) {
+  useEffect(() => {
+    if (open && section) {
       setTitle(section.title);
       setContent(section.content);
     }
-    onOpenChange(isOpen);
-  };
+  }, [open, section]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpen}>

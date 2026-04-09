@@ -94,6 +94,14 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.05, yPct: 0.62, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
   { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.55, yPct: 0.62, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
 
+  // ============ PAGE 9 - Acceptance of Assignment ============
+  { id: "p9_patient_name", label: "Patient Name", type: "text", page: 9, xPct: 0.25, yPct: 0.32, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_patient_addr", label: "Patient Address", type: "text", page: 9, xPct: 0.25, yPct: 0.37, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.25, yPct: 0.42, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.10, yPct: 0.52, widthPct: 0.80, section: "Acceptance of Assignment", fontSize: 9 },
+  { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.35, yPct: 0.82, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.72, yPct: 0.82, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
+
   // ============ PAGE 11 - Job Description Signature ============
   { id: "p11_date", label: "Date", type: "date", page: 11, xPct: 0.60, yPct: 0.56, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
 

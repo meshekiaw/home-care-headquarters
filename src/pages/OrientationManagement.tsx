@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle, ShieldAlert,
+  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle, ShieldAlert, Download,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
@@ -20,6 +20,7 @@ import AddSectionDialog from "@/components/orientation/AddSectionDialog";
 import AddQuizQuestionDialog from "@/components/orientation/AddQuizQuestionDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { downloadOrientationCertificate } from "@/utils/orientationCertificatePdf";
 
 export default function OrientationManagement() {
   const { isAdmin, loading: roleLoading } = useUserRole();
@@ -320,17 +321,18 @@ export default function OrientationManagement() {
             <Card>
               <Table>
                 <TableHeader>
-                  <TableRow>
+                   <TableRow>
                     <TableHead>Caregiver</TableHead>
                     <TableHead>Progress</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Confirmed</TableHead>
-                  </TableRow>
+                    <TableHead>Certificate</TableHead>
+                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {progressList.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                       <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                         <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         No orientation progress yet.
                       </TableCell>
@@ -357,6 +359,27 @@ export default function OrientationManagement() {
                           </TableCell>
                           <TableCell>
                             {p.confirmed_at ? format(new Date(p.confirmed_at), "MMM d, yyyy") : "—"}
+                          </TableCell>
+                          <TableCell>
+                            {p.confirmed_at && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const name = p.caregiver
+                                    ? `${p.caregiver.first_name} ${p.caregiver.last_name}`
+                                    : "Unknown";
+                                  downloadOrientationCertificate({
+                                    caregiverName: name,
+                                    completionDate: format(new Date(p.confirmed_at!), "MMMM d, yyyy"),
+                                    totalSections: modules.length,
+                                    signatureData: p.signature_data,
+                                  });
+                                }}
+                              >
+                                <Download className="w-4 h-4 mr-1" /> PDF
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       );

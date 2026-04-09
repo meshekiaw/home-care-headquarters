@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RichTextEditor from "./RichTextEditor";
 
 interface EditSectionDialogProps {
   open: boolean;
@@ -26,7 +25,7 @@ export default function EditSectionDialog({ open, onOpenChange, section, onSave 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Section</DialogTitle>
           <DialogDescription>Update the orientation section title and content.</DialogDescription>
@@ -36,26 +35,10 @@ export default function EditSectionDialog({ open, onOpenChange, section, onSave 
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
-          <Tabs defaultValue="editor">
-            <TabsList>
-              <TabsTrigger value="editor">HTML Editor</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-            </TabsList>
-            <TabsContent value="editor">
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={15}
-                className="font-mono text-xs"
-              />
-            </TabsContent>
-            <TabsContent value="preview">
-              <div
-                className="prose prose-sm max-w-none border rounded-md p-4 min-h-[200px] bg-background"
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            </TabsContent>
-          </Tabs>
+          <div>
+            <Label>Content</Label>
+            <RichTextEditor content={content} onChange={setContent} />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

@@ -1,32 +1,21 @@
 
 
-## Add Page 9 Fields to Application Form Filler
+## Add Application Tab to Admin Caregiver Profile
 
-### What's on Page 9
-"Acceptance of Assignment" — acknowledges the employee's receipt of a patient assignment. It has:
-- Patient Name, Address, Phone, Plan of Care Summary (admin-filled, but we can include them)
-- **Employee Signature line** with three columns: Employee (signature), Fill IN Employee (printed name), and Date
+### What
+Add an "Application" tab to the admin-facing caregiver profile page (`/caregivers/:id`) so admins can view and review a caregiver's filled application PDF without needing to log in as the caregiver.
 
-### Changes
+### Steps
 
-**File: `src/components/caregivers/ApplicationFormFiller.tsx`**
+1. **Update `src/pages/CaregiverProfile.tsx`**
+   - Import `ApplicationFormFiller` from `@/components/caregivers/ApplicationFormFiller`
+   - Import `ClipboardList` icon
+   - Change the TabsList grid from `grid-cols-5` to `grid-cols-6`
+   - Add a new `TabsTrigger` for "Application" after the Calendar tab
+   - Add a new `TabsContent` that renders `<ApplicationFormFiller>` with the caregiver's ID and data, using the same template path (`/templates/HCN_Application.pdf`)
 
-Add the following fields to the `APPLICATION_FIELDS` array between the Page 8 and Page 11 sections (around line 96):
+2. **No database or route changes needed** -- the `caregiver_applications` table already has an RLS policy allowing admins (`auth.uid() = user_id`) to view and update applications, and the `ApplicationFormFiller` component already handles loading saved form data by `caregiver_id`.
 
-```text
-// ============ PAGE 9 - Acceptance of Assignment ============
-- p9_patient_name   — "Patient Name" (text, admin field)
-- p9_patient_addr   — "Patient Address" (text, admin field)  
-- p9_patient_phone  — "Patient Phone" (text, admin field)
-- p9_care_summary   — "Plan of Care Summary" (text, admin field)
-- p9_employee_name  — "Employee Printed Name" (text, name_mirror tag)
-- p9_date           — "Date" (date, date_mirror tag)
-```
-
-The Employee Printed Name field will be tagged with `name_mirror` so it auto-fills when the primary name is entered on Page 1. The Date field will be tagged with `date_mirror` so it auto-fills with today's date.
-
-Coordinates will be estimated based on the parsed document layout and the page screenshot, consistent with the existing coordinate mapping pattern used throughout the file.
-
-### No other files change
-This is a field-mapping addition only — no new components, routes, or database changes needed.
+### Technical detail
+The `ApplicationFormFiller` component accepts `{ fileUrl, caregiverId, caregiverData }` props and is self-contained -- it loads saved progress, renders the PDF, and provides the side panel for viewing/editing fields. Embedding it in a `TabsContent` with a fixed height container is all that's needed.
 

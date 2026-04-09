@@ -1,18 +1,22 @@
 
+# Optimize Browser Voice for Softer, Professional Sound
 
-# American English Voice + Colorful Slide Backgrounds
+## Changes in `src/components/orientation/OrientationSection.tsx`
 
-## Changes
+### 1. Refine voice selection
+Update the `useFemaleVoice` hook to prefer higher-quality, softer-sounding US English voices. Prioritize in order:
+- "Samantha" (macOS — warm, professional)
+- "Microsoft Zira" (Windows — soft, clear)
+- "Google US English" (Chrome — neutral, smooth)
+- Any other `en-US` female voice
 
-### 1. American English voice preference (`OrientationSection.tsx`)
-Update the `useFemaleVoice` hook to prioritize American English voices. Change the keyword list to favor US English voices and add a `lang` filter for `en-US`:
-- First try: voices where `lang === "en-US"` and name matches female keywords ("samantha", "google us english", "zira", "victoria")
-- Fallback: any `en-US` voice
-- Remove UK-specific entries ("google uk english female", "moira", "fiona", "karen")
+### 2. Tune utterance parameters for a softer delivery
+In `createUtterance`, adjust:
+- **Rate**: `0.9` (slightly slower for a calmer feel, down from `0.95`)
+- **Pitch**: `1.05` (slightly higher for warmth)
+- **Volume**: `0.85` (slightly softer, less harsh)
 
-### 2. Colorful content background (`OrientationSection.tsx`)
-The card headers already have gradient colors. Add a subtle colored background to the **entire card content area** (not just the narration player) using each section's `theme.light` class on the `<CardContent>` wrapper, so the whole slide feels colorful rather than plain white.
+These small tweaks make the browser voice sound noticeably more pleasant and professional without any external dependency.
 
-## Files Modified
-- `src/components/orientation/OrientationSection.tsx` — voice filter update + content area background color
-
+## File Modified
+- `src/components/orientation/OrientationSection.tsx`

@@ -430,6 +430,7 @@ export type Database = {
           auth_user_id: string | null
           city: string | null
           created_at: string
+          date_of_birth: string | null
           email: string | null
           first_name: string
           hourly_rate: number | null
@@ -438,6 +439,7 @@ export type Database = {
           phone: string | null
           service_radius_miles: number | null
           specializations: string[] | null
+          ssn: string | null
           state: string | null
           status: string
           updated_at: string
@@ -449,6 +451,7 @@ export type Database = {
           auth_user_id?: string | null
           city?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           first_name: string
           hourly_rate?: number | null
@@ -457,6 +460,7 @@ export type Database = {
           phone?: string | null
           service_radius_miles?: number | null
           specializations?: string[] | null
+          ssn?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -468,6 +472,7 @@ export type Database = {
           auth_user_id?: string | null
           city?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           first_name?: string
           hourly_rate?: number | null
@@ -476,6 +481,7 @@ export type Database = {
           phone?: string | null
           service_radius_miles?: number | null
           specializations?: string[] | null
+          ssn?: string | null
           state?: string | null
           status?: string
           updated_at?: string

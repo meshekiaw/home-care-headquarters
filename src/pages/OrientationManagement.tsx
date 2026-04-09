@@ -10,8 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle,
+  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle, ShieldAlert,
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
 import { orientationSections } from "@/data/orientationContent";
 import EditSectionDialog from "@/components/orientation/EditSectionDialog";
@@ -21,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 export default function OrientationManagement() {
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { modules, loading: modulesLoading, seedModules, addModule, updateModule, deleteModule } = useOrientationModules();
   const { quizzes, loading: quizzesLoading, seedQuizzes, addQuiz, updateQuiz, deleteQuiz } = useOrientationQuizzes();
   const { progressList, loading: progressLoading } = useOrientationProgress();
@@ -36,7 +38,25 @@ export default function OrientationManagement() {
   const [quizDialogSection, setQuizDialogSection] = useState(1);
   const [editingQuiz, setEditingQuiz] = useState<any>(null);
 
-  const loading = modulesLoading || quizzesLoading || progressLoading;
+  const loading = modulesLoading || quizzesLoading || progressLoading || roleLoading;
+
+  // Show unauthorized state for non-admins
+  if (!roleLoading && !isAdmin) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <ShieldAlert className="w-16 h-16 text-destructive mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Access Restricted</h2>
+          <p className="text-muted-foreground mb-6 max-w-md">
+            Orientation management is only available to administrators. If you need to complete your orientation, please use the orientation viewer.
+          </p>
+          <Button asChild>
+            <Link to="/dashboard">Return to Dashboard</Link>
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const handleSeedContent = async () => {
     setSeeding(true);

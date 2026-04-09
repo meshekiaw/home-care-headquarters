@@ -10,8 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   BookOpen, Users, CheckCircle2, Clock, Edit, Trash2,
-  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle,
+  Upload, GraduationCap, Volume2, Eye, Plus, ChevronDown, HelpCircle, ShieldAlert,
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
 import { orientationSections } from "@/data/orientationContent";
 import EditSectionDialog from "@/components/orientation/EditSectionDialog";

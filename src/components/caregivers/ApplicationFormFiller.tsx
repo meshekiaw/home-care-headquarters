@@ -302,7 +302,13 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
         .maybeSingle()
         .then(({ data }) => {
           if (data?.form_data && typeof data.form_data === "object") {
-            setFormValues({ ...initial, ...(data.form_data as Record<string, string>) });
+            const saved = data.form_data as Record<string, string>;
+            // Only use saved values that are non-empty; profile pre-population wins for blank saved fields
+            const filtered: Record<string, string> = {};
+            for (const [k, v] of Object.entries(saved)) {
+              if (v && String(v).trim() !== "") filtered[k] = v;
+            }
+            setFormValues({ ...initial, ...filtered });
           } else {
             setFormValues(initial);
           }

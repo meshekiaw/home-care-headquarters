@@ -107,14 +107,17 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.25, yPct: 0.42, section: "Acceptance of Assignment", fontSize: 10 },
   { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.10, yPct: 0.52, widthPct: 0.80, section: "Acceptance of Assignment", fontSize: 9 },
   { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.35, yPct: 0.82, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p9_signature", label: "Employee Signature", type: "signature", page: 9, xPct: 0.35, yPct: 0.78, section: "Acceptance of Assignment", fontSize: 10 },
   { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.72, yPct: 0.82, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 12 - Job Description Signature ============
+  { id: "p11_signature", label: "Employee Signature", type: "signature", page: 12, xPct: 0.28, yPct: 0.595, section: "Job Description Signature", fontSize: 10 },
   { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.60, yPct: 0.56, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 13 - Employee Handbook Receipt ============
   { id: "p12_name", label: "Employee Name", type: "text", page: 13, xPct: 0.30, yPct: 0.77, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
   { id: "p12_printed_name", label: "Applicant's Printed Name", type: "text", page: 13, xPct: 0.26, yPct: 0.175, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p12_signature", label: "Applicant's Signature", type: "signature", page: 13, xPct: 0.26, yPct: 0.14, section: "Handbook Receipt", fontSize: 10 },
   { id: "p12_date", label: "Date", type: "date", page: 13, xPct: 0.52, yPct: 0.14, section: "Handbook Receipt", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 14 - Practitioner ID Request ============
@@ -123,6 +126,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p13_dob", label: "Date of Birth", type: "text", page: 14, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
   { id: "p13_phone", label: "Phone Number", type: "text", page: 14, xPct: 0.05, yPct: 0.18, section: "Practitioner ID", profileField: "phone", fontSize: 9 },
   { id: "p13_email", label: "Email Address", type: "text", page: 14, xPct: 0.05, yPct: 0.14, section: "Practitioner ID", profileField: "email", fontSize: 9 },
+  { id: "p13_signature", label: "Practitioner's Signature", type: "signature", page: 14, xPct: 0.05, yPct: 0.075, section: "Practitioner ID", fontSize: 10 },
   { id: "p13_date", label: "Date", type: "date", page: 14, xPct: 0.55, yPct: 0.075, section: "Practitioner ID", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 15 - Direct Deposit ============
@@ -131,6 +135,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p14_routing", label: "Routing/Transit Number", type: "text", page: 15, xPct: 0.30, yPct: 0.64, section: "Direct Deposit", fontSize: 9 },
   { id: "p14_account_num", label: "Account Number", type: "text", page: 15, xPct: 0.30, yPct: 0.615, section: "Direct Deposit", fontSize: 9 },
   { id: "p14_bank_name", label: "Bank Name", type: "text", page: 15, xPct: 0.30, yPct: 0.59, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_signature", label: "Employee/Worker Signature", type: "signature", page: 15, xPct: 0.28, yPct: 0.195, section: "Direct Deposit", fontSize: 10 },
   { id: "p14_date", label: "Date", type: "date", page: 15, xPct: 0.72, yPct: 0.195, section: "Direct Deposit", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 16 - W-4 Form ============

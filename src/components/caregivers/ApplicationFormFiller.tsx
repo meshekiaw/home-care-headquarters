@@ -27,7 +27,8 @@ import { format } from "date-fns";
 interface FormFieldDef {
   id: string;
   label: string;
-  type: "text" | "date" | "checkbox" | "textarea" | "signature";
+  type: "text" | "date" | "checkbox" | "textarea" | "signature" | "multiCheckbox";
+  options?: string[];
   page: number;
   xPct: number;
   yPct: number;
@@ -258,12 +259,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "tb_q4_no", label: "4. Lived in TB-common country – No", type: "checkbox", page: 27, xPct: 0.74, yPct: 0.635, section: "TB Part 1 – Risk Factors", fontSize: 10 },
   { id: "tb_q4_where", label: "4. If yes, where", type: "text", page: 27, xPct: 0.18, yPct: 0.62, section: "TB Part 1 – Risk Factors", fontSize: 9 },
 
-  { id: "tb_q5_hospital", label: "5. Worked in Hospital", type: "checkbox", page: 27, xPct: 0.40, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
-  { id: "tb_q5_nursing", label: "5. Worked in Nursing Home", type: "checkbox", page: 27, xPct: 0.49, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
-  { id: "tb_q5_correctional", label: "5. Worked in Correctional Facility", type: "checkbox", page: 27, xPct: 0.63, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
-  { id: "tb_q5_homeless", label: "5. Worked in Homeless Shelter", type: "checkbox", page: 27, xPct: 0.80, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
-  { id: "tb_q5_drug", label: "5. Worked in Drug Treatment Center", type: "checkbox", page: 27, xPct: 0.27, yPct: 0.585, section: "TB Part 1 – Risk Factors", fontSize: 10 },
-  { id: "tb_q5_homecare", label: "5. Worked in Home Care/Hospice", type: "checkbox", page: 27, xPct: 0.47, yPct: 0.585, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q5", label: "5. Have you worked in any of the following?", type: "multiCheckbox", page: 27, xPct: 0.40, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10, options: ["Hospital", "Nursing Home", "Correctional Facility", "Homeless Shelter", "Drug Treatment Center", "Home Care/Hospice"] },
 
   { id: "tb_q6_yes", label: "6. Close contact with active TB – Yes", type: "checkbox", page: 27, xPct: 0.75, yPct: 0.56, section: "TB Part 1 – Risk Factors", fontSize: 10 },
   { id: "tb_q6_no", label: "6. Close contact with active TB – No", type: "checkbox", page: 27, xPct: 0.82, yPct: 0.56, section: "TB Part 1 – Risk Factors", fontSize: 10 },
@@ -653,7 +649,29 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
                       {field.instructions && (
                         <p className="text-[10px] text-muted-foreground mt-0.5 mb-1">{field.instructions}</p>
                       )}
-                      {field.type === "checkbox" ? (
+                      {field.type === "multiCheckbox" && field.options ? (
+                        <div className="mt-1 space-y-1.5">
+                          {field.options.map((opt) => {
+                            const selected = (formValues[field.id] || "").split(",").filter(Boolean);
+                            const isChecked = selected.includes(opt);
+                            return (
+                              <div key={opt} className="flex items-center gap-2">
+                                <Checkbox
+                                  id={`${field.id}_${opt}`}
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    const updated = checked
+                                      ? [...selected, opt]
+                                      : selected.filter((s) => s !== opt);
+                                    handleFieldChange(field.id, updated.join(","));
+                                  }}
+                                />
+                                <label htmlFor={`${field.id}_${opt}`} className="text-xs text-muted-foreground">{opt}</label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : field.type === "checkbox" ? (
                         <div className="flex items-center gap-2 mt-1">
                           <Checkbox
                             id={field.id}

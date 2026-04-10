@@ -48,9 +48,9 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "home_phone", label: "Home Phone", type: "text", page: 1, xPct: 0.17, yPct: 0.585, section: "Application", profileField: "phone", fontSize: 10 },
   { id: "cell_phone", label: "Cell Phone", type: "text", page: 1, xPct: 0.42, yPct: 0.585, section: "Application", profileField: "phone", fontSize: 10 },
   { id: "p1_email", label: "Email", type: "text", page: 1, xPct: 0.68, yPct: 0.585, section: "Application", profileField: "email", fontSize: 10 },
-  { id: "ssn", label: "Social Security Number", type: "text", page: 1, xPct: 0.26, yPct: 0.545, section: "Application", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 10 },
+  { id: "ssn", label: "Social Security Number", type: "text", page: 1, xPct: 0.26, yPct: 0.545, section: "Application", tags: ["ssn_primary", "ssn_mirror"], profileField: "ssn", fontSize: 10 },
   { id: "dl_number", label: "DL/State ID Number", type: "text", page: 1, xPct: 0.62, yPct: 0.545, section: "Application", fontSize: 10 },
-  { id: "dob", label: "Date of Birth", type: "text", page: 1, xPct: 0.17, yPct: 0.515, section: "Application", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
+  { id: "dob", label: "Date of Birth", type: "text", page: 1, xPct: 0.17, yPct: 0.515, section: "Application", tags: ["dob_primary", "dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
   { id: "certifications", label: "Certifications", type: "text", page: 1, xPct: 0.56, yPct: 0.485, section: "Application", fontSize: 10 },
   { id: "hours_sunday", label: "Hours NOT Available - Sunday", type: "text", page: 1, xPct: 0.42, yPct: 0.435, section: "Availability", fontSize: 9 },
   { id: "hours_monday", label: "Monday", type: "text", page: 1, xPct: 0.68, yPct: 0.435, section: "Availability", fontSize: 9 },
@@ -395,14 +395,28 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
     // Name propagation
     if (field?.tags?.includes("name_primary")) {
       APPLICATION_FIELDS.forEach((f) => {
-        if (f.tags?.includes("name_mirror")) updated[f.id] = value;
+        if (f.tags?.includes("name_mirror") && f.id !== fieldId) updated[f.id] = value;
       });
     }
 
     // Date propagation
     if (field?.tags?.includes("date_primary")) {
       APPLICATION_FIELDS.forEach((f) => {
-        if (f.tags?.includes("date_mirror")) updated[f.id] = value;
+        if (f.tags?.includes("date_mirror") && f.id !== fieldId) updated[f.id] = value;
+      });
+    }
+
+    // SSN propagation
+    if (field?.tags?.includes("ssn_primary")) {
+      APPLICATION_FIELDS.forEach((f) => {
+        if (f.tags?.includes("ssn_mirror") && f.id !== fieldId) updated[f.id] = value;
+      });
+    }
+
+    // DOB propagation
+    if (field?.tags?.includes("dob_primary")) {
+      APPLICATION_FIELDS.forEach((f) => {
+        if (f.tags?.includes("dob_mirror") && f.id !== fieldId) updated[f.id] = value;
       });
     }
 

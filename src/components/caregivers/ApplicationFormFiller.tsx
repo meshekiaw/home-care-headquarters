@@ -61,17 +61,22 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "hours_saturday", label: "Saturday", type: "text", page: 1, xPct: 0.42, yPct: 0.385, section: "Availability", fontSize: 9 },
   { id: "related_employees", label: "Related to current/former employees?", type: "text", page: 1, xPct: 0.05, yPct: 0.34, section: "Application", fontSize: 9 },
   { id: "how_heard", label: "How did you hear about HCN?", type: "text", page: 1, xPct: 0.45, yPct: 0.305, section: "Application", fontSize: 9 },
+  { id: "p1_signature", label: "Applicant Signature", type: "signature", page: 1, xPct: 0.18, yPct: 0.075, section: "Application", fontSize: 10 },
   { id: "p1_date", label: "Date (Page 1)", type: "date", page: 1, xPct: 0.62, yPct: 0.075, section: "Application", tags: ["date_primary"], fontSize: 10 },
 
   // ============ PAGE 2 - Policy Acknowledgments ============
   { id: "p2_name_sig_1", label: "Printed Name (P&P Manual)", type: "text", page: 2, xPct: 0.30, yPct: 0.79, section: "P&P Manual Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_1", label: "Signature (P&P Manual)", type: "signature", page: 2, xPct: 0.30, yPct: 0.755, section: "P&P Manual Acknowledgment", fontSize: 10 },
   { id: "p2_date_1", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.72, section: "P&P Manual Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
   { id: "p2_name_sig_2", label: "Printed Name (Medication Policy)", type: "text", page: 2, xPct: 0.30, yPct: 0.555, section: "Medication Policy Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_2", label: "Signature (Medication Policy)", type: "signature", page: 2, xPct: 0.30, yPct: 0.52, section: "Medication Policy Acknowledgment", fontSize: 10 },
   { id: "p2_date_2", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.49, section: "Medication Policy Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
   { id: "p2_name_sig_3", label: "Printed Name (Confidentiality)", type: "text", page: 2, xPct: 0.30, yPct: 0.36, section: "Confidentiality Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_3", label: "Signature (Confidentiality)", type: "signature", page: 2, xPct: 0.30, yPct: 0.325, section: "Confidentiality Acknowledgment", fontSize: 10 },
   { id: "p2_date_3", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.295, section: "Confidentiality Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
   { id: "p2_position", label: "Position Title", type: "text", page: 2, xPct: 0.52, yPct: 0.215, section: "Job Description Acknowledgment", fontSize: 10 },
   { id: "p2_name_sig_4", label: "Printed Name (Job Description)", type: "text", page: 2, xPct: 0.30, yPct: 0.10, section: "Job Description Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_4", label: "Signature (Job Description)", type: "signature", page: 2, xPct: 0.30, yPct: 0.065, section: "Job Description Acknowledgment", fontSize: 10 },
   { id: "p2_date_4", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.035, section: "Job Description Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 3 - Business Reference 1 ============
@@ -93,6 +98,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
 
   // ============ PAGE 8 - Agreement Signatures ============
   { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.05, yPct: 0.62, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p8_signature", label: "Signature of Employee", type: "signature", page: 8, xPct: 0.05, yPct: 0.56, section: "Agreement Signatures", fontSize: 10 },
   { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.55, yPct: 0.62, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 9 - Acceptance of Assignment ============
@@ -101,14 +107,17 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.25, yPct: 0.42, section: "Acceptance of Assignment", fontSize: 10 },
   { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.10, yPct: 0.52, widthPct: 0.80, section: "Acceptance of Assignment", fontSize: 9 },
   { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.35, yPct: 0.82, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p9_signature", label: "Employee Signature", type: "signature", page: 9, xPct: 0.35, yPct: 0.78, section: "Acceptance of Assignment", fontSize: 10 },
   { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.72, yPct: 0.82, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 12 - Job Description Signature ============
+  { id: "p11_signature", label: "Employee Signature", type: "signature", page: 12, xPct: 0.28, yPct: 0.595, section: "Job Description Signature", fontSize: 10 },
   { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.60, yPct: 0.56, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 13 - Employee Handbook Receipt ============
   { id: "p12_name", label: "Employee Name", type: "text", page: 13, xPct: 0.30, yPct: 0.77, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
   { id: "p12_printed_name", label: "Applicant's Printed Name", type: "text", page: 13, xPct: 0.26, yPct: 0.175, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p12_signature", label: "Applicant's Signature", type: "signature", page: 13, xPct: 0.26, yPct: 0.14, section: "Handbook Receipt", fontSize: 10 },
   { id: "p12_date", label: "Date", type: "date", page: 13, xPct: 0.52, yPct: 0.14, section: "Handbook Receipt", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 14 - Practitioner ID Request ============
@@ -117,6 +126,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p13_dob", label: "Date of Birth", type: "text", page: 14, xPct: 0.05, yPct: 0.49, section: "Practitioner ID", tags: ["dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
   { id: "p13_phone", label: "Phone Number", type: "text", page: 14, xPct: 0.05, yPct: 0.18, section: "Practitioner ID", profileField: "phone", fontSize: 9 },
   { id: "p13_email", label: "Email Address", type: "text", page: 14, xPct: 0.05, yPct: 0.14, section: "Practitioner ID", profileField: "email", fontSize: 9 },
+  { id: "p13_signature", label: "Practitioner's Signature", type: "signature", page: 14, xPct: 0.05, yPct: 0.075, section: "Practitioner ID", fontSize: 10 },
   { id: "p13_date", label: "Date", type: "date", page: 14, xPct: 0.55, yPct: 0.075, section: "Practitioner ID", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 15 - Direct Deposit ============
@@ -125,6 +135,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p14_routing", label: "Routing/Transit Number", type: "text", page: 15, xPct: 0.30, yPct: 0.64, section: "Direct Deposit", fontSize: 9 },
   { id: "p14_account_num", label: "Account Number", type: "text", page: 15, xPct: 0.30, yPct: 0.615, section: "Direct Deposit", fontSize: 9 },
   { id: "p14_bank_name", label: "Bank Name", type: "text", page: 15, xPct: 0.30, yPct: 0.59, section: "Direct Deposit", fontSize: 9 },
+  { id: "p14_signature", label: "Employee/Worker Signature", type: "signature", page: 15, xPct: 0.28, yPct: 0.195, section: "Direct Deposit", fontSize: 10 },
   { id: "p14_date", label: "Date", type: "date", page: 15, xPct: 0.72, yPct: 0.195, section: "Direct Deposit", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 16 - W-4 Form ============
@@ -210,15 +221,18 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 23, xPct: 0.40, yPct: 0.215, section: "Statement of Oath", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 24 - Medication Policy ============
+  { id: "p23_signature", label: "Employee Signature", type: "signature", page: 24, xPct: 0.22, yPct: 0.11, section: "Medication Policy", fontSize: 10 },
   { id: "p23_date", label: "Date", type: "date", page: 24, xPct: 0.52, yPct: 0.11, section: "Medication Policy", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 25 - Lifting Restrictions ============
+  { id: "p24_signature", label: "Employee Signature", type: "signature", page: 25, xPct: 0.22, yPct: 0.42, section: "Lifting Restrictions", fontSize: 10 },
   { id: "p24_date", label: "Date", type: "date", page: 25, xPct: 0.55, yPct: 0.42, section: "Lifting Restrictions", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 26 - Documentation/Orientation Checklist ============
   { id: "p25_position", label: "Position Applied For", type: "text", page: 26, xPct: 0.32, yPct: 0.73, section: "Orientation Checklist", fontSize: 10 },
   { id: "p25_printed_name", label: "Applicant's Printed Name", type: "text", page: 26, xPct: 0.27, yPct: 0.115, section: "Orientation Checklist", tags: ["name_mirror"], fontSize: 10 },
   { id: "p25_alias", label: "Applicant's Alias", type: "text", page: 26, xPct: 0.20, yPct: 0.09, section: "Orientation Checklist", fontSize: 10 },
+  { id: "p25_signature", label: "Applicant's Signature", type: "signature", page: 26, xPct: 0.27, yPct: 0.065, section: "Orientation Checklist", fontSize: 10 },
   { id: "p25_date", label: "Date", type: "date", page: 26, xPct: 0.75, yPct: 0.065, section: "Orientation Checklist", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 27 - TB Risk Assessment ============
@@ -228,6 +242,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "tb_job_title", label: "Job Title", type: "text", page: 27, xPct: 0.18, yPct: 0.81, section: "TB Assessment", fontSize: 10 },
 
   // ============ PAGE 28 - TB Assessment Results ============
+  { id: "p27_emp_signature", label: "Employee Signature", type: "signature", page: 28, xPct: 0.22, yPct: 0.58, section: "TB Results", fontSize: 10 },
   { id: "p27_emp_date", label: "Employee Signature Date", type: "date", page: 28, xPct: 0.65, yPct: 0.58, section: "TB Results", tags: ["date_mirror"], fontSize: 10 },
 ];
 

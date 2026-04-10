@@ -221,15 +221,18 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 23, xPct: 0.40, yPct: 0.215, section: "Statement of Oath", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 24 - Medication Policy ============
+  { id: "p23_signature", label: "Employee Signature", type: "signature", page: 24, xPct: 0.22, yPct: 0.11, section: "Medication Policy", fontSize: 10 },
   { id: "p23_date", label: "Date", type: "date", page: 24, xPct: 0.52, yPct: 0.11, section: "Medication Policy", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 25 - Lifting Restrictions ============
+  { id: "p24_signature", label: "Employee Signature", type: "signature", page: 25, xPct: 0.22, yPct: 0.42, section: "Lifting Restrictions", fontSize: 10 },
   { id: "p24_date", label: "Date", type: "date", page: 25, xPct: 0.55, yPct: 0.42, section: "Lifting Restrictions", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 26 - Documentation/Orientation Checklist ============
   { id: "p25_position", label: "Position Applied For", type: "text", page: 26, xPct: 0.32, yPct: 0.73, section: "Orientation Checklist", fontSize: 10 },
   { id: "p25_printed_name", label: "Applicant's Printed Name", type: "text", page: 26, xPct: 0.27, yPct: 0.115, section: "Orientation Checklist", tags: ["name_mirror"], fontSize: 10 },
   { id: "p25_alias", label: "Applicant's Alias", type: "text", page: 26, xPct: 0.20, yPct: 0.09, section: "Orientation Checklist", fontSize: 10 },
+  { id: "p25_signature", label: "Applicant's Signature", type: "signature", page: 26, xPct: 0.27, yPct: 0.065, section: "Orientation Checklist", fontSize: 10 },
   { id: "p25_date", label: "Date", type: "date", page: 26, xPct: 0.75, yPct: 0.065, section: "Orientation Checklist", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 27 - TB Risk Assessment ============
@@ -239,6 +242,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "tb_job_title", label: "Job Title", type: "text", page: 27, xPct: 0.18, yPct: 0.81, section: "TB Assessment", fontSize: 10 },
 
   // ============ PAGE 28 - TB Assessment Results ============
+  { id: "p27_emp_signature", label: "Employee Signature", type: "signature", page: 28, xPct: 0.22, yPct: 0.58, section: "TB Results", fontSize: 10 },
   { id: "p27_emp_date", label: "Employee Signature Date", type: "date", page: 28, xPct: 0.65, yPct: 0.58, section: "TB Results", tags: ["date_mirror"], fontSize: 10 },
 ];
 

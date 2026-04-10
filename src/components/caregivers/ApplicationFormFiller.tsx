@@ -98,6 +98,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
 
   // ============ PAGE 8 - Agreement Signatures ============
   { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.05, yPct: 0.62, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p8_signature", label: "Signature of Employee", type: "signature", page: 8, xPct: 0.05, yPct: 0.56, section: "Agreement Signatures", fontSize: 10 },
   { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.55, yPct: 0.62, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 9 - Acceptance of Assignment ============

@@ -195,9 +195,13 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "bg_state", label: "State", type: "text", page: 22, xPct: 0.22, yPct: 0.345, section: "Background Check", profileField: "state", fontSize: 9 },
   { id: "bg_zip", label: "ZIP Code", type: "text", page: 22, xPct: 0.22, yPct: 0.315, section: "Background Check", profileField: "zip_code", fontSize: 9 },
 
-  // ============ PAGE 23 - Background Check Signatures ============
-  { id: "p22_sig_date_1", label: "Date (Privacy Statement)", type: "date", page: 23, xPct: 0.40, yPct: 0.595, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
-  { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 23, xPct: 0.40, yPct: 0.215, section: "Background Signatures", tags: ["date_mirror"], fontSize: 10 },
+  // ============ PAGE 23 - Privacy Statement & Statement of Oath ============
+  { id: "p22_sig_name_1", label: "Printed Name (Privacy Statement)", type: "text", page: 23, xPct: 0.10, yPct: 0.625, section: "Privacy Right Statement", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p22_signature_1", label: "Signature (Privacy Statement)", type: "signature", page: 23, xPct: 0.10, yPct: 0.595, section: "Privacy Right Statement", fontSize: 10 },
+  { id: "p22_sig_date_1", label: "Date (Privacy Statement)", type: "date", page: 23, xPct: 0.40, yPct: 0.595, section: "Privacy Right Statement", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p22_sig_name_2", label: "Printed Name (Statement of Oath)", type: "text", page: 23, xPct: 0.10, yPct: 0.245, section: "Statement of Oath", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p22_signature_2", label: "Signature (Statement of Oath)", type: "signature", page: 23, xPct: 0.10, yPct: 0.215, section: "Statement of Oath", fontSize: 10 },
+  { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 23, xPct: 0.40, yPct: 0.215, section: "Statement of Oath", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 24 - Medication Policy ============
   { id: "p23_date", label: "Date", type: "date", page: 24, xPct: 0.52, yPct: 0.11, section: "Medication Policy", tags: ["date_mirror"], fontSize: 10 },

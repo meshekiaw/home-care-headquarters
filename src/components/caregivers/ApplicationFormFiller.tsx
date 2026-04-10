@@ -66,13 +66,17 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
 
   // ============ PAGE 2 - Policy Acknowledgments ============
   { id: "p2_name_sig_1", label: "Printed Name (P&P Manual)", type: "text", page: 2, xPct: 0.30, yPct: 0.79, section: "P&P Manual Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_1", label: "Signature (P&P Manual)", type: "signature", page: 2, xPct: 0.30, yPct: 0.755, section: "P&P Manual Acknowledgment", fontSize: 10 },
   { id: "p2_date_1", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.72, section: "P&P Manual Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
   { id: "p2_name_sig_2", label: "Printed Name (Medication Policy)", type: "text", page: 2, xPct: 0.30, yPct: 0.555, section: "Medication Policy Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_2", label: "Signature (Medication Policy)", type: "signature", page: 2, xPct: 0.30, yPct: 0.52, section: "Medication Policy Acknowledgment", fontSize: 10 },
   { id: "p2_date_2", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.49, section: "Medication Policy Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
   { id: "p2_name_sig_3", label: "Printed Name (Confidentiality)", type: "text", page: 2, xPct: 0.30, yPct: 0.36, section: "Confidentiality Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_3", label: "Signature (Confidentiality)", type: "signature", page: 2, xPct: 0.30, yPct: 0.325, section: "Confidentiality Acknowledgment", fontSize: 10 },
   { id: "p2_date_3", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.295, section: "Confidentiality Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
   { id: "p2_position", label: "Position Title", type: "text", page: 2, xPct: 0.52, yPct: 0.215, section: "Job Description Acknowledgment", fontSize: 10 },
   { id: "p2_name_sig_4", label: "Printed Name (Job Description)", type: "text", page: 2, xPct: 0.30, yPct: 0.10, section: "Job Description Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_4", label: "Signature (Job Description)", type: "signature", page: 2, xPct: 0.30, yPct: 0.065, section: "Job Description Acknowledgment", fontSize: 10 },
   { id: "p2_date_4", label: "Date", type: "date", page: 2, xPct: 0.65, yPct: 0.035, section: "Job Description Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 3 - Business Reference 1 ============

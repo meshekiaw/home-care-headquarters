@@ -27,7 +27,8 @@ import { format } from "date-fns";
 interface FormFieldDef {
   id: string;
   label: string;
-  type: "text" | "date" | "checkbox" | "textarea" | "signature";
+  type: "text" | "date" | "checkbox" | "textarea" | "signature" | "multiCheckbox";
+  options?: string[];
   page: number;
   xPct: number;
   yPct: number;

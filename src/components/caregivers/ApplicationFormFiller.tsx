@@ -163,7 +163,21 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "i9_ssn", label: "SSN", type: "text", page: 19, xPct: 0.28, yPct: 0.66, section: "I-9 Form", tags: ["ssn_mirror"], profileField: "ssn", fontSize: 9 },
   { id: "i9_email", label: "Email", type: "text", page: 19, xPct: 0.48, yPct: 0.66, section: "I-9 Form", profileField: "email", fontSize: 9 },
   { id: "i9_phone", label: "Phone", type: "text", page: 19, xPct: 0.72, yPct: 0.66, section: "I-9 Form", profileField: "phone", fontSize: 9 },
-  { id: "i9_date", label: "Date (Employee)", type: "date", page: 19, xPct: 0.72, yPct: 0.42, section: "I-9 Form", tags: ["date_mirror"], fontSize: 9 },
+  // Citizenship Attestation
+  { id: "i9_citizen", label: "1. A citizen of the United States", type: "checkbox", page: 19, xPct: 0.05, yPct: 0.52, section: "I-9 Form – Citizenship Status", instructions: "Check if you are a U.S. citizen", fontSize: 9 },
+  { id: "i9_noncitizen_national", label: "2. A noncitizen national of the United States", type: "checkbox", page: 19, xPct: 0.05, yPct: 0.49, section: "I-9 Form – Citizenship Status", instructions: "Check if you are a noncitizen national", fontSize: 9 },
+  { id: "i9_permanent_resident", label: "3. A lawful permanent resident", type: "checkbox", page: 19, xPct: 0.05, yPct: 0.46, section: "I-9 Form – Citizenship Status", instructions: "Check if you are a lawful permanent resident", fontSize: 9 },
+  { id: "i9_alien_reg_number", label: "Alien Reg. Number/USCIS Number (if #3)", type: "text", page: 19, xPct: 0.55, yPct: 0.46, section: "I-9 Form – Citizenship Status", fontSize: 9 },
+  { id: "i9_authorized_alien", label: "4. An alien authorized to work", type: "checkbox", page: 19, xPct: 0.05, yPct: 0.43, section: "I-9 Form – Citizenship Status", instructions: "Check if you are an alien authorized to work", fontSize: 9 },
+  { id: "i9_work_expiration", label: "Work Auth. Expiration Date (if #4)", type: "text", page: 19, xPct: 0.55, yPct: 0.43, section: "I-9 Form – Citizenship Status", instructions: "mm/dd/yyyy or N/A", fontSize: 9 },
+  // Alien document numbers
+  { id: "i9_alien_uscis", label: "Alien Reg. Number/USCIS Number", type: "text", page: 19, xPct: 0.05, yPct: 0.38, section: "I-9 Form – Document Numbers (if #3 or #4)", instructions: "Complete one of these three fields", fontSize: 9 },
+  { id: "i9_i94_number", label: "Form I-94 Admission Number", type: "text", page: 19, xPct: 0.05, yPct: 0.35, section: "I-9 Form – Document Numbers (if #3 or #4)", fontSize: 9 },
+  { id: "i9_foreign_passport", label: "Foreign Passport Number", type: "text", page: 19, xPct: 0.05, yPct: 0.32, section: "I-9 Form – Document Numbers (if #3 or #4)", fontSize: 9 },
+  { id: "i9_country_issuance", label: "Country of Issuance", type: "text", page: 19, xPct: 0.55, yPct: 0.32, section: "I-9 Form – Document Numbers (if #3 or #4)", fontSize: 9 },
+  // Signature & Date
+  { id: "i9_signature", label: "Signature of Employee", type: "signature", page: 19, xPct: 0.05, yPct: 0.245, section: "I-9 Form – Employee Signature", fontSize: 9 },
+  { id: "i9_date", label: "Today's Date", type: "date", page: 19, xPct: 0.72, yPct: 0.245, section: "I-9 Form – Employee Signature", tags: ["date_mirror"], fontSize: 9 },
 
   // ============ PAGE 21-22 - Background Check ============
   { id: "bg_last_name", label: "Last Name", type: "text", page: 22, xPct: 0.22, yPct: 0.725, section: "Background Check", fontSize: 9 },

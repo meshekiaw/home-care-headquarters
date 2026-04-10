@@ -199,6 +199,12 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p22_sig_name_1", label: "Printed Name (Privacy Statement)", type: "text", page: 23, xPct: 0.10, yPct: 0.625, section: "Privacy Right Statement", tags: ["name_mirror"], fontSize: 10 },
   { id: "p22_signature_1", label: "Signature (Privacy Statement)", type: "signature", page: 23, xPct: 0.10, yPct: 0.595, section: "Privacy Right Statement", fontSize: 10 },
   { id: "p22_sig_date_1", label: "Date (Privacy Statement)", type: "date", page: 23, xPct: 0.40, yPct: 0.595, section: "Privacy Right Statement", tags: ["date_mirror"], fontSize: 10 },
+  // Applicant Initials Boxes
+  { id: "p22_initial_1", label: "Initial – Consent for Criminal Record Check", type: "text", page: 23, xPct: 0.88, yPct: 0.46, section: "Applicant Initials", instructions: "Initial inside box: consent for AR State Police & FBI criminal record check", fontSize: 10 },
+  { id: "p22_initial_2", label: "Initial – Directions for Changes/Correcting", type: "text", page: 23, xPct: 0.88, yPct: 0.395, section: "Applicant Initials", instructions: "Initial inside box: received directions for changes/correcting FBI record", fontSize: 10 },
+  { id: "p22_initial_3", label: "Initial – Directions to Obtain Copy", type: "text", page: 23, xPct: 0.88, yPct: 0.35, section: "Applicant Initials", instructions: "Initial inside box: received directions to obtain copy of FBI record", fontSize: 10 },
+  { id: "p22_initial_4", label: "Initial – Directions to Appeal Accuracy", type: "text", page: 23, xPct: 0.88, yPct: 0.30, section: "Applicant Initials", instructions: "Initial inside box: received directions on how to appeal accuracy/disposition", fontSize: 10 },
+  // Statement of Oath
   { id: "p22_sig_name_2", label: "Printed Name (Statement of Oath)", type: "text", page: 23, xPct: 0.10, yPct: 0.245, section: "Statement of Oath", tags: ["name_mirror"], fontSize: 10 },
   { id: "p22_signature_2", label: "Signature (Statement of Oath)", type: "signature", page: 23, xPct: 0.10, yPct: 0.215, section: "Statement of Oath", fontSize: 10 },
   { id: "p22_sig_date_2", label: "Date (Statement of Oath)", type: "date", page: 23, xPct: 0.40, yPct: 0.215, section: "Statement of Oath", tags: ["date_mirror"], fontSize: 10 },

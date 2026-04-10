@@ -61,6 +61,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "hours_saturday", label: "Saturday", type: "text", page: 1, xPct: 0.42, yPct: 0.385, section: "Availability", fontSize: 9 },
   { id: "related_employees", label: "Related to current/former employees?", type: "text", page: 1, xPct: 0.05, yPct: 0.34, section: "Application", fontSize: 9 },
   { id: "how_heard", label: "How did you hear about HCN?", type: "text", page: 1, xPct: 0.45, yPct: 0.305, section: "Application", fontSize: 9 },
+  { id: "p1_signature", label: "Applicant Signature", type: "signature", page: 1, xPct: 0.18, yPct: 0.075, section: "Application", fontSize: 10 },
   { id: "p1_date", label: "Date (Page 1)", type: "date", page: 1, xPct: 0.62, yPct: 0.075, section: "Application", tags: ["date_primary"], fontSize: 10 },
 
   // ============ PAGE 2 - Policy Acknowledgments ============

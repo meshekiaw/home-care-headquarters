@@ -241,6 +241,43 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "tb_date", label: "Date", type: "date", page: 27, xPct: 0.55, yPct: 0.835, section: "TB Assessment", tags: ["date_mirror"], fontSize: 10 },
   { id: "tb_job_title", label: "Job Title", type: "text", page: 27, xPct: 0.18, yPct: 0.81, section: "TB Assessment", fontSize: 10 },
 
+  // Part 1 — TB Risk Factors
+  { id: "tb_q1_yes", label: "1. Positive TB skin/blood test – Yes", type: "checkbox", page: 27, xPct: 0.62, yPct: 0.735, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q1_no", label: "1. Positive TB skin/blood test – No", type: "checkbox", page: 27, xPct: 0.70, yPct: 0.735, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q1_date", label: "1. If yes, date", type: "text", page: 27, xPct: 0.84, yPct: 0.735, section: "TB Part 1 – Risk Factors", fontSize: 9 },
+
+  { id: "tb_q2_yes", label: "2. Diagnosed/treated for active TB – Yes", type: "checkbox", page: 27, xPct: 0.63, yPct: 0.70, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q2_no", label: "2. Diagnosed/treated for active TB – No", type: "checkbox", page: 27, xPct: 0.70, yPct: 0.70, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q2_detail", label: "2. If yes, where/when", type: "text", page: 27, xPct: 0.18, yPct: 0.68, section: "TB Part 1 – Risk Factors", fontSize: 9 },
+
+  { id: "tb_q3_yes", label: "3. BCG (TB) vaccine – Yes", type: "checkbox", page: 27, xPct: 0.46, yPct: 0.665, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q3_no", label: "3. BCG (TB) vaccine – No", type: "checkbox", page: 27, xPct: 0.52, yPct: 0.665, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q3_date", label: "3. If yes, date/year", type: "text", page: 27, xPct: 0.69, yPct: 0.665, section: "TB Part 1 – Risk Factors", fontSize: 9 },
+
+  { id: "tb_q4_yes", label: "4. Lived in TB-common country – Yes", type: "checkbox", page: 27, xPct: 0.66, yPct: 0.635, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q4_no", label: "4. Lived in TB-common country – No", type: "checkbox", page: 27, xPct: 0.74, yPct: 0.635, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q4_where", label: "4. If yes, where", type: "text", page: 27, xPct: 0.18, yPct: 0.62, section: "TB Part 1 – Risk Factors", fontSize: 9 },
+
+  { id: "tb_q5_hospital", label: "5. Worked in Hospital", type: "checkbox", page: 27, xPct: 0.40, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q5_nursing", label: "5. Worked in Nursing Home", type: "checkbox", page: 27, xPct: 0.49, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q5_correctional", label: "5. Worked in Correctional Facility", type: "checkbox", page: 27, xPct: 0.63, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q5_homeless", label: "5. Worked in Homeless Shelter", type: "checkbox", page: 27, xPct: 0.80, yPct: 0.60, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q5_drug", label: "5. Worked in Drug Treatment Center", type: "checkbox", page: 27, xPct: 0.27, yPct: 0.585, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q5_homecare", label: "5. Worked in Home Care/Hospice", type: "checkbox", page: 27, xPct: 0.47, yPct: 0.585, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+
+  { id: "tb_q6_yes", label: "6. Close contact with active TB – Yes", type: "checkbox", page: 27, xPct: 0.75, yPct: 0.56, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q6_no", label: "6. Close contact with active TB – No", type: "checkbox", page: 27, xPct: 0.82, yPct: 0.56, section: "TB Part 1 – Risk Factors", fontSize: 10 },
+  { id: "tb_q6_detail", label: "6. If yes, describe", type: "text", page: 27, xPct: 0.25, yPct: 0.545, section: "TB Part 1 – Risk Factors", fontSize: 9 },
+
+  // Part 2 — Symptoms of Active TB Disease
+  { id: "tb_sym_cough", label: "Persistent cough >3 weeks", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.48, section: "TB Part 2 – Symptoms", fontSize: 10 },
+  { id: "tb_sym_blood", label: "Coughing up blood or sputum", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.465, section: "TB Part 2 – Symptoms", fontSize: 10 },
+  { id: "tb_sym_weight", label: "Unexplained weight loss", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.45, section: "TB Part 2 – Symptoms", fontSize: 10 },
+  { id: "tb_sym_sweats", label: "Night sweats", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.435, section: "TB Part 2 – Symptoms", fontSize: 10 },
+  { id: "tb_sym_fever", label: "Fever or chills", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.42, section: "TB Part 2 – Symptoms", fontSize: 10 },
+  { id: "tb_sym_chest", label: "Chest pain or shortness of breath", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.405, section: "TB Part 2 – Symptoms", fontSize: 10 },
+  { id: "tb_sym_fatigue", label: "Fatigue or weakness", type: "checkbox", page: 27, xPct: 0.15, yPct: 0.39, section: "TB Part 2 – Symptoms", fontSize: 10 },
+
   // ============ PAGE 28 - TB Assessment Results ============
   { id: "p27_emp_signature", label: "Employee Signature", type: "signature", page: 28, xPct: 0.22, yPct: 0.58, section: "TB Results", fontSize: 10 },
   { id: "p27_emp_date", label: "Employee Signature Date", type: "date", page: 28, xPct: 0.65, yPct: 0.58, section: "TB Results", tags: ["date_mirror"], fontSize: 10 },

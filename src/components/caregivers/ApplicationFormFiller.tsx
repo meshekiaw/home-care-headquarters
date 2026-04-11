@@ -47,18 +47,18 @@ const PDF_SKIP_FIELD_IDS = new Set(["p13_phone", "p13_email", "p22_sig_name_1", 
 // Formula: yPct = (792 - pdfplumber_label_top - 0.792 * fontSize) / 792
 // This accounts for pdf-lib drawText placing text at BASELINE, while pdfplumber reports text TOP.
 const W4_FILING_STATUS_MARKS = {
-  single: { xPct: 0.188, yPct: 0.7882 },
-  married: { xPct: 0.188, yPct: 0.7731 },
-  head: { xPct: 0.188, yPct: 0.7579 },
+  single: { xPct: 0.1948, yPct: 0.792 },
+  married: { xPct: 0.1948, yPct: 0.7768 },
+  head: { xPct: 0.1948, yPct: 0.7617 },
 } as const;
 
 const TB_Q5_OPTION_MARKS: Record<string, { xPct: number; yPct: number }> = {
-  Hospital: { xPct: 0.388, yPct: 0.5038 },
-  "Nursing Home": { xPct: 0.479, yPct: 0.5038 },
-  "Correctional Facility": { xPct: 0.616, yPct: 0.5038 },
-  "Homeless Shelter": { xPct: 0.792, yPct: 0.5038 },
-  "Drug Treatment Center": { xPct: 0.261, yPct: 0.4886 },
-  "Home Care/Hospice": { xPct: 0.461, yPct: 0.4886 },
+  Hospital: { xPct: 0.3922, yPct: 0.5032 },
+  "Nursing Home": { xPct: 0.5065, yPct: 0.5032 },
+  "Correctional Facility": { xPct: 0.6438, yPct: 0.5032 },
+  "Homeless Shelter": { xPct: 0.1275, yPct: 0.488 },
+  "Drug Treatment Center": { xPct: 0.2892, yPct: 0.488 },
+  "Home Care/Hospice": { xPct: 0.4886, yPct: 0.488 },
 };
 
 const APPLICATION_FIELDS: FormFieldDef[] = [

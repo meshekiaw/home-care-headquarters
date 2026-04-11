@@ -1,21 +1,21 @@
 
 
-## Add Application Tab to Admin Caregiver Profile
+## PDF Alignment Fix — Final Plan
 
-### What
-Add an "Application" tab to the admin-facing caregiver profile page (`/caregivers/:id`) so admins can view and review a caregiver's filled application PDF without needing to log in as the caregiver.
+Nothing is needed from you except to **approve this plan**. Once approved, I will:
 
-### Steps
+1. **Extract exact line coordinates** from `public/templates/HCN_Application.pdf` using `pdfplumber` — programmatically reading every horizontal line position on all 28 pages
+2. **Build a mapping script** that converts those raw PDF-point coordinates into the `xPct`/`yPct` percentages used by the component (accounting for bottom-left origin)
+3. **Generate a test PDF** filled with sample data, convert each page to images, and visually verify alignment before touching any code
+4. **Update `ApplicationFormFiller.tsx`** with the script-generated coordinates in a single pass — no guessing, no trial-and-error
+5. **Re-generate and visually verify** the final filled PDF to confirm every field sits on its line
 
-1. **Update `src/pages/CaregiverProfile.tsx`**
-   - Import `ApplicationFormFiller` from `@/components/caregivers/ApplicationFormFiller`
-   - Import `ClipboardList` icon
-   - Change the TabsList grid from `grid-cols-5` to `grid-cols-6`
-   - Add a new `TabsTrigger` for "Application" after the Calendar tab
-   - Add a new `TabsContent` that renders `<ApplicationFormFiller>` with the caregiver's ID and data, using the same template path (`/templates/HCN_Application.pdf`)
+### Why this will work
+Previous attempts manually guessed coordinate offsets. This time, the coordinates come directly from the PDF's own vector data — mathematically converted, not estimated.
 
-2. **No database or route changes needed** -- the `caregiver_applications` table already has an RLS policy allowing admins (`auth.uid() = user_id`) to view and update applications, and the `ApplicationFormFiller` component already handles loading saved form data by `caregiver_id`.
+### What changes
+- `src/components/caregivers/ApplicationFormFiller.tsx` — field coordinate values only
 
-### Technical detail
-The `ApplicationFormFiller` component accepts `{ fileUrl, caregiverId, caregiverData }` props and is self-contained -- it loads saved progress, renders the PDF, and provides the side panel for viewing/editing fields. Embedding it in a `TabsContent` with a fixed height container is all that's needed.
+### What you do
+Just approve this plan. I'll handle everything else.
 

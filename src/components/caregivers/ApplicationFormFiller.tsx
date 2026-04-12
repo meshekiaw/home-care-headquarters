@@ -610,7 +610,17 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
 
         const x = width * field.xPct;
         const y = height * field.yPct;
-        const fontSize = field.fontSize || 10;
+        let fontSize = field.fontSize || 10;
+
+        // Width-constrained text fitting: shrink font if text exceeds field box
+        if (field.widthPct) {
+          const maxWidth = width * field.widthPct - 4; // 4pt padding
+          let textWidth = font.widthOfTextAtSize(value, fontSize);
+          while (textWidth > maxWidth && fontSize > 5) {
+            fontSize -= 0.5;
+            textWidth = font.widthOfTextAtSize(value, fontSize);
+          }
+        }
 
         page.drawText(value, { x, y, size: fontSize, font, color: rgb(0, 0, 0) });
       });

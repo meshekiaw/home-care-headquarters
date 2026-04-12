@@ -1,49 +1,74 @@
 
+Stop using credits on the current trial-and-error coordinate edits. I reviewed the code, and the real problem is bigger than “a few bad coordinates.”
 
-## PDF Alignment Fix — Evidence-Based Approach
+### What’s actually causing this
+The issue is centered in `src/components/caregivers/ApplicationFormFiller.tsx`.
 
-### What the Filled PDF Reveals
+1. The caregiver application is a **flat PDF**, not a native fillable form.
+2. The export logic uses **hardcoded point anchors** in `APPLICATION_FIELDS` and then does:
+   - `page.drawText(value, { x, y })`
+3. That means the app has:
+   - no true field boxes
+   - no width fitting
+   - no clipping
+   - no shrink-to-fit
+   - no overflow protection
+4. I also found that `widthPct` exists in the field model, but the download logic does **not use it** when drawing text.
+5. So even if one field is “close,” longer values can still visually spill into neighboring cells, especially on structured pages like:
+   - W-4
+   - I-9
+   - Background check
+   - initials/checkbox grids
 
-Parsing the uploaded `HCN_Application_Filled_7.pdf` shows data landing in **wrong cells**, not just slightly offset. Examples:
+That is why repeated coordinate-only fixes have not solved it.
 
-**Page 19 (I-9 Form):**
-- "Other Last Names Used" column shows "AR 71603" — that's the ZIP code, not a name
-- Address row: "Pine Bluff" appears in the Apt Number column, "smithminnie@gmail.com" in City, "870-643-4194" in State
-- This means the I-9 fields are horizontally AND vertically misaligned — data is bleeding into adjacent cells
+### Recommended fix
+I recommend we **stop patching coordinates** and switch to one of these two paths:
 
-**Page 16 (W-4):**
-- Text appears to render but the filing status checkbox marks may not land in the correct boxes
+#### Best path: use a real fillable PDF
+If you have the original fillable version of this application PDF, I should switch this flow to use native PDF form fields instead of manual coordinates. The project already has a reusable pattern for this in:
+- `src/components/clients/UploadedPdfFiller.tsx`
 
-### Root Cause
+This would be the most reliable fix.
 
-The coordinates in `APPLICATION_FIELDS` were never extracted from the actual PDF. They were manually estimated, then repeatedly patched with blanket offsets. The download code is straightforward (`x = width * xPct`, `y = height * yPct`) — the math is correct, but the input percentages are wrong.
+#### If the PDF must stay flat
+Then I should rebuild `ApplicationFormFiller` so it uses **box-based field rendering**, not single-point anchors.
 
-### The Fix — Using the PDF Skill Toolkit Scripts
+That rebuild would include:
+1. Replace “point only” placement with field boxes:
+   - `xPct`, `yPct`, `widthPct`, and per-field fit behavior
+2. Add text fitting rules:
+   - clamp to width
+   - shrink font for long values
+   - optional multi-line where needed
+3. Keep centered marks for:
+   - checkboxes
+   - initials
+   - filing-status marks
+4. Recalibrate only the truly structured pages first:
+   - page 16
+   - page 19
+   - page 22
+   - page 23
+   - page 27
+5. Add a clean test path so saved draft data does not confuse validation
+6. Verify the exported PDF visually before calling it fixed
 
-This time, I will use the purpose-built scripts that extract ground-truth coordinates directly from the PDF template. No guessing.
+### What I would change
+Likely files:
+- `src/components/caregivers/ApplicationFormFiller.tsx`
+- possibly `src/pages/CaregiverApplication.tsx` if I switch the screen to a more reliable filler flow
 
-**Step 1:** Run `extract_layout_structure.py` on `public/templates/HCN_Application.pdf` to get exact PDF-point coordinates for every text label, line, and checkbox on all 28 pages.
+### What I need from you
+Choose the fastest reliable route:
 
-**Step 2:** Run `render_pages_to_images.py` to create reference images of each page.
+1. **Best option:** upload the original fillable version of the caregiver application PDF, if you have it.
+2. **Otherwise:** approve a rebuild of the current flat-PDF filler using box-based rendering instead of more coordinate tweaking.
 
-**Step 3:** For each field in `APPLICATION_FIELDS`, match it to the extracted structure:
-- Find the label text (e.g., "Last Name") in the structure data
-- Calculate the entry area as `label.x1 + 5` horizontally
-- Use the row boundary line for vertical positioning
-- Convert to percentages: `xPct = x / page_width`, `yPct = (page_height - y) / page_height` (pdf-lib uses bottom-left origin)
+### Recommendation
+My recommendation is:
 
-**Step 4:** Use zoom crops on critical pages (1, 16, 19, 22, 23, 27) to verify coordinates precisely.
+- If you can provide the original fillable PDF, use that.
+- If not, I should rebuild the current export logic once, properly, instead of spending more credits nudging numbers.
 
-**Step 5:** Generate a test PDF with sample data using `annotate_form_entries.py`, convert to images, and visually verify every page.
-
-**Step 6:** Update `ApplicationFormFiller.tsx` with verified coordinates in a single pass.
-
-### What Changes
-- `src/components/caregivers/ApplicationFormFiller.tsx` — all `xPct`/`yPct` values in `APPLICATION_FIELDS`, `W4_FILING_STATUS_MARKS`, and `TB_Q5_OPTION_MARKS`
-
-### Why This Will Work
-Previous attempts estimated coordinates and applied uniform offsets. This approach extracts the actual vector geometry from the PDF template, matches each field to its specific label/row, and visually verifies the output before writing any code. The scripts handle coordinate conversion automatically.
-
-### What You Need To Do
-Nothing — just approve this plan.
-
+This is the point where “getting help” means changing the approach, not retrying the same coordinate edits again.

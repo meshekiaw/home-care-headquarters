@@ -1,74 +1,73 @@
 
-Stop using credits on the current trial-and-error coordinate edits. I reviewed the code, and the real problem is bigger than “a few bad coordinates.”
+Goal: fix only the pages you flagged — 1, 2, 5, 6, 8, 9, and 12 — by investigating each page individually and correcting the field mapping instead of applying another blanket offset.
 
-### What’s actually causing this
-The issue is centered in `src/components/caregivers/ApplicationFormFiller.tsx`.
+What I found
+- The current PDF filler still depends on hardcoded coordinates in `src/components/caregivers/ApplicationFormFiller.tsx`.
+- The screenshots show different failure types on different pages:
+  - Page 1: `dl_number` is too far left and overlaps the label.
+  - Page 2: printed name / signature / date anchors are landing on the wrong rows.
+  - Page 5: agreement date pieces and employee fields are not aligned to the blanks.
+  - Page 6: there are no fields mapped to page 6 at all right now, which strongly suggests at least one field is assigned to the wrong page or the page needs its own mapping.
+  - Page 8: printed name / signature / date are shifted and not respecting the specific lines.
+  - Page 9: acceptance-of-assignment fields need their own recalibration, especially the signature row and care summary width.
+  - Page 12: signature/date row is mispositioned and likely needs separate width/placement handling.
 
-1. The caregiver application is a **flat PDF**, not a native fillable form.
-2. The export logic uses **hardcoded point anchors** in `APPLICATION_FIELDS` and then does:
-   - `page.drawText(value, { x, y })`
-3. That means the app has:
-   - no true field boxes
-   - no width fitting
-   - no clipping
-   - no shrink-to-fit
-   - no overflow protection
-4. I also found that `widthPct` exists in the field model, but the download logic does **not use it** when drawing text.
-5. So even if one field is “close,” longer values can still visually spill into neighboring cells, especially on structured pages like:
-   - W-4
-   - I-9
-   - Background check
-   - initials/checkbox grids
+Implementation approach
+1. Audit the existing field definitions for only pages 1, 2, 5, 6, 8, 9, and 12 in `ApplicationFormFiller.tsx`.
+2. Rebuild those pages one by one:
+   - verify whether each field belongs on the correct page
+   - separate printed-name, signature, and date anchors instead of reusing loose shared assumptions
+   - add or refine `widthPct` where line length matters
+   - correct any page-number mismatches, especially around pages 5/6 and 8/12
+3. Keep the rest of the document untouched so fixes stay isolated to the reported pages.
+4. Generate and visually inspect a new filled PDF, checking those pages individually before considering the fix complete.
 
-That is why repeated coordinate-only fixes have not solved it.
+Page-by-page fix scope
+- Page 1
+  - Reposition `dl_number`
+  - Verify SSN, DOB, address, phones, email on their own lines
+- Page 2
+  - Recalibrate all four acknowledgment blocks independently
+  - Fix printed name, signature, and date rows separately
+  - Verify `p2_position`
+- Page 5
+  - Re-anchor `p5_day`, `p5_month`, `p5_year`
+  - Reposition employee name, address, rate, and position title
+- Page 6
+  - Investigate whether a missing or misassigned field should actually live here
+  - Add explicit mapping if the template has fillable blanks on this page
+- Page 8
+  - Reposition printed name, signature, and date to their exact line segments
+- Page 9
+  - Reposition patient info and employee signature block
+  - Tighten `p9_care_summary` so it stays inside its intended area
+- Page 12
+  - Re-anchor signature/date line and confirm the employee-name placement is not being drawn on the wrong row
 
-### Recommended fix
-I recommend we **stop patching coordinates** and switch to one of these two paths:
-
-#### Best path: use a real fillable PDF
-If you have the original fillable version of this application PDF, I should switch this flow to use native PDF form fields instead of manual coordinates. The project already has a reusable pattern for this in:
-- `src/components/clients/UploadedPdfFiller.tsx`
-
-This would be the most reliable fix.
-
-#### If the PDF must stay flat
-Then I should rebuild `ApplicationFormFiller` so it uses **box-based field rendering**, not single-point anchors.
-
-That rebuild would include:
-1. Replace “point only” placement with field boxes:
-   - `xPct`, `yPct`, `widthPct`, and per-field fit behavior
-2. Add text fitting rules:
-   - clamp to width
-   - shrink font for long values
-   - optional multi-line where needed
-3. Keep centered marks for:
-   - checkboxes
-   - initials
-   - filing-status marks
-4. Recalibrate only the truly structured pages first:
-   - page 16
-   - page 19
-   - page 22
-   - page 23
-   - page 27
-5. Add a clean test path so saved draft data does not confuse validation
-6. Verify the exported PDF visually before calling it fixed
-
-### What I would change
-Likely files:
+Files involved
 - `src/components/caregivers/ApplicationFormFiller.tsx`
-- possibly `src/pages/CaregiverApplication.tsx` if I switch the screen to a more reliable filler flow
+- possibly `src/pages/CaregiverApplication.tsx` only if a page-routing/display issue is contributing, though right now the main problem appears to be field mapping
 
-### What I need from you
-Choose the fastest reliable route:
+Technical details
+- I will avoid a global offset pass.
+- I will treat each page as its own layout problem.
+- For text fields, I’ll use bounded placement where possible:
+```text
+x = pageWidth * xPct
+y = pageHeight * yPct
+maxWidth = pageWidth * widthPct
+```
+- For signature/date lines, I’ll calibrate each anchor separately rather than assuming uniform spacing across repeated sections.
+- Because page 6 currently has no mapped fields in the component, I’ll explicitly verify whether:
+  - the page truly should be read-only, or
+  - one or more fields were attached to the wrong neighboring page.
 
-1. **Best option:** upload the original fillable version of the caregiver application PDF, if you have it.
-2. **Otherwise:** approve a rebuild of the current flat-PDF filler using box-based rendering instead of more coordinate tweaking.
+Validation plan
+- After implementation, I will check the reported pages individually:
+  - 1, 2, 5, 6, 8, 9, 12
+- I will only mark the fix complete after those specific pages are visually verified one by one, not by sampling a couple of pages.
 
-### Recommendation
-My recommendation is:
-
-- If you can provide the original fillable PDF, use that.
-- If not, I should rebuild the current export logic once, properly, instead of spending more credits nudging numbers.
-
-This is the point where “getting help” means changing the approach, not retrying the same coordinate edits again.
+Expected outcome
+- The reported pages are corrected independently.
+- No more “one fix breaks another page” behavior from blanket coordinate shifts.
+- We narrow the work to the exact problem pages you identified rather than reworking the entire 28-page file again.

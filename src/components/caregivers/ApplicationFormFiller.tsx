@@ -111,31 +111,31 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "ref2_address", label: "Company Address/Phone/Fax/Email", type: "text", page: 4, xPct: 0.4248, yPct: 0.6278, section: "Reference 2", fontSize: 9 },
 
   // ============ PAGE 5 - Employment Agreement ============
-  { id: "p5_day", label: "Day", type: "text", page: 5, xPct: 0.3023, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
-  { id: "p5_month", label: "Month", type: "text", page: 5, xPct: 0.4167, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
-  { id: "p5_year", label: "Year (20__)", type: "text", page: 5, xPct: 0.6209, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_day", label: "Day", type: "text", page: 5, xPct: 0.34, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_month", label: "Month", type: "text", page: 5, xPct: 0.44, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_year", label: "Year (20__)", type: "text", page: 5, xPct: 0.60, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
   { id: "p5_employee_name", label: "Employee Name", type: "text", page: 5, xPct: 0.2696, yPct: 0.7355, section: "Employment Agreement", tags: ["name_mirror"], fontSize: 10 },
   { id: "p5_employee_address", label: "Employee Address", type: "text", page: 5, xPct: 0.0588, yPct: 0.6847, section: "Employment Agreement", profileField: "full_address", fontSize: 9 },
   { id: "p5_position_title", label: "Position Title", type: "text", page: 5, xPct: 0.1846, yPct: 0.3605, section: "Employment Agreement", fontSize: 10 },
-  { id: "p5_rate", label: "Compensation Rate", type: "text", page: 5, xPct: 0.7598, yPct: 0.7342, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_rate", label: "Compensation Rate", type: "text", page: 5, xPct: 0.74, yPct: 0.2237, section: "Employment Agreement", fontSize: 10 },
 
   // ============ PAGE 8 - Agreement Signatures ============
-  { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.0882, yPct: 0.6951, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p8_signature", label: "Signature of Employee", type: "signature", page: 8, xPct: 0.0882, yPct: 0.5928, section: "Agreement Signatures", fontSize: 10 },
-  { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.2614, yPct: 0.6951, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.0882, yPct: 0.7127, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p8_signature", label: "Signature of Employee", type: "signature", page: 8, xPct: 0.0882, yPct: 0.6105, section: "Agreement Signatures", fontSize: 10 },
+  { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.55, yPct: 0.7127, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 9 - Acceptance of Assignment ============
-  { id: "p9_patient_name", label: "Patient Name", type: "text", page: 9, xPct: 0.2778, yPct: 0.6597, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_patient_addr", label: "Patient Address", type: "text", page: 9, xPct: 0.2157, yPct: 0.6105, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.1961, yPct: 0.5612, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.3595, yPct: 0.4637, widthPct: 0.60, section: "Acceptance of Assignment", fontSize: 9 },
-  { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.1176, yPct: 0.3554, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p9_signature", label: "Employee Signature", type: "signature", page: 9, xPct: 0.4085, yPct: 0.3554, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.7549, yPct: 0.3554, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p9_patient_name", label: "Patient Name", type: "text", page: 9, xPct: 0.2820, yPct: 0.6600, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_patient_addr", label: "Patient Address", type: "text", page: 9, xPct: 0.2157, yPct: 0.6106, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.1983, yPct: 0.5613, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.3653, yPct: 0.5119, widthPct: 0.58, section: "Acceptance of Assignment", fontSize: 9 },
+  { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.1176, yPct: 0.3124, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p9_signature", label: "Employee Signature", type: "signature", page: 9, xPct: 0.4117, yPct: 0.3124, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.7058, yPct: 0.3124, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 12 - Job Description Signature ============
-  { id: "p11_signature", label: "Employee Signature", type: "signature", page: 12, xPct: 0.098, yPct: 0.8049, section: "Job Description Signature", fontSize: 10 },
-  { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.7761, yPct: 0.8049, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p11_signature", label: "Employee Signature", type: "signature", page: 12, xPct: 0.1029, yPct: 0.8225, section: "Job Description Signature", fontSize: 10 },
+  { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.6351, yPct: 0.8225, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 13 - Employee Handbook Receipt ============
   { id: "p12_name", label: "Employee Name", type: "text", page: 13, xPct: 0.1307, yPct: 0.8302, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },

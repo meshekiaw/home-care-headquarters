@@ -70,7 +70,7 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "cell_phone", label: "Cell Phone", type: "text", page: 1, xPct: 0.4412, yPct: 0.6263, widthPct: 0.219, section: "Application", profileField: "phone", fontSize: 10 },
   { id: "p1_email", label: "Email", type: "text", page: 1, xPct: 0.7108, yPct: 0.6265, widthPct: 0.230, section: "Application", profileField: "email", fontSize: 10 },
   { id: "ssn", label: "Social Security Number", type: "text", page: 1, xPct: 0.2696, yPct: 0.5795, widthPct: 0.260, section: "Application", tags: ["ssn_primary", "ssn_mirror"], profileField: "ssn", fontSize: 10 },
-  { id: "dl_number", label: "DL/State ID Number", type: "text", page: 1, xPct: 0.6667, yPct: 0.5795, widthPct: 0.275, section: "Application", fontSize: 10 },
+  { id: "dl_number", label: "DL/State ID Number", type: "text", page: 1, xPct: 0.70, yPct: 0.5795, widthPct: 0.240, section: "Application", fontSize: 10 },
   { id: "dob", label: "Date of Birth", type: "text", page: 1, xPct: 0.1879, yPct: 0.5492, widthPct: 0.283, section: "Application", tags: ["dob_primary", "dob_mirror"], profileField: "date_of_birth", fontSize: 10 },
   { id: "certifications", label: "Certifications", type: "text", page: 1, xPct: 0.5686, yPct: 0.517, section: "Application", fontSize: 10 },
   { id: "hours_sunday", label: "Hours NOT Available - Sunday", type: "text", page: 1, xPct: 0.4118, yPct: 0.4389, section: "Availability", fontSize: 9 },
@@ -86,19 +86,21 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "p1_date", label: "Date (Page 1)", type: "date", page: 1, xPct: 0.6454, yPct: 0.0725, section: "Application", tags: ["date_primary"], fontSize: 10 },
 
   // ============ PAGE 2 - Policy Acknowledgments ============
-  { id: "p2_name_sig_1", label: "Printed Name (P&P Manual)", type: "text", page: 2, xPct: 0.3268, yPct: 0.7468, section: "P&P Manual Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p2_signature_1", label: "Signature (P&P Manual)", type: "signature", page: 2, xPct: 0.4902, yPct: 0.7468, section: "P&P Manual Acknowledgment", fontSize: 10 },
-  { id: "p2_date_1", label: "Date", type: "date", page: 2, xPct: 0.6895, yPct: 0.7468, section: "P&P Manual Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
-  { id: "p2_name_sig_2", label: "Printed Name (Medication Policy)", type: "text", page: 2, xPct: 0.3268, yPct: 0.5436, section: "Medication Policy Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p2_signature_2", label: "Signature (Medication Policy)", type: "signature", page: 2, xPct: 0.4902, yPct: 0.5436, section: "Medication Policy Acknowledgment", fontSize: 10 },
-  { id: "p2_date_2", label: "Date", type: "date", page: 2, xPct: 0.6895, yPct: 0.5436, section: "Medication Policy Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
-  { id: "p2_name_sig_3", label: "Printed Name (Confidentiality)", type: "text", page: 2, xPct: 0.3268, yPct: 0.3403, section: "Confidentiality Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p2_signature_3", label: "Signature (Confidentiality)", type: "signature", page: 2, xPct: 0.4902, yPct: 0.3403, section: "Confidentiality Acknowledgment", fontSize: 10 },
-  { id: "p2_date_3", label: "Date", type: "date", page: 2, xPct: 0.6895, yPct: 0.3403, section: "Confidentiality Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
-  { id: "p2_position", label: "Position Title", type: "text", page: 2, xPct: 0.4902, yPct: 0.262, section: "Job Description Acknowledgment", fontSize: 10 },
-  { id: "p2_name_sig_4", label: "Printed Name (Job Description)", type: "text", page: 2, xPct: 0.3268, yPct: 0.0587, section: "Job Description Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p2_signature_4", label: "Signature (Job Description)", type: "signature", page: 2, xPct: 0.4902, yPct: 0.0587, section: "Job Description Acknowledgment", fontSize: 10 },
-  { id: "p2_date_4", label: "Date", type: "date", page: 2, xPct: 0.6895, yPct: 0.0587, section: "Job Description Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  // Each block: "Printed Name, Signature & Date" header, then "Administrator Signature: ___ Date: ___" below.
+  // Employee fills on the blank line between header and admin sig line.
+  { id: "p2_name_sig_1", label: "Printed Name (P&P Manual)", type: "text", page: 2, xPct: 0.06, yPct: 0.7727, section: "P&P Manual Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_1", label: "Signature (P&P Manual)", type: "signature", page: 2, xPct: 0.35, yPct: 0.7727, section: "P&P Manual Acknowledgment", fontSize: 10 },
+  { id: "p2_date_1", label: "Date", type: "date", page: 2, xPct: 0.70, yPct: 0.7727, section: "P&P Manual Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p2_name_sig_2", label: "Printed Name (Medication Policy)", type: "text", page: 2, xPct: 0.06, yPct: 0.5670, section: "Medication Policy Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_2", label: "Signature (Medication Policy)", type: "signature", page: 2, xPct: 0.35, yPct: 0.5670, section: "Medication Policy Acknowledgment", fontSize: 10 },
+  { id: "p2_date_2", label: "Date", type: "date", page: 2, xPct: 0.70, yPct: 0.5670, section: "Medication Policy Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p2_name_sig_3", label: "Printed Name (Confidentiality)", type: "text", page: 2, xPct: 0.06, yPct: 0.3639, section: "Confidentiality Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_3", label: "Signature (Confidentiality)", type: "signature", page: 2, xPct: 0.35, yPct: 0.3639, section: "Confidentiality Acknowledgment", fontSize: 10 },
+  { id: "p2_date_3", label: "Date", type: "date", page: 2, xPct: 0.70, yPct: 0.3639, section: "Confidentiality Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p2_position", label: "Position Title", type: "text", page: 2, xPct: 0.52, yPct: 0.262, section: "Job Description Acknowledgment", fontSize: 10 },
+  { id: "p2_name_sig_4", label: "Printed Name (Job Description)", type: "text", page: 2, xPct: 0.06, yPct: 0.0826, section: "Job Description Acknowledgment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p2_signature_4", label: "Signature (Job Description)", type: "signature", page: 2, xPct: 0.35, yPct: 0.0826, section: "Job Description Acknowledgment", fontSize: 10 },
+  { id: "p2_date_4", label: "Date", type: "date", page: 2, xPct: 0.70, yPct: 0.0826, section: "Job Description Acknowledgment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 3 - Business Reference 1 ============
   { id: "ref1_company", label: "Company Name", type: "text", page: 3, xPct: 0.1928, yPct: 0.6471, section: "Reference 1", fontSize: 10 },
@@ -109,31 +111,31 @@ const APPLICATION_FIELDS: FormFieldDef[] = [
   { id: "ref2_address", label: "Company Address/Phone/Fax/Email", type: "text", page: 4, xPct: 0.4248, yPct: 0.6278, section: "Reference 2", fontSize: 9 },
 
   // ============ PAGE 5 - Employment Agreement ============
-  { id: "p5_day", label: "Day", type: "text", page: 5, xPct: 0.3023, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
-  { id: "p5_month", label: "Month", type: "text", page: 5, xPct: 0.4167, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
-  { id: "p5_year", label: "Year (20__)", type: "text", page: 5, xPct: 0.6209, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_day", label: "Day", type: "text", page: 5, xPct: 0.34, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_month", label: "Month", type: "text", page: 5, xPct: 0.44, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_year", label: "Year (20__)", type: "text", page: 5, xPct: 0.60, yPct: 0.786, section: "Employment Agreement", fontSize: 10 },
   { id: "p5_employee_name", label: "Employee Name", type: "text", page: 5, xPct: 0.2696, yPct: 0.7355, section: "Employment Agreement", tags: ["name_mirror"], fontSize: 10 },
   { id: "p5_employee_address", label: "Employee Address", type: "text", page: 5, xPct: 0.0588, yPct: 0.6847, section: "Employment Agreement", profileField: "full_address", fontSize: 9 },
   { id: "p5_position_title", label: "Position Title", type: "text", page: 5, xPct: 0.1846, yPct: 0.3605, section: "Employment Agreement", fontSize: 10 },
-  { id: "p5_rate", label: "Compensation Rate", type: "text", page: 5, xPct: 0.7598, yPct: 0.7342, section: "Employment Agreement", fontSize: 10 },
+  { id: "p5_rate", label: "Compensation Rate", type: "text", page: 5, xPct: 0.74, yPct: 0.2237, section: "Employment Agreement", fontSize: 10 },
 
   // ============ PAGE 8 - Agreement Signatures ============
-  { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.0882, yPct: 0.6951, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p8_signature", label: "Signature of Employee", type: "signature", page: 8, xPct: 0.0882, yPct: 0.5928, section: "Agreement Signatures", fontSize: 10 },
-  { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.2614, yPct: 0.6951, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p8_printed_name", label: "Printed Name of Employee", type: "text", page: 8, xPct: 0.0882, yPct: 0.7127, section: "Agreement Signatures", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p8_signature", label: "Signature of Employee", type: "signature", page: 8, xPct: 0.0882, yPct: 0.6105, section: "Agreement Signatures", fontSize: 10 },
+  { id: "p8_date", label: "Date", type: "date", page: 8, xPct: 0.55, yPct: 0.7127, section: "Agreement Signatures", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 9 - Acceptance of Assignment ============
-  { id: "p9_patient_name", label: "Patient Name", type: "text", page: 9, xPct: 0.2778, yPct: 0.6597, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_patient_addr", label: "Patient Address", type: "text", page: 9, xPct: 0.2157, yPct: 0.6105, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.1961, yPct: 0.5612, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.3595, yPct: 0.4637, widthPct: 0.60, section: "Acceptance of Assignment", fontSize: 9 },
-  { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.1176, yPct: 0.3554, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
-  { id: "p9_signature", label: "Employee Signature", type: "signature", page: 9, xPct: 0.4085, yPct: 0.3554, section: "Acceptance of Assignment", fontSize: 10 },
-  { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.7549, yPct: 0.3554, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p9_patient_name", label: "Patient Name", type: "text", page: 9, xPct: 0.2820, yPct: 0.6600, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_patient_addr", label: "Patient Address", type: "text", page: 9, xPct: 0.2157, yPct: 0.6106, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_patient_phone", label: "Patient Phone", type: "text", page: 9, xPct: 0.1983, yPct: 0.5613, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_care_summary", label: "Plan of Care Summary", type: "text", page: 9, xPct: 0.3653, yPct: 0.5119, widthPct: 0.58, section: "Acceptance of Assignment", fontSize: 9 },
+  { id: "p9_employee_name", label: "Employee Printed Name", type: "text", page: 9, xPct: 0.1176, yPct: 0.3124, section: "Acceptance of Assignment", tags: ["name_mirror"], fontSize: 10 },
+  { id: "p9_signature", label: "Employee Signature", type: "signature", page: 9, xPct: 0.4117, yPct: 0.3124, section: "Acceptance of Assignment", fontSize: 10 },
+  { id: "p9_date", label: "Date", type: "date", page: 9, xPct: 0.7058, yPct: 0.3124, section: "Acceptance of Assignment", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 12 - Job Description Signature ============
-  { id: "p11_signature", label: "Employee Signature", type: "signature", page: 12, xPct: 0.098, yPct: 0.8049, section: "Job Description Signature", fontSize: 10 },
-  { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.7761, yPct: 0.8049, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
+  { id: "p11_signature", label: "Employee Signature", type: "signature", page: 12, xPct: 0.1029, yPct: 0.8225, section: "Job Description Signature", fontSize: 10 },
+  { id: "p11_date", label: "Date", type: "date", page: 12, xPct: 0.6351, yPct: 0.8225, section: "Job Description Signature", tags: ["date_mirror"], fontSize: 10 },
 
   // ============ PAGE 13 - Employee Handbook Receipt ============
   { id: "p12_name", label: "Employee Name", type: "text", page: 13, xPct: 0.1307, yPct: 0.8302, section: "Handbook Receipt", tags: ["name_mirror"], fontSize: 10 },

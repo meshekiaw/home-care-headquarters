@@ -159,7 +159,7 @@ import { parseExcelFile } from "@/utils/excelParser";
          <DialogHeader>
            <DialogTitle>Bulk Import Clients</DialogTitle>
            <DialogDescription>
-             Upload a CSV file to add multiple clients at once
+             Upload a CSV or Excel file to add multiple clients at once
            </DialogDescription>
          </DialogHeader>
  

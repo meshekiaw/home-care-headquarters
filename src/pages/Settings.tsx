@@ -16,6 +16,7 @@ import {
  import { StateRegulationsSection } from "@/components/settings/StateRegulationsSection";
  import { NotificationPreferencesSection } from "@/components/settings/NotificationPreferencesSection";
  import { AgencyCredentialsSection } from "@/components/settings/AgencyCredentialsSection";
+ import { UserManagementSection } from "@/components/settings/UserManagementSection";
 
 export default function Settings() {
   return (

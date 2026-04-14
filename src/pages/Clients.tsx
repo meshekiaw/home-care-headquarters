@@ -151,12 +151,25 @@ export default function Clients() {
 
   const filteredClients = clients.filter(client => {
     const searchLower = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = (
       client.first_name.toLowerCase().includes(searchLower) ||
       client.last_name.toLowerCase().includes(searchLower) ||
       client.email?.toLowerCase().includes(searchLower) ||
       client.phone?.includes(searchQuery)
     );
+    if (!matchesSearch) return false;
+    if (statusFilter !== "all" && client.status !== statusFilter) return false;
+    if (dueDateMonth !== "all") {
+      if (!client.authorization_due_date) return false;
+      const d = new Date(client.authorization_due_date);
+      if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== dueDateMonth) return false;
+    }
+    if (expirationDateMonth !== "all") {
+      if (!client.authorization_expiration_date) return false;
+      const d = new Date(client.authorization_expiration_date);
+      if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== expirationDateMonth) return false;
+    }
+    return true;
   });
 
   const sortedClients = [...filteredClients].sort((a, b) => {

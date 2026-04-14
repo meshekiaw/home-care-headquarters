@@ -317,11 +317,70 @@ export default function Clients() {
               <SelectItem value="authorization_expiration_date">Auth Expiration Date</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="sm:w-auto">
+          <Button variant="outline" className="sm:w-auto relative" onClick={() => setFilterOpen(!filterOpen)}>
             <Filter className="w-4 h-4 mr-2" />
             Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="default" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                {activeFilterCount}
+              </Badge>
+            )}
           </Button>
         </div>
+
+        {/* Filter Bar */}
+        {filterOpen && (
+          <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/50 border rounded-lg">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Status</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">618 Due Date Month</label>
+              <Select value={dueDateMonth} onValueChange={setDueDateMonth}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {dueDateMonths.map(ym => (
+                    <SelectItem key={ym} value={ym}>{formatYearMonthLabel(ym)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Auth Expiration Month</label>
+              <Select value={expirationDateMonth} onValueChange={setExpirationDateMonth}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {expirationDateMonths.map(ym => (
+                    <SelectItem key={ym} value={ym}>{formatYearMonthLabel(ym)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {activeFilterCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => { setStatusFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
+                <X className="w-4 h-4 mr-1" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (

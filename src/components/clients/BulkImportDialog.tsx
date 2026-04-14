@@ -28,10 +28,14 @@
    X,
    Loader2,
  } from "lucide-react";
-import { useState, useCallback } from "react";
-   type ClientParseResult,
-   type ParsedClient,
- } from "@/utils/csvParser";
+import {
+  parseClientCSV,
+  validateAndTransformClients,
+  generateClientSampleCSV,
+  type ClientParseResult,
+  type ParsedClient,
+} from "@/utils/csvParser";
+import { parseExcelFile } from "@/utils/excelParser";
  
  interface BulkImportDialogProps {
    open: boolean;

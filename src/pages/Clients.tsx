@@ -205,6 +205,27 @@ export default function Clients() {
     setSelectedIds(new Set());
   }, [searchQuery]);
 
+  const formatYearMonth = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  const formatYearMonthLabel = (ym: string) => {
+    const [year, month] = ym.split('-');
+    const d = new Date(parseInt(year), parseInt(month) - 1);
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  const dueDateMonths = [...new Set(
+    clients.filter(c => c.authorization_due_date).map(c => formatYearMonth(c.authorization_due_date!))
+  )].sort();
+
+  const expirationDateMonths = [...new Set(
+    clients.filter(c => c.authorization_expiration_date).map(c => formatYearMonth(c.authorization_expiration_date!))
+  )].sort();
+
+  const activeFilterCount = [statusFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
+
   const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
   const someSelected = sortedClients.some(c => selectedIds.has(c.id));
 

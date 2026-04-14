@@ -34,6 +34,7 @@ import ProximityMatchTab from "@/components/clients/ProximityMatchTab";
 import { AdmissionFormsTab } from "@/components/forms/AdmissionFormsTab";
 import { AssignedNursesTab } from "@/components/clients/AssignedNursesTab";
 import { NursingFormsTab } from "@/components/clients/NursingFormsTab";
+import { ClientFormsTab } from "@/components/clients/ClientFormsTab";
 
 interface Client {
   id: string;
@@ -215,7 +216,7 @@ export default function ClientProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 sm:grid-cols-10 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 sm:grid-cols-11 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -243,6 +244,10 @@ export default function ClientProfile() {
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Documents</span>
+            </TabsTrigger>
+            <TabsTrigger value="client-forms" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              <span className="hidden sm:inline">Forms</span>
             </TabsTrigger>
             <TabsTrigger value="nurses" className="flex items-center gap-2">
               <Stethoscope className="w-4 h-4" />
@@ -284,6 +289,10 @@ export default function ClientProfile() {
 
           <TabsContent value="documents">
             <DocumentsTab clientId={client.id} />
+          </TabsContent>
+
+          <TabsContent value="client-forms">
+            <ClientFormsTab clientId={client.id} />
           </TabsContent>
  
           <TabsContent value="nurses">

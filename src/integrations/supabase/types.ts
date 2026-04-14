@@ -749,6 +749,8 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          authorization_due_date: string | null
+          authorization_expiration_date: string | null
           city: string | null
           created_at: string
           date_of_birth: string | null
@@ -768,6 +770,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          authorization_due_date?: string | null
+          authorization_expiration_date?: string | null
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -787,6 +791,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          authorization_due_date?: string | null
+          authorization_expiration_date?: string | null
           city?: string | null
           created_at?: string
           date_of_birth?: string | null

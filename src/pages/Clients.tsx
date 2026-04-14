@@ -154,6 +154,34 @@ export default function Clients() {
     );
   });
 
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    switch (sortBy) {
+      case 'city':
+        if (!a.city && !b.city) return 0;
+        if (!a.city) return 1;
+        if (!b.city) return -1;
+        return a.city.localeCompare(b.city);
+      case 'status': {
+        const order: Record<string, number> = { active: 0, pending: 1, inactive: 2 };
+        return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+      }
+      case 'created_at':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'authorization_due_date':
+      case 'authorization_expiration_date': {
+        const dateA = a[sortBy];
+        const dateB = b[sortBy];
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
+      }
+      case 'name':
+      default:
+        return a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name);
+    }
+  });
+
   // Clear selection when search changes
   useEffect(() => {
     setSelectedIds(new Set());

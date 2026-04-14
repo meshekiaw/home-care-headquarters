@@ -62,6 +62,9 @@ export default function Settings() {
           </CardContent>
         </Card>
 
+        {/* User Management */}
+        <UserManagementSection />
+
         {/* Agency Settings */}
         {/* State Regulations & Policies */}
         <StateRegulationsSection />

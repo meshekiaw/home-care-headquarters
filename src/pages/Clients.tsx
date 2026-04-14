@@ -39,8 +39,16 @@ import {
   Printer,
   MessageSquare,
   ChevronDown,
-  UserPlus
+  UserPlus,
+  ArrowUpDown
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,7 +71,11 @@ interface Client {
   city: string | null;
   status: string;
   created_at: string;
+  authorization_due_date: string | null;
+  authorization_expiration_date: string | null;
 }
+
+type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -71,6 +83,7 @@ export default function Clients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<SortOption>('name');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -141,19 +154,47 @@ export default function Clients() {
     );
   });
 
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    switch (sortBy) {
+      case 'city':
+        if (!a.city && !b.city) return 0;
+        if (!a.city) return 1;
+        if (!b.city) return -1;
+        return a.city.localeCompare(b.city);
+      case 'status': {
+        const order: Record<string, number> = { active: 0, pending: 1, inactive: 2 };
+        return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+      }
+      case 'created_at':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'authorization_due_date':
+      case 'authorization_expiration_date': {
+        const dateA = a[sortBy];
+        const dateB = b[sortBy];
+        if (!dateA && !dateB) return 0;
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
+      }
+      case 'name':
+      default:
+        return a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name);
+    }
+  });
+
   // Clear selection when search changes
   useEffect(() => {
     setSelectedIds(new Set());
   }, [searchQuery]);
 
-  const allSelected = filteredClients.length > 0 && filteredClients.every(c => selectedIds.has(c.id));
-  const someSelected = filteredClients.some(c => selectedIds.has(c.id));
+  const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
+  const someSelected = sortedClients.some(c => selectedIds.has(c.id));
 
   const toggleAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredClients.map(c => c.id)));
+      setSelectedIds(new Set(sortedClients.map(c => c.id)));
     }
   };
 
@@ -223,6 +264,20 @@ export default function Clients() {
               className="pl-10"
             />
           </div>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger className="w-[200px]">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="city">City</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="created_at">Date Added</SelectItem>
+              <SelectItem value="authorization_due_date">618 Due Date</SelectItem>
+              <SelectItem value="authorization_expiration_date">Auth Expiration Date</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" className="sm:w-auto">
             <Filter className="w-4 h-4 mr-2" />
             Filters
@@ -341,7 +396,7 @@ export default function Clients() {
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
-            ) : filteredClients.length === 0 ? (
+            ) : sortedClients.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <Users className="w-8 h-8 text-primary" />
@@ -384,7 +439,7 @@ export default function Clients() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredClients.map((client) => (
+                    {sortedClients.map((client) => (
                       <TableRow key={client.id} className="hover:bg-muted/50" data-state={selectedIds.has(client.id) ? "selected" : undefined}>
                         <TableCell>
                           <Checkbox

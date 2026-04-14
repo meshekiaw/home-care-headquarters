@@ -1,21 +1,18 @@
 
 
-## Grant Admin Access to Demetrich Brown
+## Generate Custom Favicon for Home Care Headquarters
 
-Demetrich Brown currently has a "caregiver" role, which restricts her to the caregiver dashboard only. To give her full access to the entire site, she needs the "admin" role.
+### What will happen
 
-### Changes
+1. **Generate a favicon** using AI image generation — a simple, professional icon with "HCH" initials using the brand's blue color scheme
+2. **Save it** to `public/favicon.png`
+3. **Update `index.html`** to reference the new favicon and remove any default Lovable icon
+4. **Add Apple touch icon** reference for mobile bookmarks
 
-**Database migration** — Insert an `admin` role for Demetrich Brown's user account in the `user_roles` table. This will be done by:
-1. Looking up her `auth_user_id` from the `caregivers` table
-2. Adding an `admin` entry in `user_roles` for that user ID
+### Technical details
 
-This single database change gives her access to all admin routes (Clients, Scheduling, Analytics, Compliance, Settings, etc.) without any code changes.
-
-### Technical detail
-- The `useUserRole` hook already prioritizes `admin` over `caregiver` when both roles exist, so adding the admin role is sufficient
-- No frontend code changes needed — the existing `ProtectedRoute` and `DashboardLayout` handle admin users automatically
-
-### Files modified
-- 1 database migration (insert admin role for Demetrich Brown's auth user)
+| File | Change |
+|------|--------|
+| `public/favicon.png` | New: AI-generated icon (blue/teal "HCH" initials on a clean background) |
+| `index.html` | Add `<link rel="icon" href="/favicon.png" type="image/png">` and `<link rel="apple-touch-icon" href="/favicon.png">` |
 

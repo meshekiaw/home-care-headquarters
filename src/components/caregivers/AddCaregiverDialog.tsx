@@ -55,7 +55,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
     state: "",
     zip_code: "",
     service_radius_miles: "25",
-    ssn: "",
+    date_of_birth: "",
     date_of_birth: "",
   });
 

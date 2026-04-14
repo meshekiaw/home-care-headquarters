@@ -60,6 +60,7 @@ import { useToast } from "@/hooks/use-toast";
 import { downloadCSV, formatClientForExport } from "@/utils/csvExport";
 import BulkImportDialog from "@/components/clients/BulkImportDialog";
 import type { ParsedClient } from "@/utils/csvParser";
+import { Badge } from "@/components/ui/badge";
 
 interface Client {
   id: string;

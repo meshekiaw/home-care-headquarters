@@ -264,6 +264,20 @@ export default function Clients() {
               className="pl-10"
             />
           </div>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger className="w-[200px]">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="city">City</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="created_at">Date Added</SelectItem>
+              <SelectItem value="authorization_due_date">618 Due Date</SelectItem>
+              <SelectItem value="authorization_expiration_date">Auth Expiration Date</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" className="sm:w-auto">
             <Filter className="w-4 h-4 mr-2" />
             Filters

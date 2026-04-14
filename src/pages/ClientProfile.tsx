@@ -34,6 +34,7 @@ import ProximityMatchTab from "@/components/clients/ProximityMatchTab";
 import { AdmissionFormsTab } from "@/components/forms/AdmissionFormsTab";
 import { AssignedNursesTab } from "@/components/clients/AssignedNursesTab";
 import { NursingFormsTab } from "@/components/clients/NursingFormsTab";
+import { ClientFormsTab } from "@/components/clients/ClientFormsTab";
 
 interface Client {
   id: string;

@@ -533,6 +533,8 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
+                      {sortBy === 'authorization_due_date' && <TableHead>618 Due Date</TableHead>}
+                      {sortBy === 'authorization_expiration_date' && <TableHead>Auth Expiration</TableHead>}
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>

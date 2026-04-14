@@ -1,51 +1,33 @@
 
 
-## Add Client Class and Client Hours Fields
+## Fix: Quiz Answers Exposed to Caregivers
 
-### What you get
+### Problem
+The `orientation_quizzes` table has a blanket SELECT policy (`USING (true)`) that lets any authenticated user — including caregivers — read all columns, including `correct_answer`. Caregivers can look up answers before taking quizzes.
 
-Two new fields on every client record:
-- **Client Class** — a dropdown with options: VA, Medicaid, Private Pay, ARChoices
-- **Client Hours** — a numeric field for the client's authorized hours
+### Solution
+Since Supabase RLS operates at the row level (not column level), we cannot simply hide `correct_answer` via RLS. Instead:
 
-These will appear in the client profile overview, the "Add New Client" form, the bulk import parser, and the client export.
-
-### Plan
-
-**1. Database migration** — Add two columns to the `clients` table:
-- `client_class` (text, nullable, default null)
-- `client_hours` (numeric, nullable, default null)
-
-**2. Update "Add New Client" form** (`src/pages/ClientNew.tsx`)
-- Add `client_class` and `client_hours` to the Zod schema and form state
-- Add a Select dropdown for class (VA, Medicaid, Private Pay, ARChoices) and a numeric Input for hours in the Compliance section
-
-**3. Update Client Profile overview** (`src/components/clients/ClientOverview.tsx`)
-- Add `client_class` and `client_hours` to the Client interface
-- Display them in the Personal Information card (class as text, hours as number)
-
-**4. Update Client Profile page** (`src/pages/ClientProfile.tsx`)
-- Add `client_class` and `client_hours` to the Client interface so they're fetched and passed through
-
-**5. Update CSV export** (`src/utils/csvExport.ts`)
-- Add `client_class` and `client_hours` to `formatClientForExport`
-
-**6. Update bulk import parsers** (`src/utils/csvParser.ts`, `src/utils/excelParser.ts`)
-- Map "client_class" and "client_hours" columns so imports can populate these fields
-
-**7. Update Clients list page** (`src/pages/Clients.tsx`)
-- Add `client_class` and `client_hours` to the Client interface so they display/export correctly
+1. **Create a database view** `orientation_quizzes_public` that exposes all columns **except** `correct_answer`.
+2. **Create a server-side edge function** `check-quiz-answers` that accepts a caregiver's answers and returns results (pass/fail, score) — the correct answers never leave the server.
+3. **Update the caregiver-facing code** (`CaregiverOrientation.tsx` / `OrientationQuiz`) to use the edge function for grading instead of client-side comparison.
+4. **Drop the blanket caregiver SELECT policy** on `orientation_quizzes` so caregivers can no longer read `correct_answer`.
+5. **Keep the admin policy** (`auth.uid() = user_id`) so admins can still manage quiz questions.
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| Migration SQL | Add `client_class` and `client_hours` columns |
-| `src/pages/ClientNew.tsx` | Add class dropdown + hours input to form |
-| `src/components/clients/ClientOverview.tsx` | Display class and hours |
-| `src/pages/ClientProfile.tsx` | Add fields to interface |
-| `src/pages/Clients.tsx` | Add fields to interface |
-| `src/utils/csvExport.ts` | Include in export |
-| `src/utils/csvParser.ts` | Support in CSV import |
-| `src/utils/excelParser.ts` | Support in Excel import |
+| Migration SQL | Create `orientation_quizzes_public` view (excludes `correct_answer`); drop the `Caregivers can view orientation quizzes` policy; add a new caregiver SELECT policy on the view |
+| `supabase/functions/check-quiz-answers/index.ts` | New edge function: accepts `{ section_number, answers: Record<questionId, selectedOption> }`, grades server-side using service role, returns `{ score, passed, results }` |
+| `src/hooks/useOrientation.ts` | `useOrientationQuizzes`: for non-admin users, query the view (no `correct_answer`); add a `gradeQuiz()` function that calls the edge function |
+| `src/components/orientation/OrientationQuiz.tsx` | Remove client-side grading; call `gradeQuiz()` instead; show results from server response |
+| `src/pages/CaregiverOrientation.tsx` | Pass the grading function through to the quiz component |
+
+### How grading works after the fix
+
+1. Caregiver selects answers and clicks Submit.
+2. Frontend calls `check-quiz-answers` edge function with the caregiver's selections.
+3. Edge function reads `correct_answer` from the DB (service role), computes score, returns pass/fail and per-question correctness.
+4. Frontend displays results — correct answers are only revealed in the response after submission.
 

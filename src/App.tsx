@@ -12,6 +12,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientNew from "./pages/ClientNew";
+import ClientEdit from "./pages/ClientEdit";
 import ClientProfile from "./pages/ClientProfile";
 import Scheduling from "./pages/Scheduling";
 import Caregivers from "./pages/Caregivers";

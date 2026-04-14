@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SessionTimeoutProvider } from "@/components/auth/SessionTimeoutProvider";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -32,12 +33,14 @@ import CaregiverDashboard from "./pages/CaregiverDashboard";
 import CaregiverOrientation from "./pages/CaregiverOrientation";
 import CaregiverMyProfile from "./pages/CaregiverMyProfile";
 import CaregiverApplication from "./pages/CaregiverApplication";
+import AuditLog from "./pages/AuditLog";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <SessionTimeoutProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -68,6 +71,7 @@ const App = () => (
             <Route path="/monthly-calendars" element={<ProtectedRoute allowedRoles={["admin"]}><MonthlyCalendars /></ProtectedRoute>} />
             <Route path="/lms/orientation" element={<ProtectedRoute allowedRoles={["admin"]}><OrientationManagement /></ProtectedRoute>} />
             <Route path="/lms/orientation/:id" element={<ProtectedRoute allowedRoles={["admin"]}><OrientationViewer /></ProtectedRoute>} />
+            <Route path="/audit-log" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLog /></ProtectedRoute>} />
             
             {/* Caregiver routes */}
             <Route path="/my-dashboard" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverDashboard /></ProtectedRoute>} />
@@ -81,6 +85,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </SessionTimeoutProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

@@ -69,15 +69,17 @@ export function ClientFormsTab({ clientId }: ClientFormsTabProps) {
         .upload(filePath, file);
       if (storageError) throw storageError;
 
-      const { data: urlData } = supabase.storage
+      const { data: urlData, error: urlError } = await supabase.storage
         .from("client-documents")
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year signed URL
+
+      if (urlError || !urlData?.signedUrl) throw urlError || new Error("Failed to create signed URL");
 
       const { error: dbError } = await supabase.from("client_documents").insert({
         client_id: clientId,
         user_id: user.id,
         name: file.name,
-        file_url: urlData.publicUrl,
+        file_url: filePath,
         file_type: file.type,
         file_size: file.size,
         category,

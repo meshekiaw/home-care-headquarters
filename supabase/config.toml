@@ -14,3 +14,6 @@ project_id = "iljmedelpqwzwyecvksa"
 
  [functions.generate-orientation-audio]
  verify_jwt = false
+
+ [functions.manage-ssn]
+ verify_jwt = false

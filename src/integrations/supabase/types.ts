@@ -183,6 +183,42 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       care_plans: {
         Row: {
           client_id: string
@@ -439,7 +475,7 @@ export type Database = {
           phone: string | null
           service_radius_miles: number | null
           specializations: string[] | null
-          ssn: string | null
+          ssn_encrypted: string | null
           state: string | null
           status: string
           updated_at: string
@@ -460,7 +496,7 @@ export type Database = {
           phone?: string | null
           service_radius_miles?: number | null
           specializations?: string[] | null
-          ssn?: string | null
+          ssn_encrypted?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -481,7 +517,7 @@ export type Database = {
           phone?: string | null
           service_radius_miles?: number | null
           specializations?: string[] | null
-          ssn?: string | null
+          ssn_encrypted?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -1964,6 +2000,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
+      encrypt_ssn: { Args: { plain_ssn: string }; Returns: string }
+      encrypt_ssn_for_caregiver: {
+        Args: { p_caregiver_id: string; p_ssn: string }
+        Returns: undefined
+      }
+      get_caregiver_ssn_masked: {
+        Args: { p_caregiver_id: string }
+        Returns: string
+      }
+      get_masked_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

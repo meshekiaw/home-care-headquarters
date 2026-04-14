@@ -337,10 +337,8 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('client-documents')
-        .getPublicUrl(fileName);
+      // Store the path (not public URL) for private bucket
+      const storagePath = fileName;
 
       // Create document record
       const { error: docError } = await supabase
@@ -349,7 +347,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
           user_id: user.id,
           client_id: clientId,
           name: uploadForm.name,
-          file_url: publicUrl,
+          file_url: storagePath,
           file_type: uploadForm.file.type,
           category: 'nursing_form',
         });

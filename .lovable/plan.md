@@ -1,30 +1,46 @@
 
 
-## Expand Bulk Actions for Selected Clients
+## Update Excel Importer for Your Updated Spreadsheet
 
-### Goal
-Add more useful bulk action options to the action bar that appears when clients are selected.
+### Your actual spreadsheet columns
 
-### New bulk actions to add
+| Column | Maps to DB field | Handling |
+|---|---|---|
+| Last Name | `last_name` | Direct (already works) |
+| First Name | `first_name` | Direct (already works) |
+| Date of Birth | `date_of_birth` | Already mapped; fix date parsing for `M/D/YY` format |
+| Phone number | `phone` | Already mapped |
+| Address | `address` | Already mapped |
+| City | `city` | Already mapped |
+| State | `state` | Already mapped |
+| Zip Code | `zip_code` | Already mapped |
+| Emergency contact Name | `emergency_contact_name` | Already mapped |
+| Emergency Contact Phone | `emergency_contact_phone` | Already mapped |
+| 618 Dute Date | `notes` | Append as "618 Due Date: value" |
+| Authorization Expiration Date | `notes` | Append as "Authorization Expiration Date: value" |
+| Status | `status` | ✓ = "active", blank = "inactive" |
+| Notes | `notes` | Already mapped |
 
-Currently only "Export Selected" and "Deselect All" exist. The following will be added:
+### Changes needed
 
-1. **Change Status** — Dropdown to set all selected clients to Active, Inactive, or Pending in one click (updates database in batch)
-2. **Delete Selected** — Remove selected clients with a confirmation dialog to prevent accidents
-3. **Send Message** — Navigate to Communications page with selected clients pre-loaded (or show a compose dialog)
-4. **Print Selected** — Open browser print dialog with a formatted list of selected client details
-5. **Assign Caregiver** — Open a dialog to assign a caregiver to all selected clients at once
+**1. `src/utils/excelParser.ts`**
+- Add `"618 dute date"` and `"authorization expiration date"` to COLUMN_MAP (mapped to notes with labels -- handled by existing extra-column logic, so no COLUMN_MAP entry needed)
+- Add special handling for Status column: convert `✓` / `✔` to `"active"`, blank to `"inactive"`
+- Add `raw_dates: true` option to `XLSX.read()` or handle Excel serial date numbers that SheetJS may return for date columns
 
-### Changes
+**2. `src/utils/csvParser.ts`**
+- In `validateAndTransformClients`, update date parsing to handle `M/D/YY` format (e.g., `1/1/59` → `1959-01-01`, `7/8/52` → `1952-07-08`)
+- Handle 2-digit years: years > 30 → 1900s, years <= 30 → 2000s (so `59` = 1959, `26` = 2026)
+- Accept `✓` as a valid status value mapped to `"active"`
 
-**Update `src/pages/Clients.tsx`**
-- Add a "Change Status" dropdown button using `DropdownMenu` with options: Active, Inactive, Pending — each calls `supabase.from('clients').update({ status }).in('id', [...selectedIds])` then refreshes
-- Add a "Delete Selected" button that shows an `AlertDialog` confirmation, then calls `supabase.from('clients').delete().in('id', [...selectedIds])` and refreshes
-- Add a "Print Selected" button that opens `window.print()` with selected client data
-- Restyle the bulk action bar to accommodate the additional buttons cleanly with wrapping on mobile
+### Result
+- All 14 columns from your spreadsheet will import correctly
+- Names, phone, address, city, state, zip, emergency contacts map directly to DB fields
+- Date of Birth parses `M/D/YY` format correctly
+- 618 Due Date and Authorization Expiration Date are preserved in notes
+- Status checkmarks become "active"
 
-### What stays the same
-- Export Selected and Deselect All remain as-is
-- Individual row actions unchanged
-- No new database tables needed
+### Files modified
+- `src/utils/excelParser.ts` -- status checkmark conversion
+- `src/utils/csvParser.ts` -- M/D/YY date format support, checkmark status handling
 

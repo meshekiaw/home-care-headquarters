@@ -1,23 +1,46 @@
 
 
-## Add Edit Client Page
+## Fix: Admins Can't Edit Clients Created by Other Users
 
 ### Problem
-The client profile has an "Edit Client" button linking to `/clients/:id/edit`, but no route or page exists for that URL — clicking it leads to a 404.
+The `clients` table RLS policies use `auth.uid() = user_id`, meaning only the user who created a client record can update it. When an admin (Demetrich, logged in as `homcarenetwork4@gmail.com`) tries to edit a client created by another admin (`meshekiaw@gmail.com`), the database silently rejects the update.
 
 ### Solution
-Create a `ClientEdit` page that reuses the same form layout as `ClientNew`, but pre-fills it with the existing client data and performs an UPDATE instead of INSERT.
+Add RLS policies that allow users with the `admin` role to SELECT, UPDATE, INSERT, and DELETE any client record, regardless of `user_id`.
 
 ### Changes
 
-| File | Change |
+| Area | Change |
 |------|--------|
-| `src/pages/ClientEdit.tsx` | **New file.** Copy the form structure from `ClientNew.tsx`. On mount, fetch the client by URL param `id` and populate the form. On submit, call `supabase.from('clients').update(...)` instead of `insert`. Redirect back to the client profile on success. |
-| `src/App.tsx` | Add route: `<Route path="/clients/:id/edit" element={<ProtectedRoute allowedRoles={["admin"]}><ClientEdit /></ProtectedRoute>} />` |
+| Database migration | Add 4 new permissive RLS policies on `clients` table using `has_role(auth.uid(), 'admin')` for SELECT, INSERT, UPDATE, and DELETE |
 
-### Details
-- The form fields, validation schema, and layout will match `ClientNew` exactly so the experience is consistent.
-- The page title and submit button will say "Edit Client" / "Save Changes" instead of "Add New Client" / "Add Client".
-- The back/cancel links will navigate to `/clients/:id` (the profile) instead of `/clients`.
-- `client_hours` is stored as `numeric` in the DB; the form will convert string ↔ number on load/save.
+### SQL Migration
+
+```sql
+-- Admins can view all clients
+CREATE POLICY "Admins can view all clients"
+ON public.clients FOR SELECT
+TO authenticated
+USING (public.has_role(auth.uid(), 'admin'::app_role));
+
+-- Admins can create clients
+CREATE POLICY "Admins can create clients"
+ON public.clients FOR INSERT
+TO authenticated
+WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
+
+-- Admins can update all clients
+CREATE POLICY "Admins can update all clients"
+ON public.clients FOR UPDATE
+TO authenticated
+USING (public.has_role(auth.uid(), 'admin'::app_role));
+
+-- Admins can delete all clients
+CREATE POLICY "Admins can delete all clients"
+ON public.clients FOR DELETE
+TO authenticated
+USING (public.has_role(auth.uid(), 'admin'::app_role));
+```
+
+These are permissive policies, so they work alongside the existing `user_id`-based policies. Any user matching either policy gets access.
 

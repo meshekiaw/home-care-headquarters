@@ -2003,7 +2003,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      orientation_quizzes_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          options: Json | null
+          points: number | null
+          question_text: string | null
+          section_number: number | null
+          sort_order: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          options?: Json | null
+          points?: number | null
+          question_text?: string | null
+          section_number?: number | null
+          sort_order?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          options?: Json | null
+          points?: number | null
+          question_text?: string | null
+          section_number?: number | null
+          sort_order?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }

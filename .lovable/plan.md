@@ -1,46 +1,24 @@
 
 
-## Add Dedicated Columns for 618 Due Date and Authorization Expiration Date
+## Add Sort-By for Compliance Dates on Clients Page
 
-The `clients` table already has a `notes` column, so Notes from the spreadsheet will continue mapping there directly. The two compliance date fields need new dedicated columns.
+### What it does
+Adds sorting options to group clients by their 618 Due Date month or Authorization Expiration Date month, in addition to the existing name/city/status options.
 
-### Database Migration
+### Changes
 
-Add two new date columns to the `clients` table:
-
-```sql
-ALTER TABLE public.clients ADD COLUMN authorization_due_date date NULL;
-ALTER TABLE public.clients ADD COLUMN authorization_expiration_date date NULL;
-```
-
-### File Changes
-
-**1. `src/utils/excelParser.ts`**
-- Add to `COLUMN_MAP`:
-  - `"618 dute date"` → `"authorization_due_date"`
-  - `"authorization expiration date"` → `"authorization_expiration_date"`
-- Handle Excel Date objects for these fields (same as DOB handling)
-
-**2. `src/utils/csvParser.ts`**
-- Add `authorization_due_date` and `authorization_expiration_date` to `ClientCSVRow` and `ParsedClient` interfaces
-- Parse these date fields in `validateAndTransformClients` (same date format logic as DOB)
-
-**3. `src/pages/Clients.tsx`**
-- Include `authorization_due_date` and `authorization_expiration_date` in the bulk import insert call
-
-**4. `src/pages/ClientProfile.tsx`**
-- Add the two new fields to the `Client` interface
-
-**5. `src/components/clients/ClientOverview.tsx`**
-- Add the two new fields to the `Client` interface
-- Display them in a new "Compliance Dates" card showing 618 Due Date and Authorization Expiration Date
-
-**6. `src/pages/ClientNew.tsx`**
-- Add optional input fields for the two new dates in the add-client form
+**`src/pages/Clients.tsx`**
+1. Add `sortBy` state with options: `name`, `city`, `status`, `created_at`, `authorization_due_date`, `authorization_expiration_date`
+2. Add a "Sort by" `Select` dropdown next to the Filters button
+3. Sort logic:
+   - **618 Due Date** -- groups by year-month of `authorization_due_date`, earliest month first; clients with no date go to the bottom
+   - **Authorization Expiration Date** -- same grouping by year-month of `authorization_expiration_date`
+   - **City** -- alphabetical by city
+   - **Name** -- alphabetical by last name, then first name
+   - **Status** -- active → pending → inactive
+   - **Date Added** -- newest first
+4. Import `Select`, `SelectContent`, `SelectItem`, `SelectTrigger`, `SelectValue` and `ArrowUpDown` icon
 
 ### Result
-- "618 Dute Date" → stored in `authorization_due_date` column
-- "Authorization Expiration Date" → stored in `authorization_expiration_date` column
-- "Notes" → stored in existing `notes` column (already works)
-- All three fields display separately in the client profile
+A dropdown in the toolbar lets you pick "618 Due Date" or "Auth Expiration Date" to see all clients in the same month grouped together, sorted chronologically.
 

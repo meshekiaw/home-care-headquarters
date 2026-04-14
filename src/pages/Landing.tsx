@@ -57,7 +57,7 @@ export default function Landing() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">HC</span>
             </div>
-            <span className="font-semibold text-lg">HomeCare</span>
+            <span className="font-semibold text-lg">Home Care Headquarters</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
@@ -153,7 +153,7 @@ export default function Landing() {
             {/* CTA Card */}
             <div className="p-6 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex flex-col justify-center">
               <h3 className="text-xl font-semibold mb-2">Ready to transform your agency?</h3>
-              <p className="text-primary-foreground/80 mb-4">Join hundreds of agencies already using HomeCare Dashboard.</p>
+              <p className="text-primary-foreground/80 mb-4">Join hundreds of agencies already using Home Care Headquarters.</p>
               <Link to="/signup">
                 <Button variant="secondary" className="w-fit">
                   Get Started Free
@@ -232,10 +232,10 @@ export default function Landing() {
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">HC</span>
               </div>
-              <span className="font-semibold">HomeCare Dashboard</span>
+              <span className="font-semibold">Home Care Headquarters</span>
             </div>
             <p className="text-sidebar-foreground/60 text-sm">
-              © 2024 HomeCare Dashboard. All rights reserved.
+              © 2024 Home Care Headquarters. All rights reserved.
             </p>
           </div>
         </div>

@@ -1,24 +1,24 @@
 
 
-## Add Sort-By for Compliance Dates on Clients Page
+## Add Date Filters to Clients Page
 
 ### What it does
-Adds sorting options to group clients by their 618 Due Date month or Authorization Expiration Date month, in addition to the existing name/city/status options.
+Makes the Filters button functional and adds date-based filtering for 618 Due Date and Authorization Expiration Date, plus a status filter.
 
 ### Changes
 
 **`src/pages/Clients.tsx`**
-1. Add `sortBy` state with options: `name`, `city`, `status`, `created_at`, `authorization_due_date`, `authorization_expiration_date`
-2. Add a "Sort by" `Select` dropdown next to the Filters button
-3. Sort logic:
-   - **618 Due Date** -- groups by year-month of `authorization_due_date`, earliest month first; clients with no date go to the bottom
-   - **Authorization Expiration Date** -- same grouping by year-month of `authorization_expiration_date`
-   - **City** -- alphabetical by city
-   - **Name** -- alphabetical by last name, then first name
-   - **Status** -- active → pending → inactive
-   - **Date Added** -- newest first
-4. Import `Select`, `SelectContent`, `SelectItem`, `SelectTrigger`, `SelectValue` and `ArrowUpDown` icon
 
-### Result
-A dropdown in the toolbar lets you pick "618 Due Date" or "Auth Expiration Date" to see all clients in the same month grouped together, sorted chronologically.
+1. Add state: `filterOpen` (boolean), `statusFilter` (string, default `"all"`), `dueDateMonth` (string, default `"all"`), `expirationDateMonth` (string, default `"all"`)
+2. Wire the Filters button with `onClick={() => setFilterOpen(!filterOpen)}` and show active filter count as a badge
+3. When `filterOpen` is true, render a filter bar below the search row with:
+   - **Status**: Select dropdown (All, Active, Inactive, Pending)
+   - **618 Due Date Month**: Select dropdown dynamically populated with year-month values from clients that have `authorization_due_date` set (e.g. "Jan 2026", "Feb 2026")
+   - **Auth Expiration Month**: Select dropdown dynamically populated from `authorization_expiration_date`
+   - **Clear Filters** button to reset all
+4. Apply filters to `filteredClients` -- match status, match year-month of due date, match year-month of expiration date
+5. When sorting by `authorization_due_date` or `authorization_expiration_date`, show the relevant date column in the table so you can see which month each client is in
+
+### Files modified
+- `src/pages/Clients.tsx`
 

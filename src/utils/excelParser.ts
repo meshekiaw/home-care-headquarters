@@ -37,7 +37,7 @@ export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array" });
+        const workbook = XLSX.read(data, { type: "array", cellDates: true });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const jsonRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
@@ -55,16 +55,29 @@ export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
           headers.forEach((header) => {
             const normalized = header.trim().toLowerCase();
             const mappedKey = COLUMN_MAP[normalized];
-            const value = String(row[header] ?? "").trim();
+            const rawValue = row[header];
+            const value = String(rawValue ?? "").trim();
 
             if (mappedKey) {
-              mapped[mappedKey] = value;
+              if (mappedKey === "status") {
+                if (value === "✓" || value === "✔" || value === "TRUE" || value === "true") {
+                  mapped[mappedKey] = "active";
+                } else if (!value) {
+                  mapped[mappedKey] = "inactive";
+                } else {
+                  mapped[mappedKey] = value;
+                }
+              } else if (mappedKey === "date_of_birth" && rawValue instanceof Date) {
+                const d = rawValue as Date;
+                mapped[mappedKey] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              } else {
+                mapped[mappedKey] = value;
+              }
             } else if (value) {
               extraParts.push(`${header}: ${value}`);
             }
           });
 
-          // Append extra columns to notes
           if (extraParts.length > 0) {
             const existing = mapped.notes || "";
             mapped.notes = [existing, ...extraParts].filter(Boolean).join(" | ");

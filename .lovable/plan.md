@@ -1,40 +1,26 @@
 
 
-## Add "Client Forms" Upload Tab to Client Profile
+## Add Select All with Bulk Actions to Clients Page
 
 ### Goal
-Add a new tab to the client profile where you can upload and manage specific document types: Care Plan, Authorizations, Admit Chart, 618, and Emergency Care Forms.
+Add checkboxes to each row in the clients table with a "Select All" checkbox in the header, enabling bulk selection of clients. Include a bulk action bar for common operations (e.g., Export Selected, Delete Selected).
 
 ### Changes
 
-**1. Create `src/components/clients/ClientFormsTab.tsx`**
-- New component with a categorized upload interface
-- Pre-defined document categories: Care Plan, Authorization, Admit Chart, 618, Emergency Care Form
-- Each category shown as a section/card with:
-  - Upload button (accepts PDF, images, Word docs)
-  - List of uploaded files with date, download link, and delete option
-  - Status indicator (uploaded / missing)
-- Files stored in the existing `client-documents` storage bucket
-- Records saved to the existing `client_documents` table with the category field set to the document type
-- Uses real file upload to storage (not just URL input like the current Documents tab)
-
-**2. Update `src/pages/ClientProfile.tsx`**
-- Import the new `ClientFormsTab` component
-- Add a new tab trigger labeled "Forms" between the existing tabs (after Documents, before Nurses)
-- Add the corresponding `TabsContent` rendering the component with `clientId`
+**1. Update `src/pages/Clients.tsx`**
+- Add `selectedIds: Set<string>` state to track selected client IDs
+- Add a `Checkbox` in the table header that toggles all filtered clients
+- Add a `Checkbox` in each table row tied to that client's ID
+- Show a bulk action bar when any clients are selected, with:
+  - "X selected" count
+  - "Export Selected" button (exports only checked rows)
+  - "Deselect All" button
+- Clear selection when search query changes
+- Import `Checkbox` from `@/components/ui/checkbox`
 
 ### How it works
-- User clicks the "Forms" tab on a client profile
-- Sees 5 sections: Care Plan, Authorizations, Admit Chart, 618, Emergency Care Form
-- Each section has an "Upload" button that opens a file picker
-- Selected file uploads directly to storage, creates a database record with the correct category
-- Uploaded files appear in their section with download and delete options
-- No new database tables or migrations needed -- uses existing `client_documents` table and `client-documents` bucket
-
-### Technical details
-- File upload uses `supabase.storage.from('client-documents').upload(...)` 
-- File path pattern: `{clientId}/{category}/{filename}`
-- Category values: `care_plan`, `authorization`, `admit_chart`, `618`, `emergency_care_form`
-- The existing Documents tab remains unchanged for general documents
-- Files modified: `ClientProfile.tsx` (add tab), new `ClientFormsTab.tsx`
+- Clicking the header checkbox selects/deselects all visible (filtered) clients
+- Clicking a row checkbox toggles that individual client
+- A bar appears above the table showing how many are selected with bulk action buttons
+- "Export Selected" exports only the checked clients to CSV
 

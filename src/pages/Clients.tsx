@@ -39,8 +39,16 @@ import {
   Printer,
   MessageSquare,
   ChevronDown,
-  UserPlus
+  UserPlus,
+  ArrowUpDown
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -50,8 +50,15 @@ Deno.serve(async (req) => {
 
     const { action, user_id, email, password, display_name } = await req.json();
 
-    if (!action || !user_id) {
-      return new Response(JSON.stringify({ error: "Missing required fields: action, user_id" }), {
+    if (!action) {
+      return new Response(JSON.stringify({ error: "Missing required field: action" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action !== "list_users" && !user_id) {
+      return new Response(JSON.stringify({ error: "Missing required field: user_id" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

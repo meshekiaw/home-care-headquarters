@@ -149,7 +149,9 @@ export default function ClientEdit() {
           client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
           status: validated.status,
         })
-        .eq("id", id!);
+        .eq("id", id!)
+        .select("id")
+        .single();
 
       if (error) throw error;
 

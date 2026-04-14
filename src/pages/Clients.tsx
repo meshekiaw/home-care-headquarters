@@ -592,6 +592,20 @@ export default function Clients() {
                             {client.status}
                           </span>
                         </TableCell>
+                        {sortBy === 'authorization_due_date' && (
+                          <TableCell className="text-sm text-muted-foreground">
+                            {client.authorization_due_date
+                              ? new Date(client.authorization_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : '—'}
+                          </TableCell>
+                        )}
+                        {sortBy === 'authorization_expiration_date' && (
+                          <TableCell className="text-sm text-muted-foreground">
+                            {client.authorization_expiration_date
+                              ? new Date(client.authorization_expiration_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : '—'}
+                          </TableCell>
+                        )}
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

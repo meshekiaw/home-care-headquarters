@@ -76,7 +76,6 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         zip_code: formData.zip_code || undefined,
         service_radius_miles: formData.service_radius_miles ? parseInt(formData.service_radius_miles) : undefined,
         date_of_birth: formData.date_of_birth || undefined,
-        date_of_birth: formData.date_of_birth || undefined,
       });
       onOpenChange(false);
       setFormData({

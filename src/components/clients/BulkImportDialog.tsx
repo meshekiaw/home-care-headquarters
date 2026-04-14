@@ -66,22 +66,37 @@ import { parseExcelFile } from "@/utils/excelParser";
      onOpenChange(false);
    };
  
-   const handleFile = useCallback((file: File) => {
-     if (!file.name.endsWith(".csv")) {
-       alert("Please upload a CSV file");
-       return;
-     }
- 
-     const reader = new FileReader();
-     reader.onload = (e) => {
-       const content = e.target?.result as string;
-       const rows = parseClientCSV(content);
-       const result = validateAndTransformClients(rows);
-       setParseResult(result);
-       setStep("preview");
-     };
-     reader.readAsText(file);
-   }, []);
+  const handleFile = useCallback((file: File) => {
+    const name = file.name.toLowerCase();
+    const isExcel = name.endsWith(".xlsx") || name.endsWith(".xls");
+    const isCsv = name.endsWith(".csv");
+
+    if (!isExcel && !isCsv) {
+      alert("Please upload a CSV or Excel (.xlsx) file");
+      return;
+    }
+
+    if (isExcel) {
+      parseExcelFile(file).then((rows) => {
+        const result = validateAndTransformClients(rows);
+        setParseResult(result);
+        setStep("preview");
+      }).catch((err) => {
+        console.error("Excel parse error:", err);
+        alert("Failed to read Excel file. Please check the file format.");
+      });
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        const rows = parseClientCSV(content);
+        const result = validateAndTransformClients(rows);
+        setParseResult(result);
+        setStep("preview");
+      };
+      reader.readAsText(file);
+    }
+  }, []);
  
    const handleDrag = useCallback((e: React.DragEvent) => {
      e.preventDefault();
@@ -163,14 +178,14 @@ import { parseExcelFile } from "@/utils/excelParser";
              >
                <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                <p className="text-lg font-medium mb-2">
-                 Drag and drop your CSV file here
+                 Drag and drop your CSV or Excel file here
                </p>
                <p className="text-sm text-muted-foreground mb-4">
                  or click to browse
                </p>
                <input
                  type="file"
-                 accept=".csv"
+                 accept=".csv,.xlsx,.xls"
                  onChange={handleFileInput}
                  className="hidden"
                  id="client-csv-upload"
@@ -186,7 +201,7 @@ import { parseExcelFile } from "@/utils/excelParser";
                <div className="flex items-center justify-between mb-3">
                  <div className="flex items-center gap-2">
                    <FileText className="w-4 h-4 text-muted-foreground" />
-                   <span className="text-sm font-medium">CSV Format</span>
+                   <span className="text-sm font-medium">CSV / Excel Format</span>
                  </div>
                  <Button variant="ghost" size="sm" onClick={handleDownloadSample}>
                    <Download className="w-4 h-4 mr-2" />

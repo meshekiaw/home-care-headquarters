@@ -2002,6 +2002,14 @@ export type Database = {
     Functions: {
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       encrypt_ssn: { Args: { plain_ssn: string }; Returns: string }
+      encrypt_ssn_for_caregiver: {
+        Args: { p_caregiver_id: string; p_ssn: string }
+        Returns: undefined
+      }
+      get_caregiver_ssn_masked: {
+        Args: { p_caregiver_id: string }
+        Returns: string
+      }
       get_masked_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       has_role: {
         Args: {

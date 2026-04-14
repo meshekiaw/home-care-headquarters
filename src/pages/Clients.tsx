@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -22,7 +23,8 @@ import {
   Users,
   Filter,
   Download,
-  Upload
+  Upload,
+  X
 } from "lucide-react";
 import {
   DropdownMenu,

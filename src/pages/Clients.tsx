@@ -71,7 +71,11 @@ interface Client {
   city: string | null;
   status: string;
   created_at: string;
+  authorization_due_date: string | null;
+  authorization_expiration_date: string | null;
 }
+
+type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
 
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);

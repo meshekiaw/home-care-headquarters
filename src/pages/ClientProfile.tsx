@@ -52,6 +52,8 @@ interface Client {
   notes: string | null;
   status: string;
   created_at: string;
+  authorization_due_date: string | null;
+  authorization_expiration_date: string | null;
 }
 
 export default function ClientProfile() {

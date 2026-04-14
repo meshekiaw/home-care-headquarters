@@ -31,6 +31,8 @@ const clientSchema = z.object({
   emergency_contact_name: z.string().max(200).optional(),
   emergency_contact_phone: z.string().max(20).optional(),
   notes: z.string().max(2000).optional(),
+  authorization_due_date: z.string().optional(),
+  authorization_expiration_date: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]),
 });
 
@@ -55,6 +57,8 @@ export default function ClientNew() {
     emergency_contact_name: "",
     emergency_contact_phone: "",
     notes: "",
+    authorization_due_date: "",
+    authorization_expiration_date: "",
     status: "active",
   });
 
@@ -93,6 +97,8 @@ export default function ClientNew() {
         emergency_contact_name: validated.emergency_contact_name || null,
         emergency_contact_phone: validated.emergency_contact_phone || null,
         notes: validated.notes || null,
+        authorization_due_date: validated.authorization_due_date || null,
+        authorization_expiration_date: validated.authorization_expiration_date || null,
         status: validated.status,
         user_id: user.id,
       }]);
@@ -319,6 +325,37 @@ export default function ClientNew() {
                     placeholder="10001"
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Compliance Dates */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Compliance Dates</CardTitle>
+              </div>
+              <CardDescription>Authorization and compliance tracking dates</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="authorization_due_date">618 Due Date</Label>
+                <Input
+                  id="authorization_due_date"
+                  type="date"
+                  value={formData.authorization_due_date}
+                  onChange={(e) => handleChange("authorization_due_date", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="authorization_expiration_date">Authorization Expiration Date</Label>
+                <Input
+                  id="authorization_expiration_date"
+                  type="date"
+                  value={formData.authorization_expiration_date}
+                  onChange={(e) => handleChange("authorization_expiration_date", e.target.value)}
+                />
               </div>
             </CardContent>
           </Card>

@@ -29,6 +29,11 @@ const COLUMN_MAP: Record<string, keyof ClientCSVRow> = {
   "emergency_contact_phone": "emergency_contact_phone",
   "emergency contact phone": "emergency_contact_phone",
   "notes": "notes",
+  "618 dute date": "authorization_due_date",
+  "618 due date": "authorization_due_date",
+  "authorization_due_date": "authorization_due_date",
+  "authorization expiration date": "authorization_expiration_date",
+  "authorization_expiration_date": "authorization_expiration_date",
 };
 
 export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
@@ -67,7 +72,7 @@ export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
                 } else {
                   mapped[mappedKey] = value;
                 }
-              } else if (mappedKey === "date_of_birth" && rawValue instanceof Date) {
+              } else if ((mappedKey === "date_of_birth" || mappedKey === "authorization_due_date" || mappedKey === "authorization_expiration_date") && rawValue instanceof Date) {
                 const d = rawValue as Date;
                 mapped[mappedKey] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
               } else {

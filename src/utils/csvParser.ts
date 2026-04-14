@@ -193,6 +193,8 @@ export interface ClientCSVRow {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   notes?: string;
+  authorization_due_date?: string;
+  authorization_expiration_date?: string;
 }
 
 export interface ParsedClient {
@@ -209,6 +211,8 @@ export interface ParsedClient {
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   notes: string | null;
+  authorization_due_date: string | null;
+  authorization_expiration_date: string | null;
 }
 
 export interface ClientParseResult {
@@ -288,6 +292,42 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
       }
     }
 
+    // Parse authorization_due_date
+    let authDueDate: string | null = null;
+    if (row.authorization_due_date?.trim()) {
+      let dateStr = row.authorization_due_date.trim();
+      const mdyMatch2 = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if (mdyMatch2) {
+        const month = parseInt(mdyMatch2[1]);
+        const day = parseInt(mdyMatch2[2]);
+        let year = parseInt(mdyMatch2[3]);
+        if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
+        dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      }
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        authDueDate = dateStr.match(/^\d{4}-\d{2}-\d{2}$/) ? dateStr : parsed.toISOString().split('T')[0];
+      }
+    }
+
+    // Parse authorization_expiration_date
+    let authExpDate: string | null = null;
+    if (row.authorization_expiration_date?.trim()) {
+      let dateStr = row.authorization_expiration_date.trim();
+      const mdyMatch3 = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if (mdyMatch3) {
+        const month = parseInt(mdyMatch3[1]);
+        const day = parseInt(mdyMatch3[2]);
+        let year = parseInt(mdyMatch3[3]);
+        if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
+        dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      }
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        authExpDate = dateStr.match(/^\d{4}-\d{2}-\d{2}$/) ? dateStr : parsed.toISOString().split('T')[0];
+      }
+    }
+
     // Only add if no critical errors for this row
     const rowErrors = errors.filter(e => e.row === rowNum);
     const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name');
@@ -307,6 +347,8 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         emergency_contact_name: row.emergency_contact_name?.trim() || null,
         emergency_contact_phone: row.emergency_contact_phone?.trim() || null,
         notes: row.notes?.trim() || null,
+        authorization_due_date: authDueDate,
+        authorization_expiration_date: authExpDate,
       });
     }
   });

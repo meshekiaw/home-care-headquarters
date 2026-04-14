@@ -74,8 +74,8 @@ export default function CaregiverOverviewTab({
             <div>
               <p className="text-sm text-muted-foreground">SSN</p>
               <p className="font-medium">
-                {(caregiver as any).ssn
-                  ? `***-**-${(caregiver as any).ssn.slice(-4)}`
+                {(caregiver as any).ssn_encrypted
+                  ? "***-**-****"
                   : "Not provided"}
               </p>
             </div>

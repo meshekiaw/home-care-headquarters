@@ -231,8 +231,43 @@ export default function Clients() {
 
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+          <div className="flex flex-wrap items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <span className="text-sm font-medium">{selectedIds.size} selected</span>
+            
+            {/* Change Status */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <ChevronDown className="w-4 h-4 mr-1" />
+                  Change Status
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {["active", "inactive", "pending"].map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onClick={async () => {
+                      try {
+                        const { error } = await supabase
+                          .from('clients')
+                          .update({ status })
+                          .in('id', [...selectedIds]);
+                        if (error) throw error;
+                        toast({ title: "Status updated", description: `${selectedIds.size} clients set to ${status}` });
+                        setSelectedIds(new Set());
+                        fetchClients();
+                      } catch (error: any) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                      }
+                    }}
+                  >
+                    <span className="capitalize">{status}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Export Selected */}
             <Button
               size="sm"
               variant="outline"
@@ -244,8 +279,54 @@ export default function Clients() {
               }}
             >
               <Download className="w-4 h-4 mr-1" />
-              Export Selected
+              Export
             </Button>
+
+            {/* Print Selected */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const selected = clients.filter(c => selectedIds.has(c.id));
+                const printWindow = window.open('', '_blank');
+                if (printWindow) {
+                  printWindow.document.write(`
+                    <html><head><title>Selected Clients</title>
+                    <style>body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5}</style>
+                    </head><body><h1>Selected Clients (${selected.length})</h1>
+                    <table><tr><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Status</th></tr>
+                    ${selected.map(c => `<tr><td>${c.first_name} ${c.last_name}</td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.city || '-'}</td><td>${c.status}</td></tr>`).join('')}
+                    </table></body></html>`);
+                  printWindow.document.close();
+                  printWindow.print();
+                }
+              }}
+            >
+              <Printer className="w-4 h-4 mr-1" />
+              Print
+            </Button>
+
+            {/* Send Message */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate('/communications')}
+            >
+              <MessageSquare className="w-4 h-4 mr-1" />
+              Message
+            </Button>
+
+            {/* Delete Selected */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+
             <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
               <X className="w-4 h-4 mr-1" />
               Deselect All

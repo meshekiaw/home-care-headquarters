@@ -1,46 +1,47 @@
 
+Goal: make Demetrich’s client edits actually work, not just load the edit screen.
 
-## Fix: Admins Can't Edit Clients Created by Other Users
+What I found:
+- Demetrich does have an `admin` role in the backend.
+- The `clients` table already has admin SELECT/INSERT/UPDATE/DELETE policies.
+- The edit page and route exist and are wired correctly.
+- Since the problem still persists after those policies were added, the remaining issue is most likely the update path itself: the current policy setup is still ambiguous for UPDATEs, and the edit form does not force the database to return a row, so failed/blocked updates are hard to detect cleanly.
 
-### Problem
-The `clients` table RLS policies use `auth.uid() = user_id`, meaning only the user who created a client record can update it. When an admin (Demetrich, logged in as `homcarenetwork4@gmail.com`) tries to edit a client created by another admin (`meshekiaw@gmail.com`), the database silently rejects the update.
+Plan to fix
 
-### Solution
-Add RLS policies that allow users with the `admin` role to SELECT, UPDATE, INSERT, and DELETE any client record, regardless of `user_id`.
+1. Harden the `clients` update policy
+- Replace the recently added admin client policies with explicit versions that include the correct checks for both existing rows and updated rows.
+- For UPDATE specifically, use both:
+  - `USING (public.has_role(auth.uid(), 'admin'::app_role))`
+  - `WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role))`
+- Keep the existing owner-based policies for non-admin users.
 
-### Changes
+2. Make the edit request fail loudly if no row is updated
+- Update `src/pages/ClientEdit.tsx` so the save call returns the updated row:
+  - use `.update(...).eq("id", id).select("id").single()`
+- This prevents silent no-op updates and gives a real error when RLS blocks the mutation.
 
-| Area | Change |
-|------|--------|
-| Database migration | Add 4 new permissive RLS policies on `clients` table using `has_role(auth.uid(), 'admin')` for SELECT, INSERT, UPDATE, and DELETE |
+3. Improve the edit-page error handling
+- Show a clearer toast when the update is rejected.
+- Include the backend message instead of only a generic failure notice.
+- Keep the current validation behavior for field-level errors.
 
-### SQL Migration
+4. Verify the route end-to-end after the fix
+- Test with Demetrich on:
+  - a client she owns
+  - a client created by the other admin
+- Confirm:
+  - edit page loads
+  - save succeeds
+  - values persist on the profile page and client list
 
-```sql
--- Admins can view all clients
-CREATE POLICY "Admins can view all clients"
-ON public.clients FOR SELECT
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'::app_role));
+Files/areas to update
+- `supabase/migrations/...sql`
+  - replace the current admin client policies with stricter explicit ones
+- `src/pages/ClientEdit.tsx`
+  - make update requests return a row and surface failures properly
 
--- Admins can create clients
-CREATE POLICY "Admins can create clients"
-ON public.clients FOR INSERT
-TO authenticated
-WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
-
--- Admins can update all clients
-CREATE POLICY "Admins can update all clients"
-ON public.clients FOR UPDATE
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'::app_role));
-
--- Admins can delete all clients
-CREATE POLICY "Admins can delete all clients"
-ON public.clients FOR DELETE
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'::app_role));
-```
-
-These are permissive policies, so they work alongside the existing `user_id`-based policies. Any user matching either policy gets access.
-
+Technical notes
+- The current route and role hook are not the main blocker.
+- Demetrich’s admin role exists, so this does not look like account provisioning.
+- The highest-confidence fix is to make the UPDATE policy explicit and make the client update request require a successful returned row.

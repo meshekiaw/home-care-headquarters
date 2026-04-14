@@ -290,6 +290,10 @@ export default function ClientProfile() {
           <TabsContent value="documents">
             <DocumentsTab clientId={client.id} />
           </TabsContent>
+
+          <TabsContent value="client-forms">
+            <ClientFormsTab clientId={client.id} />
+          </TabsContent>
  
           <TabsContent value="nurses">
             <AssignedNursesTab clientId={client.id} />

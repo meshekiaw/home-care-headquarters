@@ -234,24 +234,33 @@ export function useMessages(conversationId?: string) {
 
   // Real-time subscription
   useEffect(() => {
+    const channelConfig: {
+      event: "INSERT";
+      schema: "public";
+      table: "messages";
+      filter?: string;
+    } = {
+      event: "INSERT",
+      schema: "public",
+      table: "messages",
+    };
+
+    if (conversationId) {
+      channelConfig.filter = `conversation_id=eq.${conversationId}`;
+    }
+
     const channel = supabase
-      .channel("messages-realtime")
+      .channel(`messages-realtime-${conversationId || "all"}`)
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-        },
+        channelConfig,
         (payload) => {
           const newMessage = payload.new as Message;
           
-          // Update messages if we're in the same conversation
           if (conversationId && newMessage.conversation_id === conversationId) {
             setMessages((prev) => [...prev, newMessage]);
           }
           
-          // Refresh conversations to update last message and unread count
           fetchConversations();
         }
       )

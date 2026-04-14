@@ -124,6 +124,30 @@ export default function Clients() {
     );
   });
 
+  // Clear selection when search changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [searchQuery]);
+
+  const allSelected = filteredClients.length > 0 && filteredClients.every(c => selectedIds.has(c.id));
+  const someSelected = filteredClients.some(c => selectedIds.has(c.id));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredClients.map(c => c.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-success/10 text-success';

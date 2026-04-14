@@ -374,7 +374,17 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
                           size="icon"
                           asChild
                         >
-                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                          <a 
+                            href="#" 
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              const path = doc.file_url.includes('/storage/') 
+                                ? doc.file_url.split('/client-documents/')[1] || doc.file_url 
+                                : doc.file_url;
+                              const { data } = await supabase.storage.from('client-documents').createSignedUrl(path, 3600);
+                              if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                            }}
+                          >
                             <ExternalLink className="w-4 h-4" />
                           </a>
                         </Button>

@@ -12,6 +12,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientNew from "./pages/ClientNew";
+import ClientEdit from "./pages/ClientEdit";
 import ClientProfile from "./pages/ClientProfile";
 import Scheduling from "./pages/Scheduling";
 import Caregivers from "./pages/Caregivers";
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/clients" element={<ProtectedRoute allowedRoles={["admin"]}><Clients /></ProtectedRoute>} />
             <Route path="/clients/new" element={<ProtectedRoute allowedRoles={["admin"]}><ClientNew /></ProtectedRoute>} />
             <Route path="/clients/:id" element={<ProtectedRoute allowedRoles={["admin"]}><ClientProfile /></ProtectedRoute>} />
+            <Route path="/clients/:id/edit" element={<ProtectedRoute allowedRoles={["admin"]}><ClientEdit /></ProtectedRoute>} />
             <Route path="/scheduling" element={<ProtectedRoute allowedRoles={["admin"]}><Scheduling /></ProtectedRoute>} />
             <Route path="/caregivers" element={<ProtectedRoute allowedRoles={["admin"]}><Caregivers /></ProtectedRoute>} />
             <Route path="/caregivers/:id" element={<ProtectedRoute allowedRoles={["admin"]}><CaregiverProfile /></ProtectedRoute>} />

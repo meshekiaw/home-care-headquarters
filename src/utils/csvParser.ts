@@ -255,24 +255,39 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
       errors.push({ row: rowNum, field: 'email', message: 'Invalid email format' });
     }
     
-    // Status validation
+    // Status validation - handle checkmarks
     const validStatuses = ['active', 'inactive', 'pending'];
-    const status = row.status?.trim().toLowerCase() || 'active';
+    let status = row.status?.trim().toLowerCase() || 'active';
+    if (status === '✓' || status === '✔' || status === 'true') {
+      status = 'active';
+    }
     if (!validStatuses.includes(status)) {
       errors.push({ row: rowNum, field: 'status', message: `Status must be one of: ${validStatuses.join(', ')}` });
     }
-    
-    // Date of birth validation
+
+    // Date of birth validation - handle M/D/YY, M/D/YYYY, and YYYY-MM-DD
     let dateOfBirth: string | null = null;
     if (row.date_of_birth?.trim()) {
-      const parsed = new Date(row.date_of_birth.trim());
+      let dobStr = row.date_of_birth.trim();
+      // Handle M/D/YY or M/D/YYYY format
+      const mdyMatch = dobStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if (mdyMatch) {
+        const month = parseInt(mdyMatch[1]);
+        const day = parseInt(mdyMatch[2]);
+        let year = parseInt(mdyMatch[3]);
+        if (year < 100) {
+          year = year > 30 ? 1900 + year : 2000 + year;
+        }
+        dobStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      }
+      const parsed = new Date(dobStr);
       if (isNaN(parsed.getTime())) {
-        errors.push({ row: rowNum, field: 'date_of_birth', message: 'Invalid date format (use YYYY-MM-DD)' });
+        errors.push({ row: rowNum, field: 'date_of_birth', message: 'Invalid date format (use YYYY-MM-DD or M/D/YY)' });
       } else {
-        dateOfBirth = parsed.toISOString().split('T')[0];
+        dateOfBirth = dobStr.match(/^\d{4}-\d{2}-\d{2}$/) ? dobStr : parsed.toISOString().split('T')[0];
       }
     }
-    
+
     // Only add if no critical errors for this row
     const rowErrors = errors.filter(e => e.row === rowNum);
     const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name');

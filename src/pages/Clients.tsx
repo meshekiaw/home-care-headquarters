@@ -60,6 +60,7 @@ import { useToast } from "@/hooks/use-toast";
 import { downloadCSV, formatClientForExport } from "@/utils/csvExport";
 import BulkImportDialog from "@/components/clients/BulkImportDialog";
 import type { ParsedClient } from "@/utils/csvParser";
+import { Badge } from "@/components/ui/badge";
 
 interface Client {
   id: string;
@@ -85,6 +86,10 @@ export default function Clients() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dueDateMonth, setDueDateMonth] = useState("all");
+  const [expirationDateMonth, setExpirationDateMonth] = useState("all");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -146,12 +151,25 @@ export default function Clients() {
 
   const filteredClients = clients.filter(client => {
     const searchLower = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = (
       client.first_name.toLowerCase().includes(searchLower) ||
       client.last_name.toLowerCase().includes(searchLower) ||
       client.email?.toLowerCase().includes(searchLower) ||
       client.phone?.includes(searchQuery)
     );
+    if (!matchesSearch) return false;
+    if (statusFilter !== "all" && client.status !== statusFilter) return false;
+    if (dueDateMonth !== "all") {
+      if (!client.authorization_due_date) return false;
+      const d = new Date(client.authorization_due_date);
+      if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== dueDateMonth) return false;
+    }
+    if (expirationDateMonth !== "all") {
+      if (!client.authorization_expiration_date) return false;
+      const d = new Date(client.authorization_expiration_date);
+      if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== expirationDateMonth) return false;
+    }
+    return true;
   });
 
   const sortedClients = [...filteredClients].sort((a, b) => {
@@ -186,6 +204,27 @@ export default function Clients() {
   useEffect(() => {
     setSelectedIds(new Set());
   }, [searchQuery]);
+
+  const formatYearMonth = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  const formatYearMonthLabel = (ym: string) => {
+    const [year, month] = ym.split('-');
+    const d = new Date(parseInt(year), parseInt(month) - 1);
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  const dueDateMonths = [...new Set(
+    clients.filter(c => c.authorization_due_date).map(c => formatYearMonth(c.authorization_due_date!))
+  )].sort();
+
+  const expirationDateMonths = [...new Set(
+    clients.filter(c => c.authorization_expiration_date).map(c => formatYearMonth(c.authorization_expiration_date!))
+  )].sort();
+
+  const activeFilterCount = [statusFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
 
   const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
   const someSelected = sortedClients.some(c => selectedIds.has(c.id));
@@ -278,11 +317,70 @@ export default function Clients() {
               <SelectItem value="authorization_expiration_date">Auth Expiration Date</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="sm:w-auto">
+          <Button variant="outline" className="sm:w-auto relative" onClick={() => setFilterOpen(!filterOpen)}>
             <Filter className="w-4 h-4 mr-2" />
             Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="default" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                {activeFilterCount}
+              </Badge>
+            )}
           </Button>
         </div>
+
+        {/* Filter Bar */}
+        {filterOpen && (
+          <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/50 border rounded-lg">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Status</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">618 Due Date Month</label>
+              <Select value={dueDateMonth} onValueChange={setDueDateMonth}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {dueDateMonths.map(ym => (
+                    <SelectItem key={ym} value={ym}>{formatYearMonthLabel(ym)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Auth Expiration Month</label>
+              <Select value={expirationDateMonth} onValueChange={setExpirationDateMonth}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {expirationDateMonths.map(ym => (
+                    <SelectItem key={ym} value={ym}>{formatYearMonthLabel(ym)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {activeFilterCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => { setStatusFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
+                <X className="w-4 h-4 mr-1" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (
@@ -435,6 +533,8 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
+                      {sortBy === 'authorization_due_date' && <TableHead>618 Due Date</TableHead>}
+                      {sortBy === 'authorization_expiration_date' && <TableHead>Auth Expiration</TableHead>}
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -492,6 +592,20 @@ export default function Clients() {
                             {client.status}
                           </span>
                         </TableCell>
+                        {sortBy === 'authorization_due_date' && (
+                          <TableCell className="text-sm text-muted-foreground">
+                            {client.authorization_due_date
+                              ? new Date(client.authorization_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : '—'}
+                          </TableCell>
+                        )}
+                        {sortBy === 'authorization_expiration_date' && (
+                          <TableCell className="text-sm text-muted-foreground">
+                            {client.authorization_expiration_date
+                              ? new Date(client.authorization_expiration_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : '—'}
+                          </TableCell>
+                        )}
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

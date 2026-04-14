@@ -195,6 +195,8 @@ export interface ClientCSVRow {
   notes?: string;
   authorization_due_date?: string;
   authorization_expiration_date?: string;
+  client_class?: string;
+  client_hours?: string;
 }
 
 export interface ParsedClient {
@@ -213,6 +215,8 @@ export interface ParsedClient {
   notes: string | null;
   authorization_due_date: string | null;
   authorization_expiration_date: string | null;
+  client_class: string | null;
+  client_hours: number | null;
 }
 
 export interface ClientParseResult {
@@ -349,6 +353,8 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         notes: row.notes?.trim() || null,
         authorization_due_date: authDueDate,
         authorization_expiration_date: authExpDate,
+        client_class: row.client_class?.trim() || null,
+        client_hours: row.client_hours?.trim() ? parseFloat(row.client_hours.trim()) : null,
       });
     }
   });

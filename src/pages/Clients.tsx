@@ -74,6 +74,8 @@ interface Client {
   created_at: string;
   authorization_due_date: string | null;
   authorization_expiration_date: string | null;
+  client_class: string | null;
+  client_hours: number | null;
 }
 
 type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';

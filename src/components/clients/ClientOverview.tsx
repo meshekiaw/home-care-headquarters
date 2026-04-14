@@ -27,6 +27,8 @@ interface Client {
   created_at: string;
   authorization_due_date: string | null;
   authorization_expiration_date: string | null;
+  client_class: string | null;
+  client_hours: number | null;
 }
 
 interface ClientOverviewProps {
@@ -62,6 +64,14 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             <div>
               <p className="text-sm text-muted-foreground">Client Since</p>
               <p className="font-medium">{formatDate(client.created_at)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Client Class</p>
+              <p className="font-medium">{client.client_class || 'Not specified'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Client Hours</p>
+              <p className="font-medium">{client.client_hours != null ? client.client_hours : 'Not specified'}</p>
             </div>
           </div>
         </CardContent>

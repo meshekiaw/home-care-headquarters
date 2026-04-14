@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -22,7 +23,8 @@ import {
   Users,
   Filter,
   Download,
-  Upload
+  Upload,
+  X
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -53,6 +55,7 @@ export default function Clients() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -121,6 +124,30 @@ export default function Clients() {
     );
   });
 
+  // Clear selection when search changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [searchQuery]);
+
+  const allSelected = filteredClients.length > 0 && filteredClients.every(c => selectedIds.has(c.id));
+  const someSelected = filteredClients.some(c => selectedIds.has(c.id));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredClients.map(c => c.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-success/10 text-success';
@@ -185,6 +212,30 @@ export default function Clients() {
           </Button>
         </div>
 
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <span className="text-sm font-medium">{selectedIds.size} selected</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const selected = clients.filter(c => selectedIds.has(c.id));
+                const exportData = selected.map(formatClientForExport);
+                downloadCSV(exportData, `clients-selected-${new Date().toISOString().split('T')[0]}`);
+                toast({ title: "Export complete", description: `Exported ${selected.length} clients` });
+              }}
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Export Selected
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              <X className="w-4 h-4 mr-1" />
+              Deselect All
+            </Button>
+          </div>
+        )}
+
         {/* Clients Table/List */}
         <Card>
           <CardContent className="p-0">
@@ -219,6 +270,14 @@ export default function Clients() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[40px]">
+                        <Checkbox
+                          checked={allSelected}
+                          onCheckedChange={toggleAll}
+                          aria-label="Select all"
+                          {...(someSelected && !allSelected ? { "data-state": "indeterminate" as any } : {})}
+                        />
+                      </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
@@ -228,7 +287,14 @@ export default function Clients() {
                   </TableHeader>
                   <TableBody>
                     {filteredClients.map((client) => (
-                      <TableRow key={client.id} className="hover:bg-muted/50">
+                      <TableRow key={client.id} className="hover:bg-muted/50" data-state={selectedIds.has(client.id) ? "selected" : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(client.id)}
+                            onCheckedChange={() => toggleOne(client.id)}
+                            aria-label={`Select ${client.first_name} ${client.last_name}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <Link 
                             to={`/clients/${client.id}`}

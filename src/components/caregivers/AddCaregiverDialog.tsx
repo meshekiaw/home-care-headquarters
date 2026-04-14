@@ -23,7 +23,6 @@ interface AddCaregiverDialogProps {
     state?: string;
     zip_code?: string;
     service_radius_miles?: number;
-    ssn?: string;
     date_of_birth?: string;
   }) => Promise<any>;
 }
@@ -76,7 +75,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         state: formData.state || undefined,
         zip_code: formData.zip_code || undefined,
         service_radius_miles: formData.service_radius_miles ? parseInt(formData.service_radius_miles) : undefined,
-        ssn: formData.ssn || undefined,
+        date_of_birth: formData.date_of_birth || undefined,
         date_of_birth: formData.date_of_birth || undefined,
       });
       onOpenChange(false);
@@ -186,14 +185,6 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Social Security Number</Label>
-              <Input
-                value={formData.ssn}
-                onChange={(e) => setFormData((f) => ({ ...f, ssn: e.target.value }))}
-                placeholder="123-45-6789"
-              />
-            </div>
             <div className="space-y-2">
               <Label>Date of Birth</Label>
               <Input

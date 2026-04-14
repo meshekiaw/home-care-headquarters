@@ -33,6 +33,8 @@ const clientSchema = z.object({
   notes: z.string().max(2000).optional(),
   authorization_due_date: z.string().optional(),
   authorization_expiration_date: z.string().optional(),
+  client_class: z.string().optional(),
+  client_hours: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]),
 });
 
@@ -59,6 +61,8 @@ export default function ClientNew() {
     notes: "",
     authorization_due_date: "",
     authorization_expiration_date: "",
+    client_class: "",
+    client_hours: "",
     status: "active",
   });
 
@@ -99,6 +103,8 @@ export default function ClientNew() {
         notes: validated.notes || null,
         authorization_due_date: validated.authorization_due_date || null,
         authorization_expiration_date: validated.authorization_expiration_date || null,
+        client_class: validated.client_class || null,
+        client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
         status: validated.status,
         user_id: user.id,
       }]);
@@ -355,6 +361,35 @@ export default function ClientNew() {
                   type="date"
                   value={formData.authorization_expiration_date}
                   onChange={(e) => handleChange("authorization_expiration_date", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_class">Client Class</Label>
+                <Select
+                  value={formData.client_class}
+                  onValueChange={(value) => handleChange("client_class", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="VA">VA</SelectItem>
+                    <SelectItem value="Medicaid">Medicaid</SelectItem>
+                    <SelectItem value="Private Pay">Private Pay</SelectItem>
+                    <SelectItem value="ARChoices">ARChoices</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_hours">Client Hours</Label>
+                <Input
+                  id="client_hours"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  value={formData.client_hours}
+                  onChange={(e) => handleChange("client_hours", e.target.value)}
+                  placeholder="e.g. 40"
                 />
               </div>
             </CardContent>

@@ -788,6 +788,8 @@ export type Database = {
           authorization_due_date: string | null
           authorization_expiration_date: string | null
           city: string | null
+          client_class: string | null
+          client_hours: number | null
           created_at: string
           date_of_birth: string | null
           email: string | null
@@ -809,6 +811,8 @@ export type Database = {
           authorization_due_date?: string | null
           authorization_expiration_date?: string | null
           city?: string | null
+          client_class?: string | null
+          client_hours?: number | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -830,6 +834,8 @@ export type Database = {
           authorization_due_date?: string | null
           authorization_expiration_date?: string | null
           city?: string | null
+          client_class?: string | null
+          client_hours?: number | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null

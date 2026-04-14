@@ -34,6 +34,12 @@ const COLUMN_MAP: Record<string, keyof ClientCSVRow> = {
   "authorization_due_date": "authorization_due_date",
   "authorization expiration date": "authorization_expiration_date",
   "authorization_expiration_date": "authorization_expiration_date",
+  "client_class": "client_class",
+  "client class": "client_class",
+  "class": "client_class",
+  "client_hours": "client_hours",
+  "client hours": "client_hours",
+  "hours": "client_hours",
 };
 
 export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {

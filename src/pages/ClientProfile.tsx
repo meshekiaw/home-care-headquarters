@@ -216,7 +216,7 @@ export default function ClientProfile() {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 sm:grid-cols-10 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 sm:grid-cols-11 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -248,8 +248,6 @@ export default function ClientProfile() {
             <TabsTrigger value="client-forms" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               <span className="hidden sm:inline">Forms</span>
-            </TabsTrigger>
-              <span className="hidden sm:inline">Documents</span>
             </TabsTrigger>
             <TabsTrigger value="nurses" className="flex items-center gap-2">
               <Stethoscope className="w-4 h-4" />

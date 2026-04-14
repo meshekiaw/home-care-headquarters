@@ -187,14 +187,14 @@ export default function Clients() {
     setSelectedIds(new Set());
   }, [searchQuery]);
 
-  const allSelected = filteredClients.length > 0 && filteredClients.every(c => selectedIds.has(c.id));
-  const someSelected = filteredClients.some(c => selectedIds.has(c.id));
+  const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
+  const someSelected = sortedClients.some(c => selectedIds.has(c.id));
 
   const toggleAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredClients.map(c => c.id)));
+      setSelectedIds(new Set(sortedClients.map(c => c.id)));
     }
   };
 
@@ -396,7 +396,7 @@ export default function Clients() {
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
-            ) : filteredClients.length === 0 ? (
+            ) : sortedClients.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <Users className="w-8 h-8 text-primary" />
@@ -439,7 +439,7 @@ export default function Clients() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredClients.map((client) => (
+                    {sortedClients.map((client) => (
                       <TableRow key={client.id} className="hover:bg-muted/50" data-state={selectedIds.has(client.id) ? "selected" : undefined}>
                         <TableCell>
                           <Checkbox

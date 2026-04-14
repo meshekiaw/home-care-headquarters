@@ -212,6 +212,30 @@ export default function Clients() {
           </Button>
         </div>
 
+        {/* Bulk Action Bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <span className="text-sm font-medium">{selectedIds.size} selected</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const selected = clients.filter(c => selectedIds.has(c.id));
+                const exportData = selected.map(formatClientForExport);
+                downloadCSV(exportData, `clients-selected-${new Date().toISOString().split('T')[0]}`);
+                toast({ title: "Export complete", description: `Exported ${selected.length} clients` });
+              }}
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Export Selected
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+              <X className="w-4 h-4 mr-1" />
+              Deselect All
+            </Button>
+          </div>
+        )}
+
         {/* Clients Table/List */}
         <Card>
           <CardContent className="p-0">
@@ -246,6 +270,14 @@ export default function Clients() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[40px]">
+                        <Checkbox
+                          checked={allSelected}
+                          onCheckedChange={toggleAll}
+                          aria-label="Select all"
+                          {...(someSelected && !allSelected ? { "data-state": "indeterminate" as any } : {})}
+                        />
+                      </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
@@ -255,7 +287,14 @@ export default function Clients() {
                   </TableHeader>
                   <TableBody>
                     {filteredClients.map((client) => (
-                      <TableRow key={client.id} className="hover:bg-muted/50">
+                      <TableRow key={client.id} className="hover:bg-muted/50" data-state={selectedIds.has(client.id) ? "selected" : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(client.id)}
+                            onCheckedChange={() => toggleOne(client.id)}
+                            aria-label={`Select ${client.first_name} ${client.last_name}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <Link 
                             to={`/clients/${client.id}`}

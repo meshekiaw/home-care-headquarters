@@ -86,6 +86,10 @@ export default function Clients() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dueDateMonth, setDueDateMonth] = useState("all");
+  const [expirationDateMonth, setExpirationDateMonth] = useState("all");
   const navigate = useNavigate();
   const { toast } = useToast();
 

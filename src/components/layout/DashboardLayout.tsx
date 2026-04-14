@@ -21,6 +21,7 @@ import {
   GraduationCap,
   BookOpen,
   CalendarDays,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,7 @@ const navItems = [
   { icon: CalendarDays, label: "Monthly Calendars", path: "/monthly-calendars" },
   { icon: GraduationCap, label: "LMS Training", path: "/lms/training" },
   { icon: BookOpen, label: "LMS Policies", path: "/lms/policies" },
+  { icon: Shield, label: "Audit Log", path: "/audit-log" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

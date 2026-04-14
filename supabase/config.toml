@@ -17,3 +17,6 @@ project_id = "iljmedelpqwzwyecvksa"
 
  [functions.manage-ssn]
  verify_jwt = false
+
+ [functions.check-quiz-answers]
+ verify_jwt = false

@@ -56,7 +56,6 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
     zip_code: "",
     service_radius_miles: "25",
     date_of_birth: "",
-    date_of_birth: "",
   });
 
   const handleSubmit = async () => {

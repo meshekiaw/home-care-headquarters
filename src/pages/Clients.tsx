@@ -472,6 +472,39 @@ export default function Clients() {
         onOpenChange={setImportDialogOpen}
         onImport={handleBulkImport}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} client{selectedIds.size > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. All selected clients and their associated data will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                try {
+                  const { error } = await supabase
+                    .from('clients')
+                    .delete()
+                    .in('id', [...selectedIds]);
+                  if (error) throw error;
+                  toast({ title: "Deleted", description: `${selectedIds.size} clients removed` });
+                  setSelectedIds(new Set());
+                  fetchClients();
+                } catch (error: any) {
+                  toast({ title: "Error", description: error.message, variant: "destructive" });
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

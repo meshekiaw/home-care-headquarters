@@ -14,7 +14,7 @@ export default function OrientationViewer() {
   const { id: caregiverId } = useParams<{ id: string }>();
   const isPreview = caregiverId === "preview";
   const { modules, loading: modulesLoading } = useOrientationModules();
-  const { quizzes, loading: quizzesLoading } = useOrientationQuizzes();
+  const { quizzes, loading: quizzesLoading, gradeQuiz } = useOrientationQuizzes();
   const { progressList, upsertProgress } = useOrientationProgress();
 
   const progress = isPreview ? undefined : progressList.find((p) => p.caregiver_id === caregiverId);
@@ -153,6 +153,7 @@ export default function OrientationViewer() {
                 passingScore={80}
                 onPass={handleQuizPass}
                 onFail={handleQuizFail}
+                gradeQuiz={gradeQuiz}
               />
             )}
 

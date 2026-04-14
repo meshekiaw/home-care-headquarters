@@ -198,7 +198,22 @@ export function useOrientationQuizzes() {
     }
   };
 
-  return { quizzes, loading, seedQuizzes, addQuiz, updateQuiz, deleteQuiz, refetch: fetchQuizzes };
+  const gradeQuiz = async (sectionNumber: number, answers: Record<string, string>) => {
+    const { data, error } = await supabase.functions.invoke("check-quiz-answers", {
+      body: { section_number: sectionNumber, answers },
+    });
+    if (error) {
+      toast({ title: "Error grading quiz", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    if (data?.error) {
+      toast({ title: "Error grading quiz", description: data.error, variant: "destructive" });
+      throw new Error(data.error);
+    }
+    return data as { score: number; passed: boolean; passingScore: number; results: Record<string, { correct: boolean; correct_answer: string }> };
+  };
+
+  return { quizzes, loading, seedQuizzes, addQuiz, updateQuiz, deleteQuiz, gradeQuiz, refetch: fetchQuizzes };
 }
 
 export function useOrientationProgress() {

@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Volume2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import DOMPurify from "dompurify";
 
 const SECTION_THEMES = [
   { gradient: "from-blue-500 to-blue-700", light: "bg-blue-50 dark:bg-blue-950/30", accent: "text-blue-600 dark:text-blue-400", progressBg: "bg-blue-200", progressFill: "bg-blue-500" },

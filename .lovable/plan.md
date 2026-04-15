@@ -1,53 +1,71 @@
 
 
-## Remove Caregiver Role from Demetrich and Grant Full Admin Access
+## Diagnose and Fix Client Edit/Save Failures
 
-### Problem
-Demetrich (homcarenetwork4@gmail.com) has both `admin` and `caregiver` roles. The `caregiver` role should be removed. Additionally, 36 tables still lack admin override RLS policies, which prevents her from editing records created by other users.
+### What I found
 
-### Changes
+The database configuration is correct:
+- Demetrich has the `admin` role, `has_role()` returns true
+- All 36 tables have admin override RLS policies for SELECT, INSERT, UPDATE, DELETE
+- The admin frontend query filters have already been removed in prior changes
 
-| Area | Change |
-|------|--------|
-| Database migration | 1. Delete the `caregiver` role row for Demetrich's user ID (`30189f34-39a7-4a4e-acd5-2583f6ddf411`) |
-| Database migration | 2. Add admin override RLS policies (SELECT, INSERT, UPDATE, DELETE) to all 36 remaining tables |
-| Frontend | 3. Fix `useUserRole.ts` so failed/empty role lookups do NOT default to `admin` — return `null` instead |
-
-### Tables receiving admin policies
-
-**Staff**: `caregivers`, `caregiver_credentials`, `caregiver_skills`, `caregiver_availability`, `caregiver_applications`
-**Nurses**: `nurses`, `nurse_credentials`
-**Clients (related)**: `care_plans`, `client_assessments`, `client_caregivers`, `client_documents`, `client_nurses`, `client_required_skills`, `medical_history`
-**Scheduling**: `appointments`, `monthly_calendar_assignments`, `monthly_calendars`
-**Forms**: `form_templates`, `form_submissions`, `form_signatures`
-**LMS**: `lms_courses`, `lms_assignments`, `lms_quiz_questions`, `lms_policies`, `lms_policy_acknowledgments`
-**Orientation**: `orientation_modules`, `orientation_progress`, `orientation_quizzes`
-**Communications**: `conversations`, `conversation_participants`, `messages`
-**Compliance**: `state_regulations`, `generated_policies`, `agency_credentials`
-**Other**: `notifications`, `notification_preferences`, `assessment_handoffs`
-
-### Policy pattern per table
-
-```sql
-CREATE POLICY "Admins full select [table]"
-  ON public.[table] FOR SELECT TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'::app_role));
-
-CREATE POLICY "Admins full insert [table]"
-  ON public.[table] FOR INSERT TO authenticated
-  WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
-
-CREATE POLICY "Admins full update [table]"
-  ON public.[table] FOR UPDATE TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
-
-CREATE POLICY "Admins full delete [table]"
-  ON public.[table] FOR DELETE TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'::app_role));
+The code in `ClientEdit.tsx` (line 131-154) does:
+```typescript
+const { error } = await supabase
+  .from("clients")
+  .update({...})
+  .eq("id", id!)
+  .select("id")
+  .single();
 ```
 
-### Frontend fix
+This should work with admin RLS. Since we cannot see the actual error, the plan adds diagnostic logging to capture it.
 
-In `src/hooks/useUserRole.ts`, change the fallback when no role is found from `setRole("admin")` to `setRole(null)` so the system never grants admin UI access to users without an explicit role.
+### Important note
+
+The preview environment is currently logged in as **Nikki Warren** (meshekiaw@gmail.com), not Demetrich. The auth logs show Demetrich logs into the **published site** (homecareheadquarters.org). If the published site has not been republished since the admin fixes were made, it will still be running old code.
+
+### Plan
+
+**Step 1: Add diagnostic console.log to `ClientEdit.tsx`**
+
+In the `handleSubmit` function, log the user ID, client ID, and the full error object before showing the toast. This will reveal the exact RLS or network error.
+
+```typescript
+// Before the update call
+console.log("[ClientEdit] Saving as user:", user?.id, "client:", id);
+
+// After the update
+if (error) {
+  console.error("[ClientEdit] Update error:", JSON.stringify(error));
+}
+```
+
+**Step 2: Add diagnostic logging to `CaregiverProfile.tsx` handleSave**
+
+Same pattern to catch any save failures on the caregiver side.
+
+**Step 3: Show the logged-in user email in the dashboard header**
+
+Add the user's email next to the avatar initial in `DashboardLayout.tsx`. This will immediately tell you which account is active when testing.
+
+**Step 4: After logging is in place, test on the preview**
+
+Log in as Demetrich in the preview, navigate to a client, click Edit, make a change, and save. The console logs will show the exact error.
+
+### Files to change
+
+| File | Change |
+|------|--------|
+| `src/pages/ClientEdit.tsx` | Add console.log in handleSubmit for user ID and error details |
+| `src/pages/CaregiverProfile.tsx` | Add console.log in handleSave for error details |
+| `src/components/layout/DashboardLayout.tsx` | Show logged-in email in top bar for debugging |
+
+### After this change
+
+You will need to:
+1. Click **Publish > Update** to push changes to the live site
+2. Log in as Demetrich on the preview or published site
+3. Try to edit a client and save
+4. Send me the result or screenshot so I can see the exact error
 

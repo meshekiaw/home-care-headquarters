@@ -31,6 +31,7 @@ const COLUMN_MAP: Record<string, keyof ClientCSVRow> = {
   "notes": "notes",
   "618 dute date": "authorization_due_date",
   "618 due date": "authorization_due_date",
+  "current 618 date": "authorization_due_date",
   "authorization_due_date": "authorization_due_date",
   "authorization expiration date": "authorization_expiration_date",
   "authorization_expiration_date": "authorization_expiration_date",

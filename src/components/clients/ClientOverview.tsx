@@ -192,7 +192,7 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">618 Due Date</p>
+              <p className="text-sm text-muted-foreground">Current 618 Date</p>
               <p className="font-medium">{formatDate(client.authorization_due_date)}</p>
             </div>
             <div>

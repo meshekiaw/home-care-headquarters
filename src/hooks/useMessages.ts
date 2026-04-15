@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export interface Message {
   id: string;
@@ -43,18 +45,32 @@ export function useMessages(conversationId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
   // Fetch conversations
   const fetchConversations = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    if (roleLoading) return;
 
-      const { data: convos, error } = await supabase
+    if (!user) {
+      setConversations([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let conversationQuery = supabase
         .from("conversations")
         .select("*")
-        .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
+
+      if (!isAdmin) {
+        conversationQuery = conversationQuery.eq("user_id", user.id);
+      }
+
+      const { data: convos, error } = await conversationQuery;
 
       if (error) throw error;
 
@@ -223,17 +239,19 @@ export function useMessages(conversationId?: string) {
   // Subscribe to real-time messages
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [user, isAdmin, roleLoading]);
 
   useEffect(() => {
-    if (conversationId) {
+    if (conversationId && !roleLoading) {
       fetchMessages(conversationId);
       markAsRead(conversationId);
     }
-  }, [conversationId]);
+  }, [conversationId, roleLoading]);
 
   // Real-time subscription
   useEffect(() => {
+    if (roleLoading || !user) return;
+
     const channelConfig: {
       event: "INSERT";
       schema: "public";
@@ -269,7 +287,7 @@ export function useMessages(conversationId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, roleLoading, user, isAdmin]);
 
   return {
     conversations,

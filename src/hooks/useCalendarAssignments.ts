@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 
 export interface CalendarAssignment {
@@ -29,21 +30,27 @@ export interface GeneratedCalendar {
 
 export function useCalendarAssignments() {
   const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const queryClient = useQueryClient();
 
   const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
-    queryKey: ["calendar-assignments", user?.id],
+    queryKey: ["calendar-assignments", user?.id, isAdmin],
     queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
+      if (!user || roleLoading) return [];
+
+      let query = supabase
         .from("monthly_calendar_assignments")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .select("*");
+
+      if (!isAdmin) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
       if (error) throw error;
       return data as CalendarAssignment[];
     },
-    enabled: !!user,
+    enabled: !!user && !roleLoading,
   });
 
   const saveAssignment = useMutation({
@@ -55,16 +62,22 @@ export function useCalendarAssignments() {
       attendant_care_hours: number;
       standard_hours: number;
     }) => {
-      if (!user) throw new Error("Not authenticated");
+      if (!user || roleLoading) throw new Error("Not authenticated");
 
       // Check if assignment already exists for this client+caregiver
-      const { data: existing } = await supabase
+      let existingQuery = supabase
         .from("monthly_calendar_assignments")
         .select("id")
-        .eq("user_id", user.id)
         .eq("client_id", input.client_id)
-        .eq("caregiver_id", input.caregiver_id)
-        .maybeSingle();
+        .eq("caregiver_id", input.caregiver_id);
+
+      if (!isAdmin) {
+        existingQuery = existingQuery.eq("user_id", user.id);
+      }
+
+      const { data: existing, error: existingError } = await existingQuery.maybeSingle();
+
+      if (existingError) throw existingError;
 
       if (existing) {
         // Update existing
@@ -161,17 +174,21 @@ export function useCalendarAssignments() {
 
 export function useGeneratedCalendars(assignmentId?: string) {
   const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
   return useQuery({
-    queryKey: ["generated-calendars", user?.id, assignmentId],
+    queryKey: ["generated-calendars", user?.id, assignmentId, isAdmin],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || roleLoading) return [];
       let query = supabase
         .from("monthly_calendars")
         .select("*")
-        .eq("user_id", user.id)
         .order("year", { ascending: false })
         .order("month", { ascending: false });
+
+      if (!isAdmin) {
+        query = query.eq("user_id", user.id);
+      }
 
       if (assignmentId) {
         query = query.eq("assignment_id", assignmentId);
@@ -181,6 +198,6 @@ export function useGeneratedCalendars(assignmentId?: string) {
       if (error) throw error;
       return data as unknown as GeneratedCalendar[];
     },
-    enabled: !!user,
+    enabled: !!user && !roleLoading,
   });
 }

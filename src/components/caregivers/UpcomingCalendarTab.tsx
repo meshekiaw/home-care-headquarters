@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock } from "lucide-react";
@@ -25,42 +26,55 @@ interface UpcomingCalendarTabProps {
 
 export default function UpcomingCalendarTab({ caregiverId, caregiverName }: UpcomingCalendarTabProps) {
   const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
   // Fetch assignments for this caregiver
   const { data: assignments = [] } = useQuery({
-    queryKey: ["caregiver-calendar-assignments", user?.id, caregiverId],
+    queryKey: ["caregiver-calendar-assignments", user?.id, caregiverId, isAdmin],
     queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
+      if (!user || roleLoading) return [];
+
+      let query = supabase
         .from("monthly_calendar_assignments")
         .select("*, clients(first_name, last_name)")
-        .eq("user_id", user.id)
         .eq("caregiver_id", caregiverId)
         .eq("is_active", true);
+
+      if (!isAdmin) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !roleLoading,
   });
 
   // Fetch generated calendars for this caregiver's assignments
   const assignmentIds = assignments.map((a: any) => a.id);
   const { data: calendars = [] } = useQuery({
-    queryKey: ["caregiver-generated-calendars", user?.id, assignmentIds],
+    queryKey: ["caregiver-generated-calendars", user?.id, assignmentIds, isAdmin],
     queryFn: async () => {
-      if (!user || assignmentIds.length === 0) return [];
-      const { data, error } = await supabase
+      if (!user || roleLoading || assignmentIds.length === 0) return [];
+
+      let query = supabase
         .from("monthly_calendars")
         .select("*")
-        .eq("user_id", user.id)
         .in("assignment_id", assignmentIds)
         .order("year", { ascending: false })
         .order("month", { ascending: false })
         .limit(3);
+
+      if (!isAdmin) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!user && assignmentIds.length > 0,
+    enabled: !!user && !roleLoading && assignmentIds.length > 0,
   });
 
   if (assignments.length === 0) {

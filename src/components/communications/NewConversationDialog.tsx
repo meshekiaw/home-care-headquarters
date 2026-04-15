@@ -15,6 +15,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface Participant {
   type: "caregiver" | "client";
@@ -37,6 +39,8 @@ export function NewConversationDialog({
   onOpenChange,
   onCreateConversation,
 }: NewConversationDialogProps) {
+  const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"direct" | "group" | "broadcast">("direct");
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,29 +50,35 @@ export function NewConversationDialog({
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && !roleLoading) {
       fetchParticipants();
     }
-  }, [open]);
+  }, [open, roleLoading, isAdmin, user]);
 
   const fetchParticipants = async () => {
+    if (!user || roleLoading) {
+      setAvailableParticipants([]);
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      let caregiversQuery = supabase
+        .from("caregivers")
+        .select("id, first_name, last_name")
+        .eq("status", "active");
 
-      const [caregiversRes, clientsRes] = await Promise.all([
-        supabase
-          .from("caregivers")
-          .select("id, first_name, last_name")
-          .eq("user_id", user.id)
-          .eq("status", "active"),
-        supabase
-          .from("clients")
-          .select("id, first_name, last_name")
-          .eq("user_id", user.id)
-          .eq("status", "active"),
-      ]);
+      let clientsQuery = supabase
+        .from("clients")
+        .select("id, first_name, last_name")
+        .eq("status", "active");
+
+      if (!isAdmin) {
+        caregiversQuery = caregiversQuery.eq("user_id", user.id);
+        clientsQuery = clientsQuery.eq("user_id", user.id);
+      }
+
+      const [caregiversRes, clientsRes] = await Promise.all([caregiversQuery, clientsQuery]);
 
       const caregivers: Participant[] = (caregiversRes.data || []).map((c) => ({
         type: "caregiver" as const,

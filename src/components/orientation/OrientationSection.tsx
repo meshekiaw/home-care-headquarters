@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Volume2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import DOMPurify from "dompurify";
 
 const SECTION_THEMES = [
   { gradient: "from-blue-500 to-blue-700", light: "bg-blue-50 dark:bg-blue-950/30", accent: "text-blue-600 dark:text-blue-400", progressBg: "bg-blue-200", progressFill: "bg-blue-500" },
@@ -70,6 +71,8 @@ export default function OrientationSection({ title, content, onAudioComplete, au
   const femaleVoice = useFemaleVoice();
 
   const theme = SECTION_THEMES[(sectionNumber - 1) % SECTION_THEMES.length];
+
+  const sanitizedContent = useMemo(() => DOMPurify.sanitize(content), [content]);
 
   const plainText = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   textRef.current = plainText;
@@ -143,7 +146,7 @@ export default function OrientationSection({ title, content, onAudioComplete, au
           <CardTitle className="text-xl text-white">{title}</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />
+          <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
         </CardContent>
       </Card>
     );
@@ -182,7 +185,7 @@ export default function OrientationSection({ title, content, onAudioComplete, au
           </div>
         </div>
 
-        <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />
+        <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
       </CardContent>
     </Card>
   );

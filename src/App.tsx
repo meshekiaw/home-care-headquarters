@@ -35,6 +35,7 @@ import CaregiverOrientation from "./pages/CaregiverOrientation";
 import CaregiverMyProfile from "./pages/CaregiverMyProfile";
 import CaregiverApplication from "./pages/CaregiverApplication";
 import AuditLog from "./pages/AuditLog";
+import CaregiverAvailability from "./pages/CaregiverAvailability";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/lms/orientation" element={<ProtectedRoute allowedRoles={["admin"]}><OrientationManagement /></ProtectedRoute>} />
             <Route path="/lms/orientation/:id" element={<ProtectedRoute allowedRoles={["admin"]}><OrientationViewer /></ProtectedRoute>} />
             <Route path="/audit-log" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLog /></ProtectedRoute>} />
+            <Route path="/caregiver-availability" element={<ProtectedRoute allowedRoles={["admin"]}><CaregiverAvailability /></ProtectedRoute>} />
             
             {/* Caregiver routes */}
             <Route path="/my-dashboard" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverDashboard /></ProtectedRoute>} />

@@ -18,6 +18,7 @@ const FORM_CATEGORIES = [
   { key: "emergency_care_form", label: "Emergency Care Forms", description: "Emergency care documentation" },
   { key: "justification_of_frequency", label: "Justification of Frequency", description: "Justification of frequency documentation" },
   { key: "client_medication_list", label: "Client Medication List", description: "Client medication list documents" },
+  { key: "nurse_visit", label: "Nurse Visit", description: "Nurse visit documentation and notes" },
 ] as const;
 
 type CategoryKey = typeof FORM_CATEGORIES[number]["key"];

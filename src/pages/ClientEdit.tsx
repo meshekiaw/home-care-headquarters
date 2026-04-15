@@ -128,6 +128,8 @@ export default function ClientEdit() {
     try {
       const validated = clientSchema.parse(formData);
 
+      console.log("[ClientEdit] Saving as user:", user?.id, "client:", id);
+
       const { error } = await supabase
         .from("clients")
         .update({
@@ -153,7 +155,10 @@ export default function ClientEdit() {
         .select("id")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("[ClientEdit] Update error:", JSON.stringify(error));
+        throw error;
+      }
 
       toast({
         title: "Client updated successfully!",

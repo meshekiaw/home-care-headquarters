@@ -128,7 +128,8 @@ export default function ClientEdit() {
     try {
       const validated = clientSchema.parse(formData);
 
-      console.log("[ClientEdit] Saving as user:", user?.id, "client:", id);
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("[ClientEdit] Saving as user:", session?.user?.id, "client:", id);
 
       const { error } = await supabase
         .from("clients")

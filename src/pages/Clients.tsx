@@ -315,7 +315,7 @@ export default function Clients() {
               <SelectItem value="city">City</SelectItem>
               <SelectItem value="status">Status</SelectItem>
               <SelectItem value="created_at">Date Added</SelectItem>
-              <SelectItem value="authorization_due_date">618 Due Date</SelectItem>
+              <SelectItem value="authorization_due_date">Current 618 Date</SelectItem>
               <SelectItem value="authorization_expiration_date">Auth Expiration Date</SelectItem>
             </SelectContent>
           </Select>
@@ -348,7 +348,7 @@ export default function Clients() {
               </Select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">618 Due Date Month</label>
+              <label className="text-xs font-medium text-muted-foreground">Current 618 Date Month</label>
               <Select value={dueDateMonth} onValueChange={setDueDateMonth}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue />
@@ -535,7 +535,7 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
-                      {sortBy === 'authorization_due_date' && <TableHead>618 Due Date</TableHead>}
+                      {sortBy === 'authorization_due_date' && <TableHead>Current 618 Date</TableHead>}
                       {sortBy === 'authorization_expiration_date' && <TableHead>Auth Expiration</TableHead>}
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>

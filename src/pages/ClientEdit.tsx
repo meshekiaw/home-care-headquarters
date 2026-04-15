@@ -334,7 +334,7 @@ export default function ClientEdit() {
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="authorization_due_date">618 Due Date</Label>
+                <Label htmlFor="authorization_due_date">Current 618 Date</Label>
                 <Input id="authorization_due_date" type="date" value={formData.authorization_due_date} onChange={(e) => handleChange("authorization_due_date", e.target.value)} />
               </div>
               <div className="space-y-2">

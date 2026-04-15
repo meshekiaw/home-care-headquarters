@@ -72,6 +72,8 @@ export default function OrientationSection({ title, content, onAudioComplete, au
 
   const theme = SECTION_THEMES[(sectionNumber - 1) % SECTION_THEMES.length];
 
+  const sanitizedContent = useMemo(() => DOMPurify.sanitize(content), [content]);
+
   const plainText = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   textRef.current = plainText;
 
@@ -144,7 +146,7 @@ export default function OrientationSection({ title, content, onAudioComplete, au
           <CardTitle className="text-xl text-white">{title}</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />
+          <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
         </CardContent>
       </Card>
     );
@@ -183,7 +185,7 @@ export default function OrientationSection({ title, content, onAudioComplete, au
           </div>
         </div>
 
-        <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />
+        <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
       </CardContent>
     </Card>
   );

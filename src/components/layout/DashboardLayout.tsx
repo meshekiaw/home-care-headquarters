@@ -22,6 +22,7 @@ import {
   BookOpen,
   CalendarDays,
   Shield,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +36,8 @@ const navItems = [
   { icon: Users, label: "Clients", path: "/clients" },
   { icon: Calendar, label: "Scheduling", path: "/scheduling" },
   { icon: UserCheck, label: "Caregivers", path: "/caregivers" },
-   { icon: Stethoscope, label: "Nurses", path: "/nurses" },
+  { icon: Clock, label: "Caregiver Availability", path: "/caregiver-availability" },
+  { icon: Stethoscope, label: "Nurses", path: "/nurses" },
   { icon: MessageSquare, label: "Communications", path: "/communications" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
   { icon: FileCheck, label: "Compliance", path: "/compliance" },

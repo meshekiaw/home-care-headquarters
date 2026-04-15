@@ -21,9 +21,8 @@ export function useUserRole() {
         .eq("user_id", user.id);
 
       if (error || !data || data.length === 0) {
-        // No role assigned — treat as admin for backwards compatibility
-        // (existing users before role system was added)
-        setRole("admin");
+        // No role assigned — deny access by default
+        setRole(null);
       } else {
         // Priority: admin > caregiver > user
         const roles = data.map((r) => r.role);

@@ -252,9 +252,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
             </button>
-            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-primary font-medium text-sm">
-                {user?.email?.charAt(0).toUpperCase() || "U"}
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-medium text-sm">
+                  {user?.email?.charAt(0).toUpperCase() || "U"}
+                </span>
+              </div>
+              <span className="hidden md:inline text-sm text-muted-foreground truncate max-w-[200px]">
+                {user?.email}
               </span>
             </div>
           </div>

@@ -92,12 +92,17 @@ export default function CaregiverProfile() {
 
     setSaving(true);
     try {
+      console.log("[CaregiverProfile] Saving as user:", user?.id, "caregiver:", id);
+
       const { error } = await supabase
         .from("caregivers")
         .update(formData)
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("[CaregiverProfile] Update error:", JSON.stringify(error));
+        throw error;
+      }
 
       toast({ title: "Caregiver updated successfully" });
       setIsEditing(false);

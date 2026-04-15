@@ -1,28 +1,26 @@
 
 
-## Create Standalone Caregiver Availability Page
+## Fix: Verify Caregiver Availability Under Demetrich's Profile
 
-A new page at `/caregiver-availability` that shows all caregivers and their weekly availability schedules in a read-only overview format, accessible from the sidebar navigation.
+### Problem
+The Caregiver Availability page was created but not verified under Demetrich's admin account (`homcarenetwork4@gmail.com`). The user wants all features tested and confirmed working under this account.
 
-### Changes
+### Plan
 
-| File | Change |
-|------|--------|
-| `src/pages/CaregiverAvailability.tsx` | **New file** — standalone page that fetches all caregivers and their availability from the database, displays a filterable list with each caregiver's weekly schedule in a visual calendar grid |
-| `src/App.tsx` | Add route `/caregiver-availability` wrapped in `ProtectedRoute` for admin role |
-| `src/components/layout/DashboardLayout.tsx` | Add nav item with `Clock` icon labeled "Caregiver Availability" after the Caregivers entry |
+1. **Save Demetrich preference to memory** — Record that all future features, data, and testing must be done under Demetrich's admin profile (`homcarenetwork4@gmail.com`) so this is never missed again.
 
-### Page Design
+2. **Log in as Demetrich and verify** — Navigate to the Caregiver Availability page (`/caregiver-availability`) while logged in as Demetrich to confirm:
+   - The page loads without errors
+   - Caregivers are listed with their availability grids
+   - The sidebar nav link is visible and functional
 
-- **Header**: Title "Caregiver Availability" with a search/filter bar to find caregivers by name
-- **Caregiver cards**: Each card shows the caregiver's name, status badge, and a compact weekly availability grid (days as columns, hours as rows) with colored blocks for available time slots
-- **Read-only view**: No editing — this is a visibility page for admins to quickly see who is available when
-- **Empty state**: Message when a caregiver has no availability set, linking to their profile to configure it
+3. **Debug if data is missing** — If no caregivers or availability data appears, check:
+   - Whether caregivers exist in the database under Demetrich's `user_id`
+   - Whether `caregiver_availability` records exist for those caregivers
+   - Whether RLS policies are correctly allowing admin access
 
-### Technical Details
+4. **Fix any issues found** — Apply corrections to queries or data as needed to ensure the page works fully under Demetrich's session.
 
-- Queries `caregivers` table for all active caregivers, then batch-fetches `caregiver_availability` for all caregiver IDs
-- Reuses the existing visual style from `AvailabilityCalendar.tsx` (color blocks, time formatting) but in a compact read-only format
-- Uses `DashboardLayout` wrapper consistent with all other admin pages
-- All data scoped through existing RLS policies (admin has full access)
+### Memory Update
+Will save to `mem://preferences/demetrich-profile` that all features must be added and verified under Demetrich's admin account.
 

@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCaregivers } from "@/hooks/useCaregivers";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +61,7 @@ function distributeQuarterHours(totalHours: number, numDays: number): number[] {
 
 export default function MonthlyCalendars() {
   const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { caregivers } = useCaregivers();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedClientId, setSelectedClientId] = useState<string>("");
@@ -81,19 +83,25 @@ export default function MonthlyCalendars() {
   const { data: generatedCalendars = [] } = useGeneratedCalendars();
 
   const { data: clients = [] } = useQuery({
-    queryKey: ["clients", user?.id],
+    queryKey: ["clients", user?.id, isAdmin],
     queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
+      if (!user || roleLoading) return [];
+
+      let query = supabase
         .from("clients")
         .select("id, first_name, last_name, status")
-        .eq("user_id", user.id)
         .eq("status", "active")
         .order("last_name");
+
+      if (!isAdmin) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && !roleLoading,
   });
 
   const monthStart = startOfMonth(currentMonth);

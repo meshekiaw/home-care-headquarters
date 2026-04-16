@@ -11,12 +11,12 @@ import {
 } from "lucide-react";
 import { formatDateOnly, isDateOnlyString } from "@/utils/dateOnly";
 
-function computeDueDate6Months(dateStr: string | null): string | null {
+function addMonthsToDate(dateStr: string | null, months: number): string | null {
   if (!dateStr) return null;
   const match = dateStr.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return null;
   let year = Number(match[1]);
-  let month = Number(match[2]) + 6;
+  let month = Number(match[2]) + months;
   const day = match[3];
   if (month > 12) {
     year += Math.floor((month - 1) / 12);
@@ -211,8 +211,13 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
               <p className="text-sm text-muted-foreground">Current 618 Date</p>
               <p className="font-medium">{formatDate(client.authorization_due_date)}</p>
             </div>
-            {client.client_class === 'VA' && client.authorization_due_date && (() => {
-              const dueDate = computeDueDate6Months(client.authorization_due_date);
+            {client.authorization_due_date && (() => {
+              const isVA = client.client_class === 'VA';
+              const isOtherClass = ['ARChoices', 'Medicaid', 'Private Pay'].includes(client.client_class || '');
+              if (!isVA && !isOtherClass) return null;
+              const months = isVA ? 6 : 12;
+              const label = isVA ? '618 Due Date (6 months)' : '618 Due Date (1 year)';
+              const dueDate = addMonthsToDate(client.authorization_due_date, months);
               const dueDateFormatted = dueDate ? (formatDateOnly(dueDate) ?? dueDate) : null;
               const now = new Date();
               const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -224,7 +229,7 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
               return (
                 <div>
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    618 Due Date (6 months)
+                    {label}
                     {isPast && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
                     {isWithin30 && <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">Due Soon</Badge>}
                   </p>

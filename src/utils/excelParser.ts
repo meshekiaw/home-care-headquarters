@@ -81,7 +81,7 @@ export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
                 }
               } else if ((mappedKey === "date_of_birth" || mappedKey === "authorization_due_date" || mappedKey === "authorization_expiration_date") && rawValue instanceof Date) {
                 const d = rawValue as Date;
-                mapped[mappedKey] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                mapped[mappedKey] = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
               } else {
                 mapped[mappedKey] = value;
               }

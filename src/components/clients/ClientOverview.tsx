@@ -216,9 +216,9 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   {label}
                   {isPast && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
-                  {isWithin30 && <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">Due Soon</Badge>}
+                  {isWithin60 && <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">Due Soon</Badge>}
                 </p>
-                <p className={`font-medium ${isPast ? 'text-destructive' : isWithin30 ? 'text-yellow-600' : ''}`}>
+                <p className={`font-medium ${isPast ? 'text-destructive' : isWithin60 ? 'text-yellow-600' : ''}`}>
                   {dueDateFormatted || 'Not available'}
                 </p>
               </div>

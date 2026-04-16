@@ -171,6 +171,26 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function parseDateString(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  // M/D/YY or M/D/YYYY
+  const mdyMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (mdyMatch) {
+    const month = parseInt(mdyMatch[1]);
+    const day = parseInt(mdyMatch[2]);
+    let year = parseInt(mdyMatch[3]);
+    if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  return null;
+}
+
 export function generateSampleCSV(): string {
   return `first_name,last_name,email,phone,status,hourly_rate,specializations,address,city,state,zip_code,service_radius_miles
 John,Doe,john.doe@email.com,(555) 123-4567,active,25.00,Elder Care|Dementia Care,123 Main St,Springfield,IL,62701,15

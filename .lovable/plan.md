@@ -1,81 +1,36 @@
 
-## Fix the actual cause of the date mismatch
 
-I reviewed the current code, and the import parser is not the only problem.
+## Add 618 Due Date Color Coding to Clients List Page
 
-### What is actually happening
-The client import now normalizes Excel/CSV dates into plain `YYYY-MM-DD` strings, which is correct for date-only fields.
+### What changes
+Always show a "618 Due Date" column in the clients table (not just when sorting by it), and color-code each row's due date based on urgency:
+- **Red** (destructive): The calculated 618 due date is past today
+- **Yellow/amber**: The calculated 618 due date is within 30 days from today
+- **Default**: More than 30 days away or no date available
 
-But the UI is still doing this in several places:
-- `new Date("YYYY-MM-DD")`
-- `.toLocaleDateString(...)`
-- `getFullYear()/getMonth()/getDate()` on those parsed values
+The calculated due date uses the same logic already in `ClientOverview.tsx`: VA clients get 6 months added, ARChoices/Medicaid/Private Pay get 12 months added to `authorization_due_date`.
 
-For date-only strings, JavaScript treats `"YYYY-MM-DD"` as UTC. In US time zones, that shifts the displayed date backward by one day. So the spreadsheet can import correctly, while the app still shows the wrong date.
+### File: `src/pages/Clients.tsx`
 
-That is why it still looks broken.
+1. Import `addMonthsToDate` — extract it from `ClientOverview.tsx` into a shared utility (or duplicate the small helper inline) along with `Badge` from the UI library.
 
-## Files I identified
-- `src/pages/Clients.tsx`
-  - month filtering for `authorization_due_date`
-  - month filtering for `authorization_expiration_date`
-  - displayed date cells for both fields
-  - `formatYearMonth`
-- `src/pages/ClientProfile.tsx`
-  - `formatDate`
-  - `calculateAge`
+2. Add a permanent "618 Due Date" column to the table header (remove the conditional `sortBy === 'authorization_due_date'` gate).
 
-## Implementation plan
+3. In each table row, compute the 618 due date based on `client.client_class` and `client.authorization_due_date`:
+   - VA → add 6 months
+   - ARChoices, Medicaid, Private Pay → add 12 months
+   - Other/null → show raw `authorization_due_date` or "—"
 
-### 1. Add a timezone-safe helper for date-only strings
-Create a small shared utility for fields stored as `YYYY-MM-DD` that:
-- formats date-only strings without `new Date("YYYY-MM-DD")`
-- extracts year/month safely
-- calculates age safely from string parts
+4. Color-code the cell:
+   - If past today: red text + "Overdue" badge (destructive)
+   - If within 30 days: yellow/amber text + "Due Soon" badge (yellow outline)
+   - Otherwise: normal muted text
 
-This helper will treat date-only values as calendar dates, not timestamps.
+5. Remove the old conditional `authorization_due_date` and `authorization_expiration_date` columns (or keep auth expiration as a separate always-visible column if desired).
 
-### 2. Update client list page to use the safe helper
-In `src/pages/Clients.tsx`:
-- replace `new Date(client.authorization_due_date)` month logic
-- replace `new Date(client.authorization_expiration_date)` month logic
-- replace the table cell display formatting for both compliance dates
-- keep timestamp handling like `created_at` unchanged
+### File: `src/components/clients/ClientOverview.tsx`
 
-This fixes both:
-- visible wrong dates
-- wrong month filter grouping caused by timezone shifting
+Move `addMonthsToDate` to a shared location or keep it duplicated (it's 10 lines). The function already exists and works correctly.
 
-### 3. Update client profile page to use the safe helper
-In `src/pages/ClientProfile.tsx`:
-- replace `formatDate` for client date-only fields
-- replace `calculateAge` so birthdays are computed from the stored date string directly
-- keep real timestamp fields separate where needed
+### No database changes needed.
 
-This fixes:
-- DOB display
-- Current 618 Date display
-- Authorization Expiration display
-- possible off-by-one age issues
-
-### 4. Leave import parsing in place, but verify the full flow
-I would not revert the parser work yet. The current parser changes are directionally correct. The missing piece is the display/filter layer still converting date-only values through JavaScript `Date`.
-
-### 5. After implementation
-- newly imported dates should match the spreadsheet exactly
-- already imported records should also display correctly if the stored value is already `YYYY-MM-DD`
-- only records that were actually stored incorrectly before the parser fix would still need correction/re-import
-
-## Technical details
-Use a date-only strategy like this:
-- parse `YYYY-MM-DD` by splitting the string
-- format using numeric year/month/day pieces
-- for month filters, derive `YYYY-MM` from the string directly
-- for age, compare month/day parts against today without constructing from UTC date strings
-
-Important distinction:
-- `created_at` and other timestamps can still use `new Date(...)`
-- `date_of_birth`, `authorization_due_date`, and `authorization_expiration_date` should not
-
-## Scope
-Code changes only. No database migration needed.

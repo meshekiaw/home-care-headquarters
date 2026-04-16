@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   User, 
   Phone, 
@@ -8,6 +9,21 @@ import {
   AlertCircle,
   FileText
 } from "lucide-react";
+import { formatDateOnly, isDateOnlyString } from "@/utils/dateOnly";
+
+function computeDueDate6Months(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  const match = dateStr.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  let year = Number(match[1]);
+  let month = Number(match[2]) + 6;
+  const day = match[3];
+  if (month > 12) {
+    year += Math.floor((month - 1) / 12);
+    month = ((month - 1) % 12) + 1;
+  }
+  return `${year}-${String(month).padStart(2, '0')}-${day}`;
+}
 
 interface Client {
   id: string;

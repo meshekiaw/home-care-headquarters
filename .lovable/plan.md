@@ -1,28 +1,23 @@
 
 
-## Fix: Excel Date Timezone Offset Bug
+## Fix: Robust Date Parsing for Excel & CSV Import
 
-### Problem
-The Excel parser uses local-timezone Date methods (`getFullYear()`, `getMonth()`, `getDate()`) on Date objects that the XLSX library creates in UTC. This causes dates to shift by one day in US timezones.
+### Changes
 
-Example: A spreadsheet date of `1/15/2025` becomes `2025-01-14` after import.
+**File 1: `src/utils/excelParser.ts`**
+- Add a `normalizeDate(value: unknown): string | null` helper that handles:
+  - `Date` objects → extract via UTC methods
+  - Numbers (Excel serial dates) → convert using epoch formula (serial - 25569) * 86400000
+  - Strings in M/D/YY or M/D/YYYY → parse manually into YYYY-MM-DD
+  - Strings already in YYYY-MM-DD → pass through
+- Replace the inline date branch (line ~82-84) with a call to `normalizeDate(rawValue)`
 
-### Fix
+**File 2: `src/utils/csvParser.ts`**
+- Add a `parseDateString(value: string): string | null` helper that:
+  - Handles M/D/YY, M/D/YYYY, and YYYY-MM-DD formats
+  - Constructs YYYY-MM-DD strings from numeric components only
+  - Never uses `new Date()` or `toISOString()` (the source of timezone shifts)
+- Replace the three date parsing blocks (date_of_birth, authorization_due_date, authorization_expiration_date) with calls to this helper
 
-**File: `src/utils/excelParser.ts`** (line 84)
-
-Change the date extraction from local timezone methods to UTC methods:
-
-```typescript
-// Before
-mapped[mappedKey] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-// After
-mapped[mappedKey] = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-```
-
-One line change. No other files affected.
-
-### After the Fix
-Previously imported clients with wrong dates would need to be re-imported or manually corrected in the client edit page.
+### No database changes. No other files affected.
 

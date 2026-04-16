@@ -61,6 +61,12 @@ import { downloadCSV, formatClientForExport } from "@/utils/csvExport";
 import BulkImportDialog from "@/components/clients/BulkImportDialog";
 import type { ParsedClient } from "@/utils/csvParser";
 import { Badge } from "@/components/ui/badge";
+import {
+  compareDateOnly,
+  formatDateOnly,
+  formatDateOnlyYearMonth,
+  getDateOnlyYearMonth,
+} from "@/utils/dateOnly";
 
 interface Client {
   id: string;
@@ -163,13 +169,11 @@ export default function Clients() {
     if (statusFilter !== "all" && client.status !== statusFilter) return false;
     if (dueDateMonth !== "all") {
       if (!client.authorization_due_date) return false;
-      const d = new Date(client.authorization_due_date);
-      if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== dueDateMonth) return false;
+      if (getDateOnlyYearMonth(client.authorization_due_date) !== dueDateMonth) return false;
     }
     if (expirationDateMonth !== "all") {
       if (!client.authorization_expiration_date) return false;
-      const d = new Date(client.authorization_expiration_date);
-      if (`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` !== expirationDateMonth) return false;
+      if (getDateOnlyYearMonth(client.authorization_expiration_date) !== expirationDateMonth) return false;
     }
     return true;
   });
@@ -191,10 +195,7 @@ export default function Clients() {
       case 'authorization_expiration_date': {
         const dateA = a[sortBy];
         const dateB = b[sortBy];
-        if (!dateA && !dateB) return 0;
-        if (!dateA) return 1;
-        if (!dateB) return -1;
-        return new Date(dateA).getTime() - new Date(dateB).getTime();
+        return compareDateOnly(dateA, dateB);
       }
       case 'name':
       default:
@@ -208,14 +209,11 @@ export default function Clients() {
   }, [searchQuery]);
 
   const formatYearMonth = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return getDateOnlyYearMonth(dateStr) ?? "";
   };
 
   const formatYearMonthLabel = (ym: string) => {
-    const [year, month] = ym.split('-');
-    const d = new Date(parseInt(year), parseInt(month) - 1);
-    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return formatDateOnlyYearMonth(ym) ?? ym;
   };
 
   const dueDateMonths = [...new Set(
@@ -597,14 +595,14 @@ export default function Clients() {
                         {sortBy === 'authorization_due_date' && (
                           <TableCell className="text-sm text-muted-foreground">
                             {client.authorization_due_date
-                              ? new Date(client.authorization_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              ? formatDateOnly(client.authorization_due_date, { month: 'short', day: 'numeric', year: 'numeric' })
                               : '—'}
                           </TableCell>
                         )}
                         {sortBy === 'authorization_expiration_date' && (
                           <TableCell className="text-sm text-muted-foreground">
                             {client.authorization_expiration_date
-                              ? new Date(client.authorization_expiration_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              ? formatDateOnly(client.authorization_expiration_date, { month: 'short', day: 'numeric', year: 'numeric' })
                               : '—'}
                           </TableCell>
                         )}

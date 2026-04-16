@@ -207,8 +207,8 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             const now = new Date();
             const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             const isPast = dueDate && dueDate <= nowStr;
-            const isWithin30 = dueDate && !isPast && dueDate <= (() => {
-              const d = new Date(now.getTime() + 30 * 86400000);
+            const isWithin60 = dueDate && !isPast && dueDate <= (() => {
+              const d = new Date(now.getTime() + 60 * 86400000);
               return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             })();
             return (
@@ -216,9 +216,9 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   {label}
                   {isPast && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
-                  {isWithin30 && <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">Due Soon</Badge>}
+                  {isWithin60 && <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">Due Soon</Badge>}
                 </p>
-                <p className={`font-medium ${isPast ? 'text-destructive' : isWithin30 ? 'text-yellow-600' : ''}`}>
+                <p className={`font-medium ${isPast ? 'text-destructive' : isWithin60 ? 'text-yellow-600' : ''}`}>
                   {dueDateFormatted || 'Not available'}
                 </p>
               </div>

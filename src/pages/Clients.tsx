@@ -600,10 +600,10 @@ export default function Clients() {
                           if (!dueDate) return <TableCell className="text-sm text-muted-foreground">—</TableCell>;
                           const now = new Date();
                           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                          const in30 = new Date(now.getTime() + 30 * 86400000);
-                          const in30Str = `${in30.getFullYear()}-${String(in30.getMonth() + 1).padStart(2, '0')}-${String(in30.getDate()).padStart(2, '0')}`;
+                          const in60 = new Date(now.getTime() + 60 * 86400000);
+                          const in60Str = `${in60.getFullYear()}-${String(in60.getMonth() + 1).padStart(2, '0')}-${String(in60.getDate()).padStart(2, '0')}`;
                           const isPast = dueDate <= todayStr;
-                          const isDueSoon = !isPast && dueDate <= in30Str;
+                          const isDueSoon = !isPast && dueDate <= in60Str;
                           const formatted = formatDateOnly(dueDate, { month: 'short', day: 'numeric', year: 'numeric' }) ?? dueDate;
                           return (
                             <TableCell>

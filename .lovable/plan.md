@@ -1,22 +1,18 @@
 
 
-## Change "Due Soon" color from yellow-600 to bright yellow
+## Make "Due Soon" a lighter, brighter yellow
 
-The current `text-yellow-600` and `border-yellow-500` classes produce an amber/orange tone. Replace them with a brighter, more distinctly yellow color.
+The classes are already `yellow-400` but may appear muted in context. Switching to `yellow-300` (#fde047) gives a lighter, more vivid yellow matching the screenshot.
 
 ### Changes
 
-**Two files**, replacing all 618-related yellow classes:
+1. **`src/pages/Clients.tsx`** (~lines 611, 615)
+   - `text-yellow-400` → `text-yellow-300`
+   - `border-yellow-400 text-yellow-400` → `border-yellow-300 text-yellow-300`
 
-1. **`src/pages/Clients.tsx`** (line ~611-615)
-   - `text-yellow-600` → `text-yellow-400`
-   - `border-yellow-500 text-yellow-600` → `border-yellow-400 text-yellow-400`
+2. **`src/components/clients/ClientOverview.tsx`** (~lines 219, 221)
+   - `border-yellow-400 text-yellow-400` → `border-yellow-300 text-yellow-300`
+   - `text-yellow-400` → `text-yellow-300`
 
-2. **`src/components/clients/ClientOverview.tsx`** (lines ~219-221)
-   - `border-yellow-500 text-yellow-600` → `border-yellow-400 text-yellow-400`
-   - `text-yellow-600` → `text-yellow-400`
-
-`yellow-400` (#facc15) is a bright, saturated yellow that reads clearly as yellow rather than orange.
-
-No other files affected — the yellow in nurses/compliance pages is unrelated.
+No other files affected. No database changes.
 

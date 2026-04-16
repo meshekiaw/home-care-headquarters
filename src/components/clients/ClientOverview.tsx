@@ -207,8 +207,8 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             const now = new Date();
             const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             const isPast = dueDate && dueDate <= nowStr;
-            const isWithin30 = dueDate && !isPast && dueDate <= (() => {
-              const d = new Date(now.getTime() + 30 * 86400000);
+            const isWithin60 = dueDate && !isPast && dueDate <= (() => {
+              const d = new Date(now.getTime() + 60 * 86400000);
               return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             })();
             return (

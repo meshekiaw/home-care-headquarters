@@ -293,63 +293,25 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
       errors.push({ row: rowNum, field: 'status', message: `Status must be one of: ${validStatuses.join(', ')}` });
     }
 
-    // Date of birth validation - handle M/D/YY, M/D/YYYY, and YYYY-MM-DD
+    // Date of birth validation
     let dateOfBirth: string | null = null;
     if (row.date_of_birth?.trim()) {
-      let dobStr = row.date_of_birth.trim();
-      // Handle M/D/YY or M/D/YYYY format
-      const mdyMatch = dobStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-      if (mdyMatch) {
-        const month = parseInt(mdyMatch[1]);
-        const day = parseInt(mdyMatch[2]);
-        let year = parseInt(mdyMatch[3]);
-        if (year < 100) {
-          year = year > 30 ? 1900 + year : 2000 + year;
-        }
-        dobStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      }
-      const parsed = new Date(dobStr);
-      if (isNaN(parsed.getTime())) {
+      dateOfBirth = parseDateString(row.date_of_birth);
+      if (!dateOfBirth) {
         errors.push({ row: rowNum, field: 'date_of_birth', message: 'Invalid date format (use YYYY-MM-DD or M/D/YY)' });
-      } else {
-        dateOfBirth = dobStr.match(/^\d{4}-\d{2}-\d{2}$/) ? dobStr : parsed.toISOString().split('T')[0];
       }
     }
 
     // Parse authorization_due_date
     let authDueDate: string | null = null;
     if (row.authorization_due_date?.trim()) {
-      let dateStr = row.authorization_due_date.trim();
-      const mdyMatch2 = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-      if (mdyMatch2) {
-        const month = parseInt(mdyMatch2[1]);
-        const day = parseInt(mdyMatch2[2]);
-        let year = parseInt(mdyMatch2[3]);
-        if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
-        dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      }
-      const parsed = new Date(dateStr);
-      if (!isNaN(parsed.getTime())) {
-        authDueDate = dateStr.match(/^\d{4}-\d{2}-\d{2}$/) ? dateStr : parsed.toISOString().split('T')[0];
-      }
+      authDueDate = parseDateString(row.authorization_due_date);
     }
 
     // Parse authorization_expiration_date
     let authExpDate: string | null = null;
     if (row.authorization_expiration_date?.trim()) {
-      let dateStr = row.authorization_expiration_date.trim();
-      const mdyMatch3 = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-      if (mdyMatch3) {
-        const month = parseInt(mdyMatch3[1]);
-        const day = parseInt(mdyMatch3[2]);
-        let year = parseInt(mdyMatch3[3]);
-        if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
-        dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      }
-      const parsed = new Date(dateStr);
-      if (!isNaN(parsed.getTime())) {
-        authExpDate = dateStr.match(/^\d{4}-\d{2}-\d{2}$/) ? dateStr : parsed.toISOString().split('T')[0];
-      }
+      authExpDate = parseDateString(row.authorization_expiration_date);
     }
 
     // Only add if no critical errors for this row

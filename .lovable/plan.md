@@ -1,18 +1,28 @@
 
 
-## Rename "618 Due Date" → "Current 618 Date"
+## Fix: Excel Date Timezone Offset Bug
 
-A simple label rename across 5 files. No database or logic changes needed — just updating display text.
+### Problem
+The Excel parser uses local-timezone Date methods (`getFullYear()`, `getMonth()`, `getDate()`) on Date objects that the XLSX library creates in UTC. This causes dates to shift by one day in US timezones.
 
-### Changes
+Example: A spreadsheet date of `1/15/2025` becomes `2025-01-14` after import.
 
-| File | What changes |
-|------|-------------|
-| `src/components/clients/ClientOverview.tsx` | Label text on client profile overview |
-| `src/pages/Clients.tsx` | Sort dropdown, filter label, and table header |
-| `src/pages/ClientNew.tsx` | Form field label |
-| `src/pages/ClientEdit.tsx` | Form field label |
-| `src/utils/excelParser.ts` | Add "current 618 date" as an accepted import column alias |
+### Fix
 
-All instances of "618 Due Date" become "Current 618 Date". The underlying database column (`authorization_due_date`) stays the same.
+**File: `src/utils/excelParser.ts`** (line 84)
+
+Change the date extraction from local timezone methods to UTC methods:
+
+```typescript
+// Before
+mapped[mappedKey] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// After
+mapped[mappedKey] = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+```
+
+One line change. No other files affected.
+
+### After the Fix
+Previously imported clients with wrong dates would need to be re-imported or manually corrected in the client edit page.
 

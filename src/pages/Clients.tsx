@@ -608,11 +608,11 @@ export default function Clients() {
                           return (
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <span className={`text-sm font-medium ${isPast ? 'text-destructive' : isDueSoon ? 'text-yellow-400' : 'text-muted-foreground'}`}>
+                                <span className={`text-sm font-medium ${isPast ? 'text-destructive' : isDueSoon ? 'text-yellow-300' : 'text-muted-foreground'}`}>
                                   {formatted}
                                 </span>
                                 {isPast && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>}
-                                {isDueSoon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-400 text-yellow-400">Due Soon</Badge>}
+                                {isDueSoon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-300 text-yellow-300">Due Soon</Badge>}
                               </div>
                             </TableCell>
                           );

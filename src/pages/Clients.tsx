@@ -603,7 +603,7 @@ export default function Clients() {
                           const in30 = new Date(now.getTime() + 30 * 86400000);
                           const in30Str = `${in30.getFullYear()}-${String(in30.getMonth() + 1).padStart(2, '0')}-${String(in30.getDate()).padStart(2, '0')}`;
                           const isPast = dueDate <= todayStr;
-                          const isDueSoon = !isPast && dueDate <= in60Str;
+                          const isDueSoon = !isPast && dueDate <= in30Str;
                           const formatted = formatDateOnly(dueDate, { month: 'short', day: 'numeric', year: 'numeric' }) ?? dueDate;
                           return (
                             <TableCell>

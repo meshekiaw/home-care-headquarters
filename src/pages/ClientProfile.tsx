@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,10 +9,7 @@ import {
   ArrowLeft, 
   Edit, 
   User, 
-  Phone, 
-  Mail, 
   MapPin, 
-  Calendar,
   AlertCircle,
   ClipboardList,
   Stethoscope,
@@ -35,6 +31,7 @@ import { AdmissionFormsTab } from "@/components/forms/AdmissionFormsTab";
 import { AssignedNursesTab } from "@/components/clients/AssignedNursesTab";
 import { NursingFormsTab } from "@/components/clients/NursingFormsTab";
 import { ClientFormsTab } from "@/components/clients/ClientFormsTab";
+import { calculateAgeFromDateOnly, formatDateOnly, isDateOnlyString } from "@/utils/dateOnly";
 
 interface Client {
   id: string;
@@ -112,6 +109,10 @@ export default function ClientProfile() {
 
   const formatDate = (date: string | null) => {
     if (!date) return 'Not specified';
+    if (isDateOnlyString(date)) {
+      return formatDateOnly(date) ?? 'Not specified';
+    }
+
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -120,15 +121,7 @@ export default function ClientProfile() {
   };
 
   const calculateAge = (dob: string | null) => {
-    if (!dob) return null;
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+    return calculateAgeFromDateOnly(dob);
   };
 
   if (loading) {

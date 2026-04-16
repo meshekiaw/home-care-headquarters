@@ -95,6 +95,20 @@ export function calculateAgeFromDateOnly(
   return age;
 }
 
+export function addMonthsToDate(dateStr: string | null, months: number): string | null {
+  if (!dateStr) return null;
+  const match = dateStr.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  let year = Number(match[1]);
+  let month = Number(match[2]) + months;
+  const day = match[3];
+  if (month > 12) {
+    year += Math.floor((month - 1) / 12);
+    month = ((month - 1) % 12) + 1;
+  }
+  return `${year}-${String(month).padStart(2, '0')}-${day}`;
+}
+
 export function compareDateOnly(a: string | null | undefined, b: string | null | undefined): number {
   const aYearMonthDay = parseDateOnlyParts(a)
     ? `${a!.slice(0, 4)}-${a!.slice(5, 7)}-${a!.slice(8, 10)}`

@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   User, 
   Phone, 
@@ -8,6 +9,21 @@ import {
   AlertCircle,
   FileText
 } from "lucide-react";
+import { formatDateOnly, isDateOnlyString } from "@/utils/dateOnly";
+
+function computeDueDate6Months(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  const match = dateStr.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  let year = Number(match[1]);
+  let month = Number(match[2]) + 6;
+  const day = match[3];
+  if (month > 12) {
+    year += Math.floor((month - 1) / 12);
+    month = ((month - 1) % 12) + 1;
+  }
+  return `${year}-${String(month).padStart(2, '0')}-${day}`;
+}
 
 interface Client {
   id: string;
@@ -195,6 +211,29 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
               <p className="text-sm text-muted-foreground">Current 618 Date</p>
               <p className="font-medium">{formatDate(client.authorization_due_date)}</p>
             </div>
+            {client.client_class === 'VA' && client.authorization_due_date && (() => {
+              const dueDate = computeDueDate6Months(client.authorization_due_date);
+              const dueDateFormatted = dueDate ? (formatDateOnly(dueDate) ?? dueDate) : null;
+              const now = new Date();
+              const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+              const isPast = dueDate && dueDate <= nowStr;
+              const isWithin30 = dueDate && !isPast && dueDate <= (() => {
+                const d = new Date(now.getTime() + 30 * 86400000);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              })();
+              return (
+                <div>
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    618 Due Date (6 months)
+                    {isPast && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
+                    {isWithin30 && <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">Due Soon</Badge>}
+                  </p>
+                  <p className={`font-medium ${isPast ? 'text-destructive' : isWithin30 ? 'text-yellow-600' : ''}`}>
+                    {dueDateFormatted || 'Not available'}
+                  </p>
+                </div>
+              );
+            })()}
             <div>
               <p className="text-sm text-muted-foreground">Authorization Expiration Date</p>
               <p className="font-medium">{formatDate(client.authorization_expiration_date)}</p>

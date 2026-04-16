@@ -1,6 +1,40 @@
 import * as XLSX from "xlsx";
 import type { ClientCSVRow } from "./csvParser";
 
+function normalizeDate(value: unknown): string | null {
+  if (value == null || value === "") return null;
+
+  if (value instanceof Date) {
+    const d = value;
+    if (isNaN(d.getTime())) return null;
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  }
+
+  if (typeof value === "number") {
+    const utcMs = (value - 25569) * 86400000;
+    const d = new Date(utcMs);
+    if (isNaN(d.getTime())) return null;
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  }
+
+  const str = String(value).trim();
+  if (!str) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+
+  const mdyMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (mdyMatch) {
+    const month = parseInt(mdyMatch[1]);
+    const day = parseInt(mdyMatch[2]);
+    let year = parseInt(mdyMatch[3]);
+    if (year < 100) year = year > 30 ? 1900 + year : 2000 + year;
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  return null;
+}
+
+
 const COLUMN_MAP: Record<string, keyof ClientCSVRow> = {
   "last_name": "last_name",
   "last name": "last_name",

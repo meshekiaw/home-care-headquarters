@@ -62,6 +62,7 @@ import BulkImportDialog from "@/components/clients/BulkImportDialog";
 import type { ParsedClient } from "@/utils/csvParser";
 import { Badge } from "@/components/ui/badge";
 import {
+  addMonthsToDate,
   compareDateOnly,
   formatDateOnly,
   formatDateOnlyYearMonth,

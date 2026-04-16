@@ -534,8 +534,7 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
-                      {sortBy === 'authorization_due_date' && <TableHead>Current 618 Date</TableHead>}
-                      {sortBy === 'authorization_expiration_date' && <TableHead>Auth Expiration</TableHead>}
+                      <TableHead>618 Due Date</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -593,20 +592,31 @@ export default function Clients() {
                             {client.status}
                           </span>
                         </TableCell>
-                        {sortBy === 'authorization_due_date' && (
-                          <TableCell className="text-sm text-muted-foreground">
-                            {client.authorization_due_date
-                              ? formatDateOnly(client.authorization_due_date, { month: 'short', day: 'numeric', year: 'numeric' })
-                              : '—'}
-                          </TableCell>
-                        )}
-                        {sortBy === 'authorization_expiration_date' && (
-                          <TableCell className="text-sm text-muted-foreground">
-                            {client.authorization_expiration_date
-                              ? formatDateOnly(client.authorization_expiration_date, { month: 'short', day: 'numeric', year: 'numeric' })
-                              : '—'}
-                          </TableCell>
-                        )}
+                        {(() => {
+                          const isVA = client.client_class === 'VA';
+                          const isOtherClass = ['ARChoices', 'Medicaid', 'Private Pay'].includes(client.client_class || '');
+                          const months = isVA ? 6 : isOtherClass ? 12 : 0;
+                          const dueDate = months > 0 ? addMonthsToDate(client.authorization_due_date, months) : client.authorization_due_date;
+                          if (!dueDate) return <TableCell className="text-sm text-muted-foreground">—</TableCell>;
+                          const now = new Date();
+                          const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                          const in30 = new Date(now.getTime() + 30 * 86400000);
+                          const in30Str = `${in30.getFullYear()}-${String(in30.getMonth() + 1).padStart(2, '0')}-${String(in30.getDate()).padStart(2, '0')}`;
+                          const isPast = dueDate <= todayStr;
+                          const isDueSoon = !isPast && dueDate <= in30Str;
+                          const formatted = formatDateOnly(dueDate, { month: 'short', day: 'numeric', year: 'numeric' }) ?? dueDate;
+                          return (
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-medium ${isPast ? 'text-destructive' : isDueSoon ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                                  {formatted}
+                                </span>
+                                {isPast && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>}
+                                {isDueSoon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-500 text-yellow-600">Due Soon</Badge>}
+                              </div>
+                            </TableCell>
+                          );
+                        })()}
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

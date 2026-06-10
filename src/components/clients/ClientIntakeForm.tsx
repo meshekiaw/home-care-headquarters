@@ -74,50 +74,173 @@ export default function ClientIntakeForm() {
     const doc = new jsPDF({ unit: "pt", format: "letter" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
-    const margin = 48;
+    const margin = 54;
     const maxW = pageW - margin * 2;
     let y = margin;
+    let pageNum = 0;
 
-    const ensureSpace = (h: number) => {
-      if (y + h > pageH - margin) {
-        doc.addPage();
-        y = margin;
-      }
+    const NAVY: [number, number, number] = [20, 60, 120];
+    const LIGHT: [number, number, number] = [235, 240, 250];
+    const TEXT: [number, number, number] = [25, 25, 35];
+    const MUTED: [number, number, number] = [110, 115, 130];
+
+    const drawFooter = () => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text(
+        `Home Care Network — Confidential Intake Packet`,
+        margin,
+        pageH - 24
+      );
+      doc.text(`Page ${pageNum}`, pageW - margin, pageH - 24, { align: "right" });
     };
 
+    const newPage = () => {
+      doc.addPage();
+      pageNum += 1;
+      y = margin;
+      drawFooter();
+    };
+
+    const ensureSpace = (h: number) => {
+      if (y + h > pageH - margin - 30) newPage();
+    };
+
+    // === Cover Page ===
+    pageNum = 1;
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, pageW, 160, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("Home Care Network — Client Intake Packet", margin, y);
-    y += 22;
+    doc.setFontSize(24);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Client Intake Packet", margin, 80);
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("Home Care Network", margin, 110);
+    doc.text(new Date().toLocaleDateString(), margin, 130);
+
+    y = 200;
+    doc.setTextColor(...TEXT);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("Client Information", margin, y);
+    y += 8;
+    doc.setDrawColor(...NAVY);
+    doc.setLineWidth(1);
+    doc.line(margin, y, pageW - margin, y);
+    y += 20;
+
+    const infoRows: [string, string][] = [
+      ["Client Name", form.clientName || "—"],
+      ["Date of Birth", form.dob || "—"],
+      ["Address", form.address || "—"],
+      ["Primary Diagnosis", form.diagnosis || "—"],
+      ["Service Type", form.serviceType || "—"],
+      ["Payer / Program", form.payer || "—"],
+      ["Authorized Hours", form.authorizedHours || "—"],
+      ["Emergency Contact", `${form.emergencyContactName || "—"} ${form.emergencyContactPhone ? "• " + form.emergencyContactPhone : ""}`.trim()],
+    ];
     doc.setFontSize(11);
-    doc.text(`Client: ${form.clientName}`, margin, y); y += 14;
-    if (form.payer) { doc.text(`Payer/Program: ${form.payer}`, margin, y); y += 14; }
-    if (form.serviceType) { doc.text(`Service Type: ${form.serviceType}`, margin, y); y += 14; }
-    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y); y += 20;
-
-    SECTIONS.forEach((s) => {
-      const text = (result[s.key] || "").trim() || "(No content returned.)";
-      ensureSpace(40);
+    infoRows.forEach(([k, v]) => {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(20, 60, 120);
-      doc.text(s.label, margin, y);
-      y += 8;
-      doc.setDrawColor(20, 60, 120);
-      doc.line(margin, y, pageW - margin, y);
-      y += 14;
-
+      doc.setTextColor(...NAVY);
+      doc.text(`${k}:`, margin, y);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(20, 20, 20);
-      const lines = doc.splitTextToSize(text, maxW);
-      lines.forEach((line: string) => {
+      doc.setTextColor(...TEXT);
+      const vLines = doc.splitTextToSize(v, maxW - 140);
+      doc.text(vLines, margin + 140, y);
+      y += 14 * vLines.length + 4;
+    });
+
+    if (form.notes) {
+      y += 10;
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...NAVY);
+      doc.text("Special Needs / Notes", margin, y);
+      y += 16;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...TEXT);
+      const nLines = doc.splitTextToSize(form.notes, maxW);
+      nLines.forEach((line: string) => {
         ensureSpace(14);
         doc.text(line, margin, y);
         y += 14;
       });
-      y += 12;
+    }
+    drawFooter();
+
+    // === One section per page ===
+    SECTIONS.forEach((s, idx) => {
+      newPage();
+
+      // Section header band
+      doc.setFillColor(...NAVY);
+      doc.rect(0, margin - 30, pageW, 56, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(200, 215, 240);
+      doc.text(`SECTION ${idx + 1} OF ${SECTIONS.length}`, margin, margin - 10);
+      doc.setFontSize(18);
+      doc.setTextColor(255, 255, 255);
+      doc.text(s.label, margin, margin + 14);
+
+      y = margin + 56;
+
+      // Light divider
+      doc.setFillColor(...LIGHT);
+      doc.rect(margin, y, maxW, 2, "F");
+      y += 20;
+
+      const text = (result[s.key] || "").trim() || "(No content returned.)";
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(...TEXT);
+
+      const paragraphs = text.split(/\n+/);
+      paragraphs.forEach((para) => {
+        const trimmed = para.trim();
+        if (!trimmed) return;
+
+        // Detect bullet/numbered lines
+        const isBullet = /^[-*•]\s+/.test(trimmed);
+        const isNumbered = /^\d+[.)]\s+/.test(trimmed);
+        const isHeading = /^#{1,3}\s+/.test(trimmed) || (/^[A-Z][A-Z0-9 \-/&]{3,}:?$/.test(trimmed) && trimmed.length < 80);
+
+        if (isHeading) {
+          ensureSpace(24);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+          doc.setTextColor(...NAVY);
+          doc.text(trimmed.replace(/^#{1,3}\s+/, ""), margin, y);
+          y += 18;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(...TEXT);
+          return;
+        }
+
+        const body = isBullet
+          ? trimmed.replace(/^[-*•]\s+/, "")
+          : isNumbered
+          ? trimmed.replace(/^\d+[.)]\s+/, "")
+          : trimmed;
+        const indent = isBullet || isNumbered ? 18 : 0;
+        const prefix = isBullet ? "•  " : isNumbered ? trimmed.match(/^(\d+[.)])\s+/)![1] + "  " : "";
+
+        const lines = doc.splitTextToSize(body, maxW - indent);
+        lines.forEach((line: string, i: number) => {
+          ensureSpace(15);
+          if (i === 0 && prefix) {
+            doc.setFont("helvetica", "bold");
+            doc.text(prefix, margin, y);
+            doc.setFont("helvetica", "normal");
+          }
+          doc.text(line, margin + indent, y);
+          y += 15;
+        });
+        y += 6;
+      });
     });
 
     const safeName = (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");

@@ -67,7 +67,8 @@ import {
   formatDateOnly,
   formatDateOnlyYearMonth,
   getDateOnlyYearMonth,
-} from "@/utils/dateOnly";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
 
 interface Client {
   id: string;

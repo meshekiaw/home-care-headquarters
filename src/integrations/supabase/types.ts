@@ -219,6 +219,78 @@ export type Database = {
         }
         Relationships: []
       }
+      call_off_events: {
+        Row: {
+          ai_response: Json | null
+          caregiver_id: string | null
+          caregiver_name: string | null
+          client_id: string | null
+          client_name: string | null
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          payer: string | null
+          reason: string
+          service_type: string | null
+          shift_end: string | null
+          shift_start: string
+          updated_at: string
+          urgency: string
+        }
+        Insert: {
+          ai_response?: Json | null
+          caregiver_id?: string | null
+          caregiver_name?: string | null
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          payer?: string | null
+          reason: string
+          service_type?: string | null
+          shift_end?: string | null
+          shift_start: string
+          updated_at?: string
+          urgency?: string
+        }
+        Update: {
+          ai_response?: Json | null
+          caregiver_id?: string | null
+          caregiver_name?: string | null
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          payer?: string | null
+          reason?: string
+          service_type?: string | null
+          shift_end?: string | null
+          shift_start?: string
+          updated_at?: string
+          urgency?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_off_events_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_off_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       care_plans: {
         Row: {
           client_id: string
@@ -921,6 +993,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      evv_corrections: {
+        Row: {
+          ai_note: Json | null
+          appointment_id: string | null
+          created_at: string
+          created_by: string
+          exception_type: string
+          id: string
+        }
+        Insert: {
+          ai_note?: Json | null
+          appointment_id?: string | null
+          created_at?: string
+          created_by?: string
+          exception_type: string
+          id?: string
+        }
+        Update: {
+          ai_note?: Json | null
+          appointment_id?: string | null
+          created_at?: string
+          created_by?: string
+          exception_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evv_corrections_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       form_signatures: {
         Row: {

@@ -252,8 +252,24 @@ export default function ClientIntakeForm() {
       });
     });
 
-    const safeName = (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
-    doc.save(`intake_packet_${safeName}.pdf`);
+    return doc;
+  };
+
+  const safeName = () => (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
+
+  const openPreview = () => {
+    const doc = buildPdf();
+    if (!doc) return;
+    const url = URL.createObjectURL(doc.output("blob"));
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(url);
+    setPreviewOpen(true);
+  };
+
+  const downloadPdf = () => {
+    const doc = buildPdf();
+    if (!doc) return;
+    doc.save(`intake_packet_${safeName()}.pdf`);
     toast({ title: "PDF downloaded" });
   };
 

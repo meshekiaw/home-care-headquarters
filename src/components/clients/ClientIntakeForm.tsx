@@ -258,11 +258,7 @@ export default function ClientIntakeForm() {
   const safeName = () => (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
 
   const openPreview = () => {
-    const doc = buildPdf();
-    if (!doc) return;
-    const url = URL.createObjectURL(doc.output("blob"));
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(url);
+    if (!result) return;
     setPreviewOpen(true);
   };
 
@@ -366,14 +362,60 @@ export default function ClientIntakeForm() {
           <DialogHeader className="px-6 pt-6 pb-3 border-b">
             <DialogTitle>Intake Packet Preview</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 bg-muted overflow-hidden">
-            {previewUrl && (
-              <iframe
-                src={previewUrl}
-                title="PDF Preview"
-                className="w-full h-full border-0"
-              />
-            )}
+          <div className="flex-1 overflow-y-auto bg-muted p-6">
+            <div className="mx-auto max-w-3xl bg-white shadow-lg rounded-md overflow-hidden">
+              <div className="bg-[rgb(20,60,120)] text-white px-8 py-8">
+                <h1 className="text-2xl font-bold">Client Intake Packet</h1>
+                <p className="text-sm opacity-90 mt-1">Home Care Network</p>
+                <p className="text-xs opacity-80">{new Date().toLocaleDateString()}</p>
+              </div>
+              <div className="px-8 py-6 border-b">
+                <h2 className="font-bold text-[rgb(20,60,120)] border-b border-[rgb(20,60,120)] pb-1 mb-3">
+                  Client Information
+                </h2>
+                <dl className="grid grid-cols-[160px_1fr] gap-y-1.5 text-sm">
+                  {([
+                    ["Client Name", form.clientName],
+                    ["Date of Birth", form.dob],
+                    ["Address", form.address],
+                    ["Primary Diagnosis", form.diagnosis],
+                    ["Service Type", form.serviceType],
+                    ["Payer / Program", form.payer],
+                    ["Authorized Hours", form.authorizedHours],
+                    ["Emergency Contact", `${form.emergencyContactName || ""}${form.emergencyContactPhone ? " • " + form.emergencyContactPhone : ""}`.trim()],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="contents">
+                      <dt className="font-semibold text-[rgb(20,60,120)]">{k}:</dt>
+                      <dd className="text-gray-800">{v || "—"}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {form.notes && (
+                  <div className="mt-4">
+                    <h3 className="font-semibold text-[rgb(20,60,120)] mb-1">Special Needs / Notes</h3>
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{form.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              {SECTIONS.map((s, idx) => (
+                <div key={s.key}>
+                  <div className="bg-[rgb(20,60,120)] text-white px-8 py-4">
+                    <div className="text-[10px] uppercase tracking-wider text-[rgb(200,215,240)]">
+                      Section {idx + 1} of {SECTIONS.length}
+                    </div>
+                    <h2 className="text-lg font-bold">{s.label}</h2>
+                  </div>
+                  <div className="px-8 py-5 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed border-b">
+                    {(result?.[s.key] || "").trim() || "(No content returned.)"}
+                  </div>
+                </div>
+              ))}
+
+              <div className="px-8 py-3 text-xs text-gray-500 text-center">
+                Home Care Network — Confidential Intake Packet
+              </div>
+            </div>
           </div>
           <DialogFooter className="px-6 py-3 border-t">
             <Button variant="ghost" onClick={() => setPreviewOpen(false)}>Close</Button>

@@ -69,6 +69,62 @@ export default function ClientIntakeForm() {
     }
   };
 
+  const downloadPdf = () => {
+    if (!result) return;
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 48;
+    const maxW = pageW - margin * 2;
+    let y = margin;
+
+    const ensureSpace = (h: number) => {
+      if (y + h > pageH - margin) {
+        doc.addPage();
+        y = margin;
+      }
+    };
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Home Care Network — Client Intake Packet", margin, y);
+    y += 22;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`Client: ${form.clientName}`, margin, y); y += 14;
+    if (form.payer) { doc.text(`Payer/Program: ${form.payer}`, margin, y); y += 14; }
+    if (form.serviceType) { doc.text(`Service Type: ${form.serviceType}`, margin, y); y += 14; }
+    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y); y += 20;
+
+    SECTIONS.forEach((s) => {
+      const text = (result[s.key] || "").trim() || "(No content returned.)";
+      ensureSpace(40);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(20, 60, 120);
+      doc.text(s.label, margin, y);
+      y += 8;
+      doc.setDrawColor(20, 60, 120);
+      doc.line(margin, y, pageW - margin, y);
+      y += 14;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(20, 20, 20);
+      const lines = doc.splitTextToSize(text, maxW);
+      lines.forEach((line: string) => {
+        ensureSpace(14);
+        doc.text(line, margin, y);
+        y += 14;
+      });
+      y += 12;
+    });
+
+    const safeName = (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
+    doc.save(`intake_packet_${safeName}.pdf`);
+    toast({ title: "PDF downloaded" });
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>

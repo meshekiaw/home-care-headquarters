@@ -78,8 +78,8 @@ export default function ClientIntakeForm() {
     }
   };
 
-  const downloadPdf = () => {
-    if (!result) return;
+  const buildPdf = (): jsPDF | null => {
+    if (!result) return null;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();

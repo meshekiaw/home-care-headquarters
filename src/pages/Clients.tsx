@@ -68,6 +68,8 @@ import {
   formatDateOnlyYearMonth,
   getDateOnlyYearMonth,
 } from "@/utils/dateOnly";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
 
 interface Client {
   id: string;
@@ -292,6 +294,14 @@ export default function Clients() {
             </Link>
           </div>
         </div>
+
+        <Tabs defaultValue="list" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="list">Client List</TabsTrigger>
+            <TabsTrigger value="intake">New Intake</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="list" className="space-y-6">
 
         {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
@@ -645,6 +655,12 @@ export default function Clients() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="intake">
+            <ClientIntakeForm />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <BulkImportDialog

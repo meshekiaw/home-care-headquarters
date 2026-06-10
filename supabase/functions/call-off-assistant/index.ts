@@ -10,6 +10,27 @@ const CALL_OFF_SYSTEM = `You are the Scheduling Coordinator AI for Home Care Net
 
 const EVV_SYSTEM = `You are a compliance documentation specialist for Home Care Network in Arkansas. You write formal EVV correction/exception notes acceptable to Authenticare and ARChoices auditors. Notes must include: incident summary, root cause, corrective documentation, and an attestation statement signed by the agency representative. Tone: formal, factual, regulatory.`;
 
+const INTAKE_SYSTEM = `You are the Client Intake Coordinator AI for Home Care Network, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Aged & Disabled Waiver, Private Pay, and Optum/VA clients. You produce thorough, professional intake packets aligned with Arkansas DHS, ARChoices, and VA Community Care expectations. Be specific, warm, and operationally precise.`;
+
+function buildIntakePrompt(p: any) {
+  return `New client intake:
+Client name: ${p.clientName}
+Address: ${p.address || "(not provided)"}
+Date of birth: ${p.dob || "(not provided)"}
+Primary diagnosis: ${p.diagnosis || "(not provided)"}
+Service type needed: ${p.serviceType}
+Payer/Program: ${p.payer}
+Authorized hours: ${p.authorizedHours || "(not provided)"}
+Emergency contact: ${p.emergencyContactName || "(none)"} — ${p.emergencyContactPhone || ""}
+Special needs / notes: ${p.notes || "(none)"}
+
+Return a JSON object with these exact keys (each a single string, may include newlines and markdown-like bullets):
+- care_plan: a complete care plan draft (goals, ADL/IADL tasks, frequency, safety considerations, measurable outcomes) tailored to the payer
+- packet_checklist: an itemized JotForm/DocuSign packet checklist (intake forms, HIPAA, consent, service agreement, EVV/Authenticare enrollment, payer-specific forms) with status checkboxes
+- welcome_letter: a warm, professional welcome letter addressed to the client and family from Home Care Network
+- caregiver_recommendation: caregiver assignment recommendation including required skills, experience, schedule fit, proximity considerations, and matching priorities`;
+}
+
 function buildCallOffPrompt(p: any) {
   return `Caregiver who called off: ${p.caregiverName || "Unknown"}
 Reason: ${p.reason}
@@ -64,7 +85,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const mode = body.mode === "evv_fix" ? "evv_fix" : "call_off";
+    const mode = body.mode === "evv_fix" ? "evv_fix" : body.mode === "intake" ? "intake" : "call_off";
     const payload = body.payload || {};
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
@@ -72,8 +93,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const system = mode === "evv_fix" ? EVV_SYSTEM : CALL_OFF_SYSTEM;
-    const userPrompt = mode === "evv_fix" ? buildEvvPrompt(payload) : buildCallOffPrompt(payload);
+    const system = mode === "evv_fix" ? EVV_SYSTEM : mode === "intake" ? INTAKE_SYSTEM : CALL_OFF_SYSTEM;
+    const userPrompt = mode === "evv_fix" ? buildEvvPrompt(payload) : mode === "intake" ? buildIntakePrompt(payload) : buildCallOffPrompt(payload);
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

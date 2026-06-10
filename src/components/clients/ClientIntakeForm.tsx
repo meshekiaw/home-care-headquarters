@@ -349,7 +349,10 @@ export default function ClientIntakeForm() {
 
       <div className="space-y-3">
         {result && (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={openPreview}>
+              <Eye className="w-4 h-4 mr-2" /> Preview PDF
+            </Button>
             <Button type="button" variant="secondary" onClick={downloadPdf}>
               <Download className="w-4 h-4 mr-2" /> Download as PDF
             </Button>
@@ -357,6 +360,29 @@ export default function ClientIntakeForm() {
         )}
         <AiResponseCard title="AI Intake Packet" result={result} sections={SECTIONS} />
       </div>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-3 border-b">
+            <DialogTitle>Intake Packet Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 bg-muted overflow-hidden">
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                title="PDF Preview"
+                className="w-full h-full border-0"
+              />
+            )}
+          </div>
+          <DialogFooter className="px-6 py-3 border-t">
+            <Button variant="ghost" onClick={() => setPreviewOpen(false)}>Close</Button>
+            <Button onClick={downloadPdf}>
+              <Download className="w-4 h-4 mr-2" /> Download
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

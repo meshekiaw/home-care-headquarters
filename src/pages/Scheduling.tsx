@@ -245,130 +245,150 @@ export default function Scheduling() {
           </div>
         </div>
 
-        <div className={`flex-1 flex gap-6 overflow-hidden ${showConflicts ? "" : ""}`}>
-          {/* Main Calendar */}
-          <Card className={`flex-1 flex flex-col overflow-hidden ${showConflicts ? "lg:flex-[2]" : ""}`}>
-            <CardContent className="p-4 flex flex-col flex-1 overflow-hidden">
-            {/* Calendar Controls */}
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={navigatePrevious}>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={navigateNext}>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-                <h3 className="text-lg font-semibold ml-2">{getHeaderTitle()}</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={goToToday}>
-                  Today
-                </Button>
-                <div className="flex rounded-lg border overflow-hidden">
-                  <Button
-                    variant={viewType === "day" ? "secondary" : "ghost"}
-                    size="sm"
-                    className="rounded-none"
-                    onClick={() => setViewType("day")}
-                  >
-                    Day
-                  </Button>
-                  <Button
-                    variant={viewType === "week" ? "secondary" : "ghost"}
-                    size="sm"
-                    className="rounded-none border-x"
-                    onClick={() => setViewType("week")}
-                  >
-                    Week
-                  </Button>
-                  <Button
-                    variant={viewType === "month" ? "secondary" : "ghost"}
-                    size="sm"
-                    className="rounded-none"
-                    onClick={() => setViewType("month")}
-                  >
-                    Month
-                  </Button>
-                </div>
-              </div>
-            </div>
+        <Tabs defaultValue="calendar" className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="self-start">
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="call-off">Call-Off Manager</TabsTrigger>
+            <TabsTrigger value="evv">EVV Exception Log</TabsTrigger>
+          </TabsList>
 
-            {/* Calendar View */}
-            <div className="flex-1 overflow-hidden">
-              {loading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-[400px] w-full" />
+          <TabsContent value="calendar" className="flex-1 flex flex-col overflow-hidden mt-4">
+            <div className={`flex-1 flex gap-6 overflow-hidden ${showConflicts ? "" : ""}`}>
+              {/* Main Calendar */}
+              <Card className={`flex-1 flex flex-col overflow-hidden ${showConflicts ? "lg:flex-[2]" : ""}`}>
+                <CardContent className="p-4 flex flex-col flex-1 overflow-hidden">
+                {/* Calendar Controls */}
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" onClick={navigatePrevious}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={navigateNext}>
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                    <h3 className="text-lg font-semibold ml-2">{getHeaderTitle()}</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={goToToday}>
+                      Today
+                    </Button>
+                    <div className="flex rounded-lg border overflow-hidden">
+                      <Button
+                        variant={viewType === "day" ? "secondary" : "ghost"}
+                        size="sm"
+                        className="rounded-none"
+                        onClick={() => setViewType("day")}
+                      >
+                        Day
+                      </Button>
+                      <Button
+                        variant={viewType === "week" ? "secondary" : "ghost"}
+                        size="sm"
+                        className="rounded-none border-x"
+                        onClick={() => setViewType("week")}
+                      >
+                        Week
+                      </Button>
+                      <Button
+                        variant={viewType === "month" ? "secondary" : "ghost"}
+                        size="sm"
+                        className="rounded-none"
+                        onClick={() => setViewType("month")}
+                      >
+                        Month
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <>
-                  {viewType === "day" && (
-                    <DayView
-                      selectedDate={selectedDate}
-                      appointments={appointments}
-                      onTimeSlotClick={handleTimeSlotClick}
-                      onAppointmentClick={handleAppointmentClick}
-                      highlightId={highlightId}
-                    />
+
+                {/* Calendar View */}
+                <div className="flex-1 overflow-hidden">
+                  {loading ? (
+                    <div className="space-y-4">
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-[400px] w-full" />
+                    </div>
+                  ) : (
+                    <>
+                      {viewType === "day" && (
+                        <DayView
+                          selectedDate={selectedDate}
+                          appointments={appointments}
+                          onTimeSlotClick={handleTimeSlotClick}
+                          onAppointmentClick={handleAppointmentClick}
+                          highlightId={highlightId}
+                        />
+                      )}
+                      {viewType === "week" && (
+                        <WeekView
+                          selectedDate={selectedDate}
+                          appointments={appointments}
+                          onTimeSlotClick={handleTimeSlotClick}
+                          onAppointmentClick={handleAppointmentClick}
+                          highlightId={highlightId}
+                        />
+                      )}
+                      {viewType === "month" && (
+                        <MonthView
+                          selectedDate={selectedDate}
+                          appointments={appointments}
+                          onDayClick={handleDayClick}
+                          onAppointmentClick={handleAppointmentClick}
+                        />
+                      )}
+                    </>
                   )}
-                  {viewType === "week" && (
-                    <WeekView
-                      selectedDate={selectedDate}
-                      appointments={appointments}
-                      onTimeSlotClick={handleTimeSlotClick}
-                      onAppointmentClick={handleAppointmentClick}
-                      highlightId={highlightId}
-                    />
-                  )}
-                  {viewType === "month" && (
-                    <MonthView
-                      selectedDate={selectedDate}
-                      appointments={appointments}
-                      onDayClick={handleDayClick}
-                      onAppointmentClick={handleAppointmentClick}
-                    />
-                  )}
-                </>
+                </div>
+                </CardContent>
+              </Card>
+
+              {/* Conflict Dashboard */}
+              {showConflicts && (
+                <div className="hidden lg:block lg:flex-1 lg:max-w-md">
+                  <ConflictDashboard
+                    weekDate={selectedDate}
+                    onAppointmentClick={handleConflictClick}
+                  />
+                </div>
               )}
             </div>
-            </CardContent>
-          </Card>
 
-          {/* Conflict Dashboard */}
-          {showConflicts && (
-            <div className="hidden lg:block lg:flex-1 lg:max-w-md">
-              <ConflictDashboard 
-                weekDate={selectedDate} 
-                onAppointmentClick={handleConflictClick}
-              />
+            {/* Legend */}
+            <div className="flex flex-wrap gap-4 text-sm mt-4">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-primary" />
+                <span>Scheduled</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-success" />
+                <span>Confirmed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-warning" />
+                <span>In Progress</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-muted-foreground" />
+                <span>Completed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-destructive" />
+                <span>Cancelled</span>
+              </div>
             </div>
-          )}
-        </div>
+          </TabsContent>
 
-        {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-primary" />
-            <span>Scheduled</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-success" />
-            <span>Confirmed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-warning" />
-            <span>In Progress</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-muted-foreground" />
-            <span>Completed</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-destructive" />
-            <span>Cancelled</span>
-          </div>
-        </div>
+          <TabsContent value="call-off" className="flex-1 overflow-y-auto mt-4">
+            <CallOffManager />
+          </TabsContent>
+
+          <TabsContent value="evv" className="flex-1 overflow-y-auto mt-4">
+            <EvvExceptionLog />
+          </TabsContent>
+        </Tabs>
       </div>
+
+
 
       <AppointmentDialog
         open={dialogOpen}

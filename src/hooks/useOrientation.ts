@@ -128,7 +128,7 @@ export function useOrientationQuizzes() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("orientation_quizzes")
+        .from("orientation_quizzes_public" as any)
         .select("*")
         .order("section_number", { ascending: true })
         .order("sort_order", { ascending: true });

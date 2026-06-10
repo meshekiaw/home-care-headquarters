@@ -16,6 +16,9 @@ import { useWeeklyConflicts } from "@/hooks/useWeeklyConflicts";
 import { downloadCSV, formatAppointmentForExport } from "@/utils/csvExport";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CallOffManager } from "@/components/scheduling/CallOffManager";
+import { EvvExceptionLog } from "@/components/scheduling/EvvExceptionLog";
 
 type ViewType = "day" | "week" | "month";
 

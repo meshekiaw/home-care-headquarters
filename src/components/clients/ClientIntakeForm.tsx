@@ -258,11 +258,7 @@ export default function ClientIntakeForm() {
   const safeName = () => (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
 
   const openPreview = () => {
-    const doc = buildPdf();
-    if (!doc) return;
-    const url = URL.createObjectURL(doc.output("blob"));
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(url);
+    if (!result) return;
     setPreviewOpen(true);
   };
 

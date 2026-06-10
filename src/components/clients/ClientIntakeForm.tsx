@@ -32,6 +32,8 @@ export default function ClientIntakeForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Record<string, string> | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [form, setForm] = useState({
     clientName: "",
     address: "",
@@ -44,6 +46,12 @@ export default function ClientIntakeForm() {
     emergencyContactPhone: "",
     notes: "",
   });
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 

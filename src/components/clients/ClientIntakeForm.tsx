@@ -199,7 +199,16 @@ export default function ClientIntakeForm() {
         </CardContent>
       </Card>
 
-      <AiResponseCard title="AI Intake Packet" result={result} sections={SECTIONS} />
+      <div className="space-y-3">
+        {result && (
+          <div className="flex justify-end">
+            <Button type="button" variant="secondary" onClick={downloadPdf}>
+              <Download className="w-4 h-4 mr-2" /> Download as PDF
+            </Button>
+          </div>
+        )}
+        <AiResponseCard title="AI Intake Packet" result={result} sections={SECTIONS} />
+      </div>
     </div>
   );
 }

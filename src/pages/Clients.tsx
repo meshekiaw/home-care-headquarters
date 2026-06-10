@@ -655,6 +655,12 @@ export default function Clients() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="intake">
+            <ClientIntakeForm />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <BulkImportDialog

@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const system = mode === "evv_fix" ? EVV_SYSTEM : CALL_OFF_SYSTEM;
-    const userPrompt = mode === "evv_fix" ? buildEvvPrompt(payload) : buildCallOffPrompt(payload);
+    const system = mode === "evv_fix" ? EVV_SYSTEM : mode === "intake" ? INTAKE_SYSTEM : CALL_OFF_SYSTEM;
+    const userPrompt = mode === "evv_fix" ? buildEvvPrompt(payload) : mode === "intake" ? buildIntakePrompt(payload) : buildCallOffPrompt(payload);
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

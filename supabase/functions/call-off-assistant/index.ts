@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const mode = body.mode === "evv_fix" ? "evv_fix" : "call_off";
+    const mode = body.mode === "evv_fix" ? "evv_fix" : body.mode === "intake" ? "intake" : "call_off";
     const payload = body.payload || {};
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");

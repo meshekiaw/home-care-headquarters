@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Sparkles, Download } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Loader2, Sparkles, Download, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,8 @@ export default function ClientIntakeForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Record<string, string> | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [form, setForm] = useState({
     clientName: "",
     address: "",
@@ -43,6 +46,12 @@ export default function ClientIntakeForm() {
     emergencyContactPhone: "",
     notes: "",
   });
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -69,8 +78,8 @@ export default function ClientIntakeForm() {
     }
   };
 
-  const downloadPdf = () => {
-    if (!result) return;
+  const buildPdf = (): jsPDF | null => {
+    if (!result) return null;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
@@ -243,8 +252,24 @@ export default function ClientIntakeForm() {
       });
     });
 
-    const safeName = (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
-    doc.save(`intake_packet_${safeName}.pdf`);
+    return doc;
+  };
+
+  const safeName = () => (form.clientName || "client").replace(/[^a-z0-9]+/gi, "_");
+
+  const openPreview = () => {
+    const doc = buildPdf();
+    if (!doc) return;
+    const url = URL.createObjectURL(doc.output("blob"));
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(url);
+    setPreviewOpen(true);
+  };
+
+  const downloadPdf = () => {
+    const doc = buildPdf();
+    if (!doc) return;
+    doc.save(`intake_packet_${safeName()}.pdf`);
     toast({ title: "PDF downloaded" });
   };
 
@@ -324,7 +349,10 @@ export default function ClientIntakeForm() {
 
       <div className="space-y-3">
         {result && (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={openPreview}>
+              <Eye className="w-4 h-4 mr-2" /> Preview PDF
+            </Button>
             <Button type="button" variant="secondary" onClick={downloadPdf}>
               <Download className="w-4 h-4 mr-2" /> Download as PDF
             </Button>
@@ -332,6 +360,29 @@ export default function ClientIntakeForm() {
         )}
         <AiResponseCard title="AI Intake Packet" result={result} sections={SECTIONS} />
       </div>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-3 border-b">
+            <DialogTitle>Intake Packet Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 bg-muted overflow-hidden">
+            {previewUrl && (
+              <iframe
+                src={previewUrl}
+                title="PDF Preview"
+                className="w-full h-full border-0"
+              />
+            )}
+          </div>
+          <DialogFooter className="px-6 py-3 border-t">
+            <Button variant="ghost" onClick={() => setPreviewOpen(false)}>Close</Button>
+            <Button onClick={downloadPdf}>
+              <Download className="w-4 h-4 mr-2" /> Download
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

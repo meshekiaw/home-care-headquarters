@@ -21,7 +21,10 @@ async function sendSms(to: string, body: string) {
   const sid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const token = Deno.env.get("TWILIO_AUTH_TOKEN");
   const from = Deno.env.get("TWILIO_FROM_NUMBER");
-  if (!sid || !token || !from) return { skipped: true };
+  if (!sid || !token || !from) {
+    console.log("[SMS] Skipped — TWILIO_* secrets not configured");
+    return { skipped: true };
+  }
   const auth = btoa(`${sid}:${token}`);
   const params = new URLSearchParams({ To: to, From: from, Body: body });
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
@@ -29,10 +32,28 @@ async function sendSms(to: string, body: string) {
     headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
   });
+  const text = await r.text();
+  console.log(`[SMS] status=${r.status} body=${text.slice(0, 300)}`);
   return { ok: r.ok, status: r.status };
 }
 
+async function findAuthUserByEmail(admin: ReturnType<typeof createClient>, email: string): Promise<string | null> {
+  const target = email.toLowerCase();
+  let page = 1;
+  // Paginate through users (default perPage 50)
+  while (page < 50) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error || !data?.users?.length) return null;
+    const hit = data.users.find((u: any) => u.email?.toLowerCase() === target);
+    if (hit) return hit.id;
+    if (data.users.length < 200) return null;
+    page++;
+  }
+  return null;
+}
+
 serve(async (req) => {
+  console.log(`[lms-notify] ${req.method} request received`);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -45,8 +66,10 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const resendKey = Deno.env.get("RESEND_API_KEY");
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@resend.dev";
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "onboarding@resend.dev";
     const siteUrl = Deno.env.get("SITE_URL") || "https://homecareheadquarters.org";
+
+    console.log(`[lms-notify] env: resend=${!!resendKey} from=${fromEmail} twilio=${!!Deno.env.get("TWILIO_ACCOUNT_SID")}`);
 
     const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
     const { data: { user: caller } } = await userClient.auth.getUser();
@@ -60,7 +83,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Admin access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { assignment_ids } = await req.json();
+    const body = await req.json();
+    console.log("[lms-notify] payload:", JSON.stringify(body));
+    const { assignment_ids } = body;
     if (!Array.isArray(assignment_ids) || assignment_ids.length === 0) {
       return new Response(JSON.stringify({ error: "assignment_ids required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -70,12 +95,14 @@ serve(async (req) => {
       .select("id, due_date, course_id, caregiver_id, lms_courses(title), caregivers(id, first_name, last_name, email, phone, auth_user_id)")
       .in("id", assignment_ids);
     if (aErr) throw aErr;
+    console.log(`[lms-notify] loaded ${assignments?.length ?? 0} assignments`);
 
     const resend = resendKey ? new Resend(resendKey) : null;
     const loginUrl = `${siteUrl}/login`;
     const results: any[] = [];
+    const warnings: string[] = [];
+    if (!resend) warnings.push("RESEND_API_KEY is not configured — emails were NOT sent.");
 
-    // Group by caregiver to consolidate temp-password creation
     const byCaregiver = new Map<string, any[]>();
     for (const a of assignments || []) {
       const arr = byCaregiver.get(a.caregiver_id) || [];
@@ -85,6 +112,7 @@ serve(async (req) => {
 
     for (const [caregiverId, items] of byCaregiver) {
       const cg = (items[0] as any).caregivers;
+      console.log(`[lms-notify] caregiver=${caregiverId} email=${cg?.email} auth_user_id=${cg?.auth_user_id}`);
       if (!cg?.email) {
         results.push({ caregiver_id: caregiverId, skipped: "no_email" });
         continue;
@@ -92,7 +120,9 @@ serve(async (req) => {
 
       let tempPassword: string | null = null;
       let provisioned = false;
-      if (!cg.auth_user_id) {
+      let authUserId: string | null = cg.auth_user_id;
+
+      if (!authUserId) {
         tempPassword = genPassword();
         const { data: created, error: cErr } = await admin.auth.admin.createUser({
           email: cg.email,
@@ -100,21 +130,28 @@ serve(async (req) => {
           email_confirm: true,
         });
         if (cErr) {
-          // Try to recover by looking up existing user
-          const { data: existing } = await admin.auth.admin.listUsers();
-          const found = existing?.users.find((u) => u.email?.toLowerCase() === cg.email.toLowerCase());
-          if (found) {
-            await admin.from("caregivers").update({ auth_user_id: found.id }).eq("id", caregiverId);
+          console.log(`[lms-notify] createUser failed (${cErr.message}); looking up existing user`);
+          authUserId = await findAuthUserByEmail(admin, cg.email);
+          if (authUserId) {
+            await admin.from("caregivers").update({ auth_user_id: authUserId }).eq("id", caregiverId);
             tempPassword = null;
           } else {
             results.push({ caregiver_id: caregiverId, error: cErr.message });
             continue;
           }
         } else if (created.user) {
-          await admin.from("user_roles").insert({ user_id: created.user.id, role: "caregiver" });
-          await admin.from("caregivers").update({ auth_user_id: created.user.id, temp_password_sent_at: new Date().toISOString() }).eq("id", caregiverId);
+          authUserId = created.user.id;
+          await admin.from("caregivers").update({ auth_user_id: authUserId, temp_password_sent_at: new Date().toISOString() }).eq("id", caregiverId);
           provisioned = true;
         }
+      }
+
+      // Ensure caregiver role exists (idempotent for both new and pre-existing accounts)
+      if (authUserId) {
+        const { error: roleErr } = await admin
+          .from("user_roles")
+          .upsert({ user_id: authUserId, role: "caregiver" }, { onConflict: "user_id,role", ignoreDuplicates: true });
+        if (roleErr) console.log(`[lms-notify] role upsert warning: ${roleErr.message}`);
       }
 
       const courseList = items.map((i: any) => {
@@ -131,9 +168,11 @@ serve(async (req) => {
         </div>
       ` : "";
 
+      let emailed = false;
+      let emailError: string | null = null;
       if (resend) {
         try {
-          await resend.emails.send({
+          const { data: sent, error: sendErr } = await resend.emails.send({
             from: `Home Care Headquarters <${fromEmail}>`,
             to: [cg.email],
             subject: `New training assigned: ${items[0].lms_courses?.title || "Course"}${items.length > 1 ? ` (+${items.length - 1} more)` : ""}`,
@@ -153,30 +192,44 @@ serve(async (req) => {
               </div>
             </body></html>`,
           });
+          if (sendErr) {
+            emailError = sendErr.message || JSON.stringify(sendErr);
+            console.error("[lms-notify] resend error:", sendErr);
+          } else {
+            emailed = true;
+            console.log(`[lms-notify] email sent id=${(sent as any)?.id}`);
+          }
         } catch (e: any) {
-          console.error("Email send failed", e);
+          emailError = e.message || String(e);
+          console.error("[lms-notify] email exception:", e);
         }
       }
 
+      let smsResult: any = { skipped: true };
       if (cg.phone) {
         const smsBody = `Home Care HQ: New training "${items[0].lms_courses?.title || "Course"}"${items.length > 1 ? ` and ${items.length - 1} more` : ""} assigned. Log in: ${loginUrl}${provisioned && tempPassword ? ` Temp password: ${tempPassword}` : ""}`;
-        try { await sendSms(cg.phone, smsBody); } catch (e) { console.error("SMS failed", e); }
+        try { smsResult = await sendSms(cg.phone, smsBody); } catch (e: any) {
+          console.error("[lms-notify] SMS failed", e);
+          smsResult = { error: e.message };
+        }
       }
 
-      await admin
-        .from("lms_assignments")
-        .update({ notification_sent_at: new Date().toISOString() })
-        .in("id", items.map((i: any) => i.id));
+      if (emailed) {
+        await admin
+          .from("lms_assignments")
+          .update({ notification_sent_at: new Date().toISOString() })
+          .in("id", items.map((i: any) => i.id));
+      }
 
-      results.push({ caregiver_id: caregiverId, count: items.length, provisioned, emailed: !!resend });
+      results.push({ caregiver_id: caregiverId, count: items.length, provisioned, emailed, emailError, sms: smsResult });
     }
 
-    return new Response(JSON.stringify({ success: true, results }), {
+    return new Response(JSON.stringify({ success: true, warnings, results }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
-    console.error("send-lms-assignment-notification error", err);
+    console.error("[lms-notify] fatal:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

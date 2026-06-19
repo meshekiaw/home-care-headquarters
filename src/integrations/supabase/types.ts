@@ -550,6 +550,7 @@ export type Database = {
           ssn_encrypted: string | null
           state: string | null
           status: string
+          temp_password_sent_at: string | null
           updated_at: string
           user_id: string
           zip_code: string | null
@@ -571,6 +572,7 @@ export type Database = {
           ssn_encrypted?: string | null
           state?: string | null
           status?: string
+          temp_password_sent_at?: string | null
           updated_at?: string
           user_id: string
           zip_code?: string | null
@@ -592,6 +594,7 @@ export type Database = {
           ssn_encrypted?: string | null
           state?: string | null
           status?: string
+          temp_password_sent_at?: string | null
           updated_at?: string
           user_id?: string
           zip_code?: string | null
@@ -1239,12 +1242,16 @@ export type Database = {
           assigned_by: string | null
           attempts: number
           caregiver_id: string
+          certificate_url: string | null
           completed_at: string | null
           course_id: string
           created_at: string
           due_date: string | null
           id: string
+          notification_sent_at: string | null
+          progress_percentage: number
           score: number | null
+          started_at: string | null
           status: string
           updated_at: string
           user_id: string
@@ -1253,12 +1260,16 @@ export type Database = {
           assigned_by?: string | null
           attempts?: number
           caregiver_id: string
+          certificate_url?: string | null
           completed_at?: string | null
           course_id: string
           created_at?: string
           due_date?: string | null
           id?: string
+          notification_sent_at?: string | null
+          progress_percentage?: number
           score?: number | null
+          started_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -1267,12 +1278,16 @@ export type Database = {
           assigned_by?: string | null
           attempts?: number
           caregiver_id?: string
+          certificate_url?: string | null
           completed_at?: string | null
           course_id?: string
           created_at?: string
           due_date?: string | null
           id?: string
+          notification_sent_at?: string | null
+          progress_percentage?: number
           score?: number | null
+          started_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string

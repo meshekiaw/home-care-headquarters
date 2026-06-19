@@ -10,22 +10,49 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
-  Search, Plus, Users, TrendingUp, BarChart3, FileText,
+  Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send,
 } from "lucide-react";
 import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
 import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
+import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LmsTraining() {
   const navigate = useNavigate();
   const { courses, loading: coursesLoading } = useLmsCourses();
-  const { assignments, loading: assignmentsLoading } = useLmsAssignments();
+  const { assignments, loading: assignmentsLoading, refetch } = useLmsAssignments();
   const [searchQuery, setSearchQuery] = useState("");
   const [addCourseOpen, setAddCourseOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
+
+  const resendNotification = async (assignmentId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+        body: { assignment_ids: [assignmentId] },
+      });
+      if (error) throw error;
+      toast({ title: "Notification re-sent" });
+      refetch();
+    } catch (e: any) {
+      toast({ title: "Failed to send notification", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const downloadCertificate = async (path: string | null) => {
+    if (!path) return;
+    const { data, error } = await supabase.storage.from("lms-certificates").createSignedUrl(path, 60);
+    if (error || !data) {
+      toast({ title: "Could not load certificate", description: error?.message, variant: "destructive" });
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
+  };
 
   // Stats
   const totalAssignments = assignments.length;

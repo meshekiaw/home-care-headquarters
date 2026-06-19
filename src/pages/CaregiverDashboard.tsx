@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, User, MessageSquare, CheckCircle2, Clock } from "lucide-react";
+import { BookOpen, User, MessageSquare, CheckCircle2, Clock, GraduationCap, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function CaregiverDashboard() {
   const { user } = useAuth();
   const [caregiver, setCaregiver] = useState<any>(null);
   const [progress, setProgress] = useState<any>(null);
+  const [training, setTraining] = useState<{ pending: number; in_progress: number; completed: number; overdue: number }>({ pending: 0, in_progress: 0, completed: 0, overdue: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +34,20 @@ export default function CaregiverDashboard() {
           .eq("caregiver_id", cg.id)
           .maybeSingle();
         setProgress(prog);
+
+        const { data: trAssignments } = await supabase
+          .from("lms_assignments")
+          .select("status, due_date")
+          .eq("caregiver_id", cg.id);
+        const now = new Date();
+        const t = { pending: 0, in_progress: 0, completed: 0, overdue: 0 };
+        (trAssignments || []).forEach((a: any) => {
+          if (a.status === "completed") t.completed++;
+          else if (a.status === "in_progress") t.in_progress++;
+          else t.pending++;
+          if (a.status !== "completed" && a.due_date && new Date(a.due_date) < now) t.overdue++;
+        });
+        setTraining(t);
       }
       setLoading(false);
     };
@@ -136,6 +151,40 @@ export default function CaregiverDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Training Summary */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-primary" />
+              My Training
+              {training.overdue > 0 && (
+                <Badge variant="destructive" className="ml-2">{training.overdue} overdue</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center p-3 rounded-lg bg-muted/40">
+                <p className="text-2xl font-bold">{training.pending}</p>
+                <p className="text-xs text-muted-foreground">Assigned</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-warning/10">
+                <p className="text-2xl font-bold text-warning">{training.in_progress}</p>
+                <p className="text-xs text-muted-foreground">In Progress</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-success/10">
+                <p className="text-2xl font-bold text-success flex items-center justify-center gap-1">
+                  <Award className="w-5 h-5" />{training.completed}
+                </p>
+                <p className="text-xs text-muted-foreground">Completed</p>
+              </div>
+            </div>
+            <Button asChild size="sm" className="w-full">
+              <Link to="/my-training">View My Training</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </CaregiverLayout>
   );

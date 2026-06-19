@@ -9,12 +9,14 @@ import {
   MessageSquare,
   LogOut,
   Home,
+  GraduationCap,
 } from "lucide-react";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/my-dashboard" },
   { label: "My Application", icon: ClipboardList, path: "/my-application" },
   { label: "My Orientation", icon: BookOpen, path: "/my-orientation" },
+  { label: "My Training", icon: GraduationCap, path: "/my-training" },
   { label: "My Profile", icon: User, path: "/my-profile" },
   { label: "Communications", icon: MessageSquare, path: "/my-communications" },
 ];

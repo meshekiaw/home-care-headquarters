@@ -101,9 +101,24 @@ export default function AssignCourseDialog({ open, onOpenChange }: Props) {
   const handleSubmit = async () => {
     if (!selectedCourse || selectedCaregivers.length === 0) return;
     setSaving(true);
-    const ok = await assignCourse(selectedCourse, selectedCaregivers, dueDate || undefined);
+    const result = await assignCourse(selectedCourse, selectedCaregivers, dueDate || undefined);
+    if (result?.assignmentIds?.length) {
+      try {
+        const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+          body: { assignment_ids: result.assignmentIds },
+        });
+        if (error) throw error;
+        toast({ title: "Notifications sent", description: `Notified ${selectedCaregivers.length} caregiver(s).` });
+      } catch (e: any) {
+        toast({
+          title: "Assignment saved, notification failed",
+          description: e.message || "Could not send notification email.",
+          variant: "destructive",
+        });
+      }
+    }
     setSaving(false);
-    if (!ok) return;
+    if (!result?.ok) return;
     setSelectedCourse("");
     setSelectedCaregivers([]);
     setDueDate("");

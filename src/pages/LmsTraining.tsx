@@ -10,22 +10,49 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
-  Search, Plus, Users, TrendingUp, BarChart3, FileText,
+  Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send,
 } from "lucide-react";
 import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
 import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
+import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LmsTraining() {
   const navigate = useNavigate();
   const { courses, loading: coursesLoading } = useLmsCourses();
-  const { assignments, loading: assignmentsLoading } = useLmsAssignments();
+  const { assignments, loading: assignmentsLoading, refetch } = useLmsAssignments();
   const [searchQuery, setSearchQuery] = useState("");
   const [addCourseOpen, setAddCourseOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
+
+  const resendNotification = async (assignmentId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+        body: { assignment_ids: [assignmentId] },
+      });
+      if (error) throw error;
+      toast({ title: "Notification re-sent" });
+      refetch();
+    } catch (e: any) {
+      toast({ title: "Failed to send notification", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const downloadCertificate = async (path: string | null) => {
+    if (!path) return;
+    const { data, error } = await supabase.storage.from("lms-certificates").createSignedUrl(path, 60);
+    if (error || !data) {
+      toast({ title: "Could not load certificate", description: error?.message, variant: "destructive" });
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
+  };
 
   // Stats
   const totalAssignments = assignments.length;
@@ -219,19 +246,21 @@ export default function LmsTraining() {
                     <TableHead>Course</TableHead>
                     <TableHead>Due Date</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Progress</TableHead>
                     <TableHead>Score</TableHead>
-                    <TableHead>Time Left</TableHead>
+                    <TableHead>Certificate</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredAssignments.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         No assignments found. Assign a course to get started.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredAssignments.map((a) => (
+                    filteredAssignments.map((a: any) => (
                       <TableRow key={a.id}>
                         <TableCell className="font-medium">
                           {a.caregiver ? `${a.caregiver.first_name} ${a.caregiver.last_name}` : "Unknown"}
@@ -239,8 +268,25 @@ export default function LmsTraining() {
                         <TableCell>{a.course?.title || "Unknown"}</TableCell>
                         <TableCell>{a.due_date ? format(new Date(a.due_date), "MMM d, yyyy") : "—"}</TableCell>
                         <TableCell>{getStatusBadge(a)}</TableCell>
+                        <TableCell className="w-32">
+                          <div className="flex items-center gap-2">
+                            <Progress value={a.progress_percentage || 0} className="h-2" />
+                            <span className="text-xs text-muted-foreground w-8 text-right">{a.progress_percentage || 0}%</span>
+                          </div>
+                        </TableCell>
                         <TableCell>{a.score !== null ? `${a.score}%` : "—"}</TableCell>
-                        <TableCell>{getDaysInfo(a.due_date)}</TableCell>
+                        <TableCell>
+                          {a.certificate_url ? (
+                            <Button variant="ghost" size="sm" onClick={() => downloadCertificate(a.certificate_url)}>
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          ) : "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => resendNotification(a.id)} title="Resend notification">
+                            <Send className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}

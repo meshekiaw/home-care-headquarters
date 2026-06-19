@@ -1,63 +1,75 @@
-## Root cause
+## Goal
 
-The "Select Course" dropdown is empty because the `lms_courses` table contains **0 rows** for this account. Verified directly against the database:
+When an administrator assigns an LMS course, the caregiver immediately sees it on their dashboard, receives an email (and optional SMS), can log in (auto-provisioned if needed), complete the training, earn a certificate, and have completion tracked for admin compliance reporting.
 
-```
-SELECT count(*) FROM lms_courses;  -- 0
-```
+## 1. Database changes (one migration)
 
-The query in `useLmsCourses` and the RLS policies are correct — there is simply nothing to fetch. Courses are only created when an admin clicks **Add Course** in the LMS Training page, and none have been added yet under Demetrich's account.
+**Add columns to `lms_assignments`:**
+- `progress_percentage int default 0`
+- `started_at timestamptz`
+- `certificate_url text` (storage path)
+- `notification_sent_at timestamptz`
 
-## Fix
+**Add columns to `caregivers`:**
+- `temp_password_sent_at timestamptz` (audit only)
 
-### 1. Seed a starter library of home-care LMS courses (data migration)
+**New storage bucket:** `lms-certificates` (private, RLS: admins all, caregivers read own).
 
-Insert a standard set of required home-care training courses owned by Demetrich's admin account (`30189f34-39a7-4a4e-acd5-2583f6ddf411`) so the dropdown has content immediately. Each row will use the existing `lms_courses` columns (no schema change).
+**RLS additions** so caregivers see/update their own assignments:
+- `SELECT lms_assignments` where `caregiver_id IN (SELECT id FROM caregivers WHERE auth_user_id = auth.uid())`
+- `UPDATE lms_assignments` same scope (status, progress, completed_at, score)
+- Similar `SELECT` on `lms_courses` for active courses they are assigned to.
 
-Courses to seed (all `is_active = true`, `content_type = 'document'`):
+## 2. Edge functions
 
-| Title | Category | Required | Duration | Passing Score |
-|---|---|---|---|---|
-| HIPAA Privacy & Security | Compliance | Yes | 45 min | 80 |
-| Bloodborne Pathogens | Safety | Yes | 30 min | 80 |
-| Infection Control & PPE | Safety | Yes | 30 min | 80 |
-| Abuse, Neglect & Exploitation Reporting | Compliance | Yes | 30 min | 80 |
-| Client Rights & Dignity | Compliance | Yes | 20 min | 80 |
-| Body Mechanics & Safe Transfers | Clinical | Yes | 30 min | 80 |
-| Fall Prevention | Clinical | Yes | 20 min | 80 |
-| Medication Reminders & Documentation | Clinical | Yes | 30 min | 80 |
-| Emergency Preparedness | Safety | Yes | 30 min | 80 |
-| Dementia & Alzheimer's Care | Clinical | No | 45 min | 80 |
-| Activities of Daily Living (ADLs) | Clinical | Yes | 30 min | 80 |
-| EVV (Electronic Visit Verification) | Compliance | Yes | 20 min | 80 |
-| Cultural Competency | Professionalism | No | 20 min | 80 |
-| Customer Service & Communication | Professionalism | No | 20 min | 80 |
+**`send-lms-assignment-notification`** (new) — called after assignment insert:
+- Input: `assignment_ids[]`
+- For each: load caregiver + course; if no `auth_user_id` and caregiver has email, generate temp password (`crypto.randomUUID().slice(0,12)`), call admin createUser, assign `caregiver` role, link to caregiver record, and include credentials in email.
+- Sends Resend email: course title, due date, login link (`${SITE_URL}/login`), and (when newly provisioned) temp password with "change after login" notice.
+- Optional Twilio SMS if `TWILIO_*` secrets exist and `caregivers.phone` set — short message with course + due date + login URL. Silently skipped if Twilio not configured.
+- Marks `notification_sent_at`.
 
-`required_for_role` will be left null (applies to all roles). `content_body` will hold a short markdown placeholder so admins can edit/expand via the existing Add Course flow.
+Updates `AssignCourseDialog` → after `assignCourse` succeeds, invoke this function with the new assignment IDs.
 
-The migration will use `ON CONFLICT DO NOTHING` keyed on `(user_id, title)` — but since no such unique constraint exists, the safer approach is `INSERT ... WHERE NOT EXISTS (...)` per row to keep it idempotent without altering the schema.
+## 3. Caregiver dashboard
 
-### 2. Improve empty-state UX in `AssignCourseDialog.tsx` (frontend only)
+Update `src/pages/CaregiverDashboard.tsx` to add an **"My Training"** card and a new section listing assignments grouped by status:
+- Assigned (pending)
+- In Progress
+- Completed (with date + score + certificate download link)
 
-Currently when `courses` is empty, the Select silently shows no options. Update so that:
+New page `src/pages/CaregiverTraining.tsx` (route `/my-training`) — full list with: course title, description, due date, status badge, progress bar, "Start / Continue / Review" button, and "Download Certificate" when completed.
 
-- If `useLmsCourses().loading` is true → show a disabled "Loading courses…" item with spinner.
-- If `courses.length === 0` after loading → show a disabled "No courses available — add one from the Courses tab" item.
-- Active/published filter: also filter `courses` to `is_active === true` for the dropdown (admins shouldn't be able to assign inactive ones).
+Course launcher reuses the orientation viewer for `content_type='orientation'` courses; for `document` courses opens content_body in a viewer with a "Mark complete" action that sets `status='completed'`, `completed_at=now()`, `progress_percentage=100`, and triggers certificate generation.
 
-This is the only change to `AssignCourseDialog.tsx`. The caregiver-selection logic stays exactly as it is.
+## 4. Certificate generation
 
-### 3. Expose `loading` from the hook usage
+Reuse `src/utils/orientationCertificatePdf.ts` pattern → new `src/utils/lmsCertificatePdf.ts` that produces a per-course PDF (caregiver name, course title, completion date, score). On completion, upload to `lms-certificates/${caregiver_id}/${assignment_id}.pdf` and store path in `assignments.certificate_url`. Admin assignments table gets a "Certificate" column with download link.
 
-`useLmsCourses()` already returns `loading` — the dialog just needs to destructure it. No hook changes required.
+## 5. Admin compliance view
 
-## Files changed
+Extend the existing assignments table in `src/pages/LmsTraining.tsx`:
+- Add "Progress" column (percent bar)
+- Add "Certificate" column (download icon when present)
+- Per-assignment "Resend notification" action (re-invokes the edge function)
 
-- **New migration** — insert 14 seed courses for Demetrich's user_id (idempotent).
-- **`src/components/lms/AssignCourseDialog.tsx`** — add loading + empty-state items in the course Select; filter to `is_active`. No changes to caregiver selection.
+No separate compliance page — existing stats cards already cover totals/overdue/in-progress/completion rate.
+
+## 6. Secrets
+
+- `RESEND_API_KEY` — already configured by other email functions; if missing the function returns a clear error.
+- `RESEND_FROM_EMAIL` — already used elsewhere.
+- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` — optional; SMS is skipped when absent. Will request via `add_secret` only if you want SMS enabled now.
 
 ## Out of scope
 
-- No RLS changes (verified policies are correct).
-- No changes to `useLmsCourses.ts`, `AddCourseDialog.tsx`, or any caregiver code.
-- No schema changes to `lms_courses`.
+- Email templates branded via Lovable Emails infrastructure (uses existing Resend pattern to match the rest of the project).
+- Quiz delivery for non-orientation courses (existing orientation quiz flow continues to apply for orientation-type courses).
+- Password-change-on-first-login enforcement (caregiver can change password in profile).
+
+## Approval needed
+
+Confirm:
+1. SMS via Twilio — set up now (you provide credentials) or leave as a no-op for later?
+2. Temp password length 12 chars OK?
+3. Should completing a course auto-issue the certificate, or require admin approval first?

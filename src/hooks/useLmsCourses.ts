@@ -32,6 +32,10 @@ export interface LmsAssignment {
   completed_at: string | null;
   score: number | null;
   attempts: number;
+  progress_percentage: number;
+  started_at: string | null;
+  certificate_url: string | null;
+  notification_sent_at: string | null;
   created_at: string;
   updated_at: string;
   course?: LmsCourse;
@@ -133,8 +137,12 @@ export function useLmsAssignments() {
 
   useEffect(() => { fetchAssignments(); }, [fetchAssignments]);
 
-  const assignCourse = async (courseId: string, caregiverIds: string[], dueDate?: string): Promise<boolean> => {
-    if (!user) return false;
+  const assignCourse = async (
+    courseId: string,
+    caregiverIds: string[],
+    dueDate?: string
+  ): Promise<{ ok: boolean; assignmentIds: string[] }> => {
+    if (!user) return { ok: false, assignmentIds: [] };
     try {
       const inserts = caregiverIds.map((cid) => ({
         user_id: user.id,
@@ -143,14 +151,14 @@ export function useLmsAssignments() {
         due_date: dueDate || null,
         assigned_by: user.email || "Admin",
       }));
-      const { error } = await supabase.from("lms_assignments").insert(inserts as any);
+      const { data, error } = await supabase.from("lms_assignments").insert(inserts as any).select("id");
       if (error) throw error;
       toast({ title: `Course assigned to ${caregiverIds.length} caregiver(s)` });
       fetchAssignments();
-      return true;
+      return { ok: true, assignmentIds: (data || []).map((r: any) => r.id) };
     } catch (error: any) {
       toast({ title: "Error assigning course", description: error.message, variant: "destructive" });
-      return false;
+      return { ok: false, assignmentIds: [] };
     }
   };
 

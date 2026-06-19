@@ -151,6 +151,40 @@ export default function CaregiverDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Training Summary */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-primary" />
+              My Training
+              {training.overdue > 0 && (
+                <Badge variant="destructive" className="ml-2">{training.overdue} overdue</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center p-3 rounded-lg bg-muted/40">
+                <p className="text-2xl font-bold">{training.pending}</p>
+                <p className="text-xs text-muted-foreground">Assigned</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-warning/10">
+                <p className="text-2xl font-bold text-warning">{training.in_progress}</p>
+                <p className="text-xs text-muted-foreground">In Progress</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-success/10">
+                <p className="text-2xl font-bold text-success flex items-center justify-center gap-1">
+                  <Award className="w-5 h-5" />{training.completed}
+                </p>
+                <p className="text-xs text-muted-foreground">Completed</p>
+              </div>
+            </div>
+            <Button asChild size="sm" className="w-full">
+              <Link to="/my-training">View My Training</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </CaregiverLayout>
   );

@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, User, MessageSquare, CheckCircle2, Clock } from "lucide-react";
+import { BookOpen, User, MessageSquare, CheckCircle2, Clock, GraduationCap, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function CaregiverDashboard() {
   const { user } = useAuth();
   const [caregiver, setCaregiver] = useState<any>(null);
   const [progress, setProgress] = useState<any>(null);
+  const [training, setTraining] = useState<{ pending: number; in_progress: number; completed: number; overdue: number }>({ pending: 0, in_progress: 0, completed: 0, overdue: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +34,20 @@ export default function CaregiverDashboard() {
           .eq("caregiver_id", cg.id)
           .maybeSingle();
         setProgress(prog);
+
+        const { data: trAssignments } = await supabase
+          .from("lms_assignments")
+          .select("status, due_date")
+          .eq("caregiver_id", cg.id);
+        const now = new Date();
+        const t = { pending: 0, in_progress: 0, completed: 0, overdue: 0 };
+        (trAssignments || []).forEach((a: any) => {
+          if (a.status === "completed") t.completed++;
+          else if (a.status === "in_progress") t.in_progress++;
+          else t.pending++;
+          if (a.status !== "completed" && a.due_date && new Date(a.due_date) < now) t.overdue++;
+        });
+        setTraining(t);
       }
       setLoading(false);
     };

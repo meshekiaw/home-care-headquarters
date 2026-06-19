@@ -24,7 +24,8 @@ interface Caregiver {
 }
 
 export default function AssignCourseDialog({ open, onOpenChange }: Props) {
-  const { courses } = useLmsCourses();
+  const { courses, loading: loadingCourses } = useLmsCourses();
+  const activeCourses = useMemo(() => courses.filter((c) => c.is_active), [courses]);
   const { assignCourse } = useLmsAssignments();
   const { toast } = useToast();
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -119,14 +120,21 @@ export default function AssignCourseDialog({ open, onOpenChange }: Props) {
         <div className="space-y-4">
           <div>
             <Label>Select Course *</Label>
-            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-              <SelectTrigger><SelectValue placeholder="Choose a course" /></SelectTrigger>
+            <Select value={selectedCourse} onValueChange={setSelectedCourse} disabled={loadingCourses || activeCourses.length === 0}>
+              <SelectTrigger>
+                <SelectValue placeholder={loadingCourses ? "Loading courses..." : activeCourses.length === 0 ? "No active courses available" : "Choose a course"} />
+              </SelectTrigger>
               <SelectContent>
-                {courses.map((c) => (
+                {activeCourses.map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {!loadingCourses && activeCourses.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Add a course from the Courses tab before assigning.
+              </p>
+            )}
           </div>
           <div>
             <Label>Due Date</Label>

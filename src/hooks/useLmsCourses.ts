@@ -133,8 +133,8 @@ export function useLmsAssignments() {
 
   useEffect(() => { fetchAssignments(); }, [fetchAssignments]);
 
-  const assignCourse = async (courseId: string, caregiverIds: string[], dueDate?: string) => {
-    if (!user) return;
+  const assignCourse = async (courseId: string, caregiverIds: string[], dueDate?: string): Promise<boolean> => {
+    if (!user) return false;
     try {
       const inserts = caregiverIds.map((cid) => ({
         user_id: user.id,
@@ -147,8 +147,10 @@ export function useLmsAssignments() {
       if (error) throw error;
       toast({ title: `Course assigned to ${caregiverIds.length} caregiver(s)` });
       fetchAssignments();
+      return true;
     } catch (error: any) {
       toast({ title: "Error assigning course", description: error.message, variant: "destructive" });
+      return false;
     }
   };
 

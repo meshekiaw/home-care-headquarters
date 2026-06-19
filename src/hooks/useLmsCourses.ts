@@ -32,6 +32,10 @@ export interface LmsAssignment {
   completed_at: string | null;
   score: number | null;
   attempts: number;
+  progress_percentage: number;
+  started_at: string | null;
+  certificate_url: string | null;
+  notification_sent_at: string | null;
   created_at: string;
   updated_at: string;
   course?: LmsCourse;

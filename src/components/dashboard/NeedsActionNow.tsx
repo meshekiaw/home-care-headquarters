@@ -40,12 +40,12 @@ export default function NeedsActionNow() {
         .order("due_date", { ascending: true });
 
       // Use a lenient any-cast because optional columns may not exist on every project
-      const cgRes = await (supabase
-        .from("caregivers")
+      const cgClient: any = supabase.from("caregivers" as any);
+      const cgRes = await cgClient
         .select("id, first_name, last_name, first_shift_at, orientation_deadline, cleared_to_schedule")
-        .eq("cleared_to_schedule" as any, false)
-        .not("first_shift_at" as any, "is", null)
-        .order("first_shift_at" as any, { ascending: true }) as any);
+        .eq("cleared_to_schedule", false)
+        .not("first_shift_at", "is", null)
+        .order("first_shift_at", { ascending: true });
 
       setAssessments((aData as AssessmentRow[]) || []);
       setCaregivers(cgRes?.error ? [] : ((cgRes?.data as CaregiverRow[]) || []));

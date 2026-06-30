@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, addDays, format } from "date-fns";
  import ShiftRemindersWidget from "@/components/dashboard/ShiftRemindersWidget";
+import NeedsActionNow from "@/components/dashboard/NeedsActionNow";
 
 interface StatCardProps {
   title: string;
@@ -157,6 +158,9 @@ export default function Dashboard() {
             icon={AlertTriangle}
           />
         </div>
+
+        {/* Needs Action Now */}
+        <NeedsActionNow />
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Alerts Section */}

@@ -20,3 +20,5 @@ project_id = "iljmedelpqwzwyecvksa"
 
  [functions.check-quiz-answers]
  verify_jwt = false
+[functions.process-email-queue]
+verify_jwt = true

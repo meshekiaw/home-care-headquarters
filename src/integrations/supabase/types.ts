@@ -537,13 +537,16 @@ export type Database = {
           address: string | null
           auth_user_id: string | null
           city: string | null
+          cleared_to_schedule: boolean
           created_at: string
           date_of_birth: string | null
           email: string | null
           first_name: string
+          first_shift_at: string | null
           hourly_rate: number | null
           id: string
           last_name: string
+          orientation_deadline: string | null
           phone: string | null
           service_radius_miles: number | null
           specializations: string[] | null
@@ -559,13 +562,16 @@ export type Database = {
           address?: string | null
           auth_user_id?: string | null
           city?: string | null
+          cleared_to_schedule?: boolean
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
           first_name: string
+          first_shift_at?: string | null
           hourly_rate?: number | null
           id?: string
           last_name: string
+          orientation_deadline?: string | null
           phone?: string | null
           service_radius_miles?: number | null
           specializations?: string[] | null
@@ -581,13 +587,16 @@ export type Database = {
           address?: string | null
           auth_user_id?: string | null
           city?: string | null
+          cleared_to_schedule?: boolean
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
           first_name?: string
+          first_shift_at?: string | null
           hourly_rate?: number | null
           id?: string
           last_name?: string
+          orientation_deadline?: string | null
           phone?: string | null
           service_radius_miles?: number | null
           specializations?: string[] | null

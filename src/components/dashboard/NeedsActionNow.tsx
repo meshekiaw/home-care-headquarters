@@ -39,16 +39,15 @@ export default function NeedsActionNow() {
         .not("due_date", "is", null)
         .order("due_date", { ascending: true });
 
-      // Use a lenient any-cast because optional columns may not exist on every project
-      const cgClient: any = supabase.from("caregivers" as any);
-      const cgRes = await cgClient
+      const { data: cgData } = await supabase
+        .from("caregivers")
         .select("id, first_name, last_name, first_shift_at, orientation_deadline, cleared_to_schedule")
         .eq("cleared_to_schedule", false)
         .not("first_shift_at", "is", null)
         .order("first_shift_at", { ascending: true });
 
       setAssessments((aData as AssessmentRow[]) || []);
-      setCaregivers(cgRes?.error ? [] : ((cgRes?.data as CaregiverRow[]) || []));
+      setCaregivers((cgData as CaregiverRow[]) || []);
     } catch (e) {
       console.error("[NeedsActionNow] load failed", e);
     } finally {

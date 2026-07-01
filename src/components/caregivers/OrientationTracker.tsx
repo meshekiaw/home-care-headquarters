@@ -120,6 +120,27 @@ export default function OrientationTracker() {
       setRecentReminderIds((prev) => new Set(prev).add(row.id));
       const channels = [row.email ? "Email" : null, row.phone ? "SMS" : null].filter(Boolean).join(" + ") || "In-app";
       const queuedAt = data?.created_at ? new Date(data.created_at) : new Date();
+      const notificationId = data?.id ?? null;
+
+      const { data: authData } = await supabase.auth.getUser();
+      const actorId = authData?.user?.id ?? null;
+      await supabase.from("caregiver_activity_log").insert({
+        caregiver_id: row.id,
+        actor_id: actorId,
+        activity_type: "orientation_reminder_queued",
+        summary: `Orientation reminder queued for ${row.first_name} ${row.last_name} via ${channels}`,
+        metadata: {
+          notification_id: notificationId,
+          notification_type: "orientation_reminder",
+          channels,
+          recipient_email: row.email,
+          recipient_phone: row.phone,
+          subject,
+          message,
+          queued_at: queuedAt.toISOString(),
+        },
+      });
+
       sonnerToast.success(`Reminder queued for ${row.first_name} ${row.last_name}`, {
         description: (
           <div className="space-y-1 text-xs">
@@ -130,7 +151,8 @@ export default function OrientationTracker() {
             <div><span className="font-semibold">Subject:</span> {subject}</div>
             <div><span className="font-semibold">Message:</span> {message}</div>
             <div><span className="font-semibold">Queued:</span> {queuedAt.toLocaleString()}</div>
-            {data?.id && <div><span className="font-semibold">Notification ID:</span> <span className="font-mono">{data.id}</span></div>}
+            {notificationId && <div><span className="font-semibold">Notification ID:</span> <span className="font-mono">{notificationId}</span></div>}
+            <div className="pt-1 italic opacity-80">Activity logged to caregiver record.</div>
           </div>
         ),
         duration: 8000,
@@ -138,6 +160,7 @@ export default function OrientationTracker() {
       void load();
     }
   }
+
 
 
 

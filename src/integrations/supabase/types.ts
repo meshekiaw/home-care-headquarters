@@ -344,6 +344,44 @@ export type Database = {
           },
         ]
       }
+      caregiver_activity_log: {
+        Row: {
+          activity_type: string
+          actor_id: string | null
+          caregiver_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          summary: string
+        }
+        Insert: {
+          activity_type: string
+          actor_id?: string | null
+          caregiver_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          summary: string
+        }
+        Update: {
+          activity_type?: string
+          actor_id?: string | null
+          caregiver_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_activity_log_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caregiver_applications: {
         Row: {
           caregiver_id: string

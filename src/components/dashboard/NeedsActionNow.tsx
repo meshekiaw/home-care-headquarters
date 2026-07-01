@@ -59,12 +59,18 @@ export default function NeedsActionNow() {
     load();
   }, []);
 
+  const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+
   function deadlineLabel(due: string) {
     const d = new Date(due).getTime();
+    if (Number.isNaN(d)) return { text: "Assessment Pending", urgent: false, show: false };
     const now = Date.now();
-    if (d < now) return { text: "Assessment Overdue", urgent: true };
-    if (d - now <= 12 * 60 * 60 * 1000) return { text: "Assessment Due Soon", urgent: true };
-    return { text: "Assessment Pending", urgent: false };
+    const diff = d - now;
+    // Overdue: deadline is in the past (diff < 0, inclusive of exactly now handled below)
+    if (diff < 0) return { text: "Assessment Overdue", urgent: true, show: true };
+    // Due Soon: deadline is now or within the next 12 hours
+    if (diff <= TWELVE_HOURS_MS) return { text: "Assessment Due Soon", urgent: true, show: true };
+    return { text: "Assessment Pending", urgent: false, show: false };
   }
 
   async function markScheduled(id: string) {

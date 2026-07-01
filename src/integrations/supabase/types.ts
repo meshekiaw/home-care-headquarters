@@ -612,6 +612,7 @@ export type Database = {
       }
       client_assessments: {
         Row: {
+          assessment_deadline: string | null
           assessment_name: string
           assessment_type: string
           assigned_nurse_id: string | null
@@ -619,6 +620,9 @@ export type Database = {
           completed_date: string | null
           created_at: string
           due_date: string
+          family_email: string | null
+          family_name: string | null
+          family_phone: string | null
           id: string
           notes: string | null
           status: string
@@ -626,6 +630,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assessment_deadline?: string | null
           assessment_name: string
           assessment_type: string
           assigned_nurse_id?: string | null
@@ -633,6 +638,9 @@ export type Database = {
           completed_date?: string | null
           created_at?: string
           due_date: string
+          family_email?: string | null
+          family_name?: string | null
+          family_phone?: string | null
           id?: string
           notes?: string | null
           status?: string
@@ -640,6 +648,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assessment_deadline?: string | null
           assessment_name?: string
           assessment_type?: string
           assigned_nurse_id?: string | null
@@ -647,6 +656,9 @@ export type Database = {
           completed_date?: string | null
           created_at?: string
           due_date?: string
+          family_email?: string | null
+          family_name?: string | null
+          family_phone?: string | null
           id?: string
           notes?: string | null
           status?: string

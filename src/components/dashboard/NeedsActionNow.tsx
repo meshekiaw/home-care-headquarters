@@ -93,7 +93,8 @@ export default function NeedsActionNow() {
     });
   }
 
-  const nothing = !loading && assessments.length === 0 && caregivers.length === 0;
+  const visibleAssessments = assessments.filter((a) => deadlineLabel(a.due_date).show);
+  const nothing = !loading && visibleAssessments.length === 0 && caregivers.length === 0;
 
   return (
     <Card>

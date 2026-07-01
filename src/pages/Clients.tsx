@@ -300,6 +300,7 @@ export default function Clients() {
           <TabsList>
             <TabsTrigger value="list">Client List</TabsTrigger>
             <TabsTrigger value="intake">New Intake</TabsTrigger>
+            <TabsTrigger value="pipeline">Onboarding Pipeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="list" className="space-y-6">

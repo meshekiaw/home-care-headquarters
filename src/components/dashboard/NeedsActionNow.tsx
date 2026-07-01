@@ -115,6 +115,7 @@ export default function NeedsActionNow() {
 
         {assessments.map((a) => {
           const label = deadlineLabel(a.due_date);
+          if (!label.show) return null;
           return (
             <div
               key={a.id}

@@ -139,8 +139,24 @@ export function AppointmentDialog({
 
   const handleCaregiverChange = async (caregiverId: string) => {
     setFormData((prev) => ({ ...prev, caregiver_id: caregiverId }));
+    // Re-verify clearance against the DB at selection time (in case list is stale)
+    if (caregiverId) {
+      const { data } = await supabase
+        .from("caregivers")
+        .select("cleared_to_schedule")
+        .eq("id", caregiverId)
+        .maybeSingle();
+      if (data) {
+        setCaregivers((prev) =>
+          prev.map((c) => (c.id === caregiverId ? { ...c, cleared_to_schedule: data.cleared_to_schedule } : c))
+        );
+      }
+    }
     await runConflictCheck(caregiverId, formData.start_time, formData.end_time);
   };
+
+  const selectedCaregiver = caregivers.find((c) => c.id === formData.caregiver_id);
+  const caregiverNotCleared = !!formData.caregiver_id && selectedCaregiver?.cleared_to_schedule === false;
 
   const handleTimeChange = async (field: "start_time" | "end_time", value: string) => {
     const newFormData = { ...formData, [field]: value };

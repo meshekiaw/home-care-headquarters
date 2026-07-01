@@ -100,7 +100,7 @@ export function AppointmentDialog({
     try {
       const [clientsRes, caregiversRes] = await Promise.all([
         supabase.from("clients").select("id, first_name, last_name").eq("status", "active"),
-        supabase.from("caregivers").select("id, first_name, last_name").eq("status", "active"),
+        supabase.from("caregivers").select("id, first_name, last_name, cleared_to_schedule").eq("status", "active"),
       ]);
 
       if (clientsRes.data) setClients(clientsRes.data);

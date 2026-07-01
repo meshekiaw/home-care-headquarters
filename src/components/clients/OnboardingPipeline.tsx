@@ -157,10 +157,17 @@ export default function OnboardingPipeline() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-muted-foreground">
-          {loading ? "Loading assessments…" : `${totalCount} assessment${totalCount === 1 ? "" : "s"} in pipeline`}
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs text-muted-foreground mr-1">
+            {loading ? "Loading assessments…" : `${totalCount} total`}
+          </p>
+          {COLUMNS.map((col) => (
+            <Badge key={col.key} variant="outline" className={cn("text-[11px]", col.badgeClass)}>
+              {col.label}: {loading ? "—" : grouped[col.key].length}
+            </Badge>
+          ))}
+        </div>
         <Button size="sm" variant="ghost" onClick={() => load(true)} disabled={loading || refreshing}>
           {refreshing ? (
             <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Refreshing…</>

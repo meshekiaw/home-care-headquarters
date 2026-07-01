@@ -70,6 +70,7 @@ import {
 } from "@/utils/dateOnly";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
+import OnboardingPipeline from "@/components/clients/OnboardingPipeline";
 
 interface Client {
   id: string;

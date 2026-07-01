@@ -170,6 +170,7 @@ export function AppointmentDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (caregiverNotCleared) return;
     setSaving(true);
 
     try {

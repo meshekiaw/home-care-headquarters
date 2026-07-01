@@ -662,6 +662,10 @@ export default function Clients() {
           <TabsContent value="intake">
             <ClientIntakeForm />
           </TabsContent>
+
+          <TabsContent value="pipeline">
+            <OnboardingPipeline />
+          </TabsContent>
         </Tabs>
       </div>
 

@@ -383,7 +383,7 @@ export function AppointmentDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={saving || (conflict?.hasConflict ?? false)}>
+            <Button type="submit" disabled={saving || caregiverNotCleared || (conflict?.hasConflict ?? false)}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {appointment ? "Update" : "Create"}
             </Button>

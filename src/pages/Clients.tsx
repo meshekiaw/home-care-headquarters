@@ -70,6 +70,7 @@ import {
 } from "@/utils/dateOnly";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
+import OnboardingPipeline from "@/components/clients/OnboardingPipeline";
 
 interface Client {
   id: string;
@@ -299,6 +300,7 @@ export default function Clients() {
           <TabsList>
             <TabsTrigger value="list">Client List</TabsTrigger>
             <TabsTrigger value="intake">New Intake</TabsTrigger>
+            <TabsTrigger value="pipeline">Onboarding Pipeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="list" className="space-y-6">
@@ -659,6 +661,10 @@ export default function Clients() {
 
           <TabsContent value="intake">
             <ClientIntakeForm />
+          </TabsContent>
+
+          <TabsContent value="pipeline">
+            <OnboardingPipeline />
           </TabsContent>
         </Tabs>
       </div>

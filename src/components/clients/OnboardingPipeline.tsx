@@ -12,8 +12,9 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, User, Eye } from "lucide-react";
+import { Calendar, User, Eye, AlertCircle, Inbox, RefreshCw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Assessment = {
   id: string;
@@ -74,6 +75,8 @@ function bucketOf(a: Assessment): Column {
 export default function OnboardingPipeline() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Assessment[]>([]);
   const [selected, setSelected] = useState<Assessment | null>(null);
 
@@ -81,18 +84,22 @@ export default function OnboardingPipeline() {
     void load();
   }, []);
 
-  async function load() {
-    setLoading(true);
+  async function load(isRefresh = false) {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    setError(null);
     const { data, error } = await supabase
       .from("client_assessments")
       .select("*, clients(first_name, last_name)")
       .order("created_at", { ascending: false });
     if (error) {
+      setError(error.message);
       toast({ title: "Error loading pipeline", description: error.message, variant: "destructive" });
     } else {
       setItems((data as unknown as Assessment[]) || []);
     }
     setLoading(false);
+    setRefreshing(false);
   }
 
   const grouped: Record<Column, Assessment[]> = {
@@ -103,8 +110,65 @@ export default function OnboardingPipeline() {
   };
   for (const a of items) grouped[bucketOf(a)].push(a);
 
+  const totalCount = items.length;
+  const isEmpty = !loading && !error && totalCount === 0;
+
+  if (error && !loading) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Couldn't load onboarding pipeline</AlertTitle>
+        <AlertDescription className="space-y-3">
+          <p className="text-sm">{error}</p>
+          <Button size="sm" variant="outline" onClick={() => load(true)} disabled={refreshing}>
+            {refreshing ? (
+              <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Retrying…</>
+            ) : (
+              <><RefreshCw className="w-3 h-3 mr-1" /> Try again</>
+            )}
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
+            <Inbox className="w-7 h-7 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-1">No assessments yet</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mb-4">
+            Assessments will appear here as they're created for your clients. New records are grouped by status automatically.
+          </p>
+          <Button size="sm" variant="outline" onClick={() => load(true)} disabled={refreshing}>
+            {refreshing ? (
+              <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Refreshing…</>
+            ) : (
+              <><RefreshCw className="w-3 h-3 mr-1" /> Refresh</>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs text-muted-foreground">
+          {loading ? "Loading assessments…" : `${totalCount} assessment${totalCount === 1 ? "" : "s"} in pipeline`}
+        </p>
+        <Button size="sm" variant="ghost" onClick={() => load(true)} disabled={loading || refreshing}>
+          {refreshing ? (
+            <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Refreshing…</>
+          ) : (
+            <><RefreshCw className="w-3 h-3 mr-1" /> Refresh</>
+          )}
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {COLUMNS.map((col) => (
           <div key={col.key} className="space-y-3">
@@ -115,11 +179,14 @@ export default function OnboardingPipeline() {
             <div className="space-y-3 min-h-[120px] bg-muted/30 border rounded-lg p-3">
               {loading ? (
                 <>
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-28 w-full" />
+                  <Skeleton className="h-28 w-full" />
                 </>
               ) : grouped[col.key].length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-8">No assessments</p>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Inbox className="w-5 h-5 text-muted-foreground/60 mb-2" />
+                  <p className="text-xs text-muted-foreground">No {col.label.toLowerCase()} assessments</p>
+                </div>
               ) : (
                 grouped[col.key].map((a) => {
                   const deadline = getDeadline(a);

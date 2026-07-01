@@ -213,7 +213,7 @@ export default function OrientationTracker() {
                             <Button
                               size="sm"
                               variant={recentlySent ? "outline" : "default"}
-                              onClick={() => sendReminder(r)}
+                              onClick={() => setConfirmRow(r)}
                               disabled={sendingId === r.id || recentlySent}
                               title={recentlySent ? "Reminder sent within last 24 hours" : undefined}
                             >

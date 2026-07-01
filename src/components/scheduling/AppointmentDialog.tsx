@@ -22,6 +22,7 @@ interface Caregiver {
   id: string;
   first_name: string;
   last_name: string;
+  cleared_to_schedule: boolean | null;
 }
 
 interface AppointmentDialogProps {

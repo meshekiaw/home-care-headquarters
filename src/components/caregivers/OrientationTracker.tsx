@@ -50,6 +50,7 @@ export default function OrientationTracker() {
   const [loading, setLoading] = useState(true);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [recentReminderIds, setRecentReminderIds] = useState<Set<string>>(new Set());
+  const [confirmRow, setConfirmRow] = useState<Row | null>(null);
 
   const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 

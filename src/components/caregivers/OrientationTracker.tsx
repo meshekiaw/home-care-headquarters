@@ -196,19 +196,26 @@ export default function OrientationTracker() {
                           <Button size="sm" variant="outline" onClick={() => navigate(`/caregivers/${r.id}`)}>
                             <Eye className="w-3 h-3 mr-1" /> View Record
                           </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => sendReminder(r)}
-                            disabled={sendingId === r.id}
-                          >
-                            {sendingId === r.id ? (
-                              <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Sending…</>
-                            ) : (
-                              <><Send className="w-3 h-3 mr-1" /> Send Reminder</>
-                            )}
-                          </Button>
-                        )}
+                        ) : (() => {
+                          const recentlySent = recentReminderIds.has(r.id);
+                          return (
+                            <Button
+                              size="sm"
+                              variant={recentlySent ? "outline" : "default"}
+                              onClick={() => sendReminder(r)}
+                              disabled={sendingId === r.id || recentlySent}
+                              title={recentlySent ? "Reminder sent within last 24 hours" : undefined}
+                            >
+                              {sendingId === r.id ? (
+                                <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Sending…</>
+                              ) : recentlySent ? (
+                                <><Send className="w-3 h-3 mr-1" /> Reminder Sent</>
+                              ) : (
+                                <><Send className="w-3 h-3 mr-1" /> Send Reminder</>
+                              )}
+                            </Button>
+                          );
+                        })()}
                       </TableCell>
                     </TableRow>
                   );

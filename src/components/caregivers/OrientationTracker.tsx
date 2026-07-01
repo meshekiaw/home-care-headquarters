@@ -236,6 +236,36 @@ export default function OrientationTracker() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!confirmRow} onOpenChange={(o) => !o && setConfirmRow(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send orientation reminder?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmRow && (
+                <>
+                  A reminder will be queued for <strong>{confirmRow.first_name} {confirmRow.last_name}</strong>
+                  {confirmRow.email ? <> via email (<span className="font-mono">{confirmRow.email}</span>)</> : null}
+                  {confirmRow.phone ? <> and SMS (<span className="font-mono">{confirmRow.phone}</span>)</> : null}
+                  . They won't be reminded again for 24 hours.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const row = confirmRow;
+                setConfirmRow(null);
+                if (row) void sendReminder(row);
+              }}
+            >
+              Send Reminder
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

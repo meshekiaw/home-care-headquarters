@@ -135,8 +135,10 @@ export default function OrientationTracker() {
         ),
         duration: 8000,
       });
+      void load();
     }
   }
+
 
 
   const notCleared = rows.filter((r) => !r.cleared_to_schedule);

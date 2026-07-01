@@ -86,135 +86,148 @@ export default function Caregivers() {
           </div>
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search caregivers..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <Tabs defaultValue="roster" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="roster">Roster</TabsTrigger>
+            <TabsTrigger value="orientation">Orientation Tracker</TabsTrigger>
+          </TabsList>
 
-        {loading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, idx) => (
-              <Card key={idx}>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-5 w-32" />
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-20" />
-                    </div>
-                  </div>
+          <TabsContent value="roster" className="space-y-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search caregivers..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {loading ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[...Array(6)].map((_, idx) => (
+                  <Card key={idx}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredCaregivers.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <UserCheck className="w-12 h-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {searchQuery ? "No caregivers found" : "No caregivers yet"}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery
+                      ? "Try adjusting your search query"
+                      : "Add your first caregiver to get started"}
+                  </p>
+                  {!searchQuery && (
+                    <Button onClick={() => setAddDialogOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Caregiver
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        ) : filteredCaregivers.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <UserCheck className="w-12 h-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                {searchQuery ? "No caregivers found" : "No caregivers yet"}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery
-                  ? "Try adjusting your search query"
-                  : "Add your first caregiver to get started"}
-              </p>
-              {!searchQuery && (
-                <Button onClick={() => setAddDialogOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Caregiver
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCaregivers.map((caregiver) => (
-              <Card
-                key={caregiver.id}
-                className="hover:shadow-elevated transition-shadow cursor-pointer"
-                onClick={() => handleViewProfile(caregiver)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <UserCheck className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold truncate">
-                          {caregiver.first_name} {caregiver.last_name}
-                        </h3>
-                        <Badge className={`text-xs flex-shrink-0 ${getStatusColor(caregiver.status)}`}>
-                          {caregiver.status}
-                        </Badge>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCaregivers.map((caregiver) => (
+                  <Card
+                    key={caregiver.id}
+                    className="hover:shadow-elevated transition-shadow cursor-pointer"
+                    onClick={() => handleViewProfile(caregiver)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <UserCheck className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="font-semibold truncate">
+                              {caregiver.first_name} {caregiver.last_name}
+                            </h3>
+                            <Badge className={`text-xs flex-shrink-0 ${getStatusColor(caregiver.status)}`}>
+                              {caregiver.status}
+                            </Badge>
+                          </div>
+                          {caregiver.specializations && caregiver.specializations.length > 0 && (
+                            <p className="text-sm text-muted-foreground truncate">
+                              {caregiver.specializations[0]}
+                              {caregiver.specializations.length > 1 && ` +${caregiver.specializations.length - 1}`}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mt-3">
+                            {caregiver.hourly_rate && (
+                              <span className="text-sm font-medium text-primary">
+                                ${caregiver.hourly_rate}/hr
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      {caregiver.specializations && caregiver.specializations.length > 0 && (
-                        <p className="text-sm text-muted-foreground truncate">
-                          {caregiver.specializations[0]}
-                          {caregiver.specializations.length > 1 && ` +${caregiver.specializations.length - 1}`}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 mt-3">
-                        {caregiver.hourly_rate && (
-                          <span className="text-sm font-medium text-primary">
-                            ${caregiver.hourly_rate}/hr
-                          </span>
+                      <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (caregiver.phone) window.location.href = `tel:${caregiver.phone}`;
+                          }}
+                          disabled={!caregiver.phone}
+                        >
+                          <Phone className="w-4 h-4 mr-1" />
+                          Call
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (caregiver.email) window.location.href = `mailto:${caregiver.email}`;
+                          }}
+                          disabled={!caregiver.email}
+                        >
+                          <Mail className="w-4 h-4 mr-1" />
+                          Email
+                        </Button>
+                        {!(caregiver as any).auth_user_id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLoginDialog({ open: true, caregiver });
+                            }}
+                          >
+                            <KeyRound className="w-4 h-4" />
+                          </Button>
                         )}
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (caregiver.phone) window.location.href = `tel:${caregiver.phone}`;
-                      }}
-                      disabled={!caregiver.phone}
-                    >
-                      <Phone className="w-4 h-4 mr-1" />
-                      Call
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (caregiver.email) window.location.href = `mailto:${caregiver.email}`;
-                      }}
-                      disabled={!caregiver.email}
-                    >
-                      <Mail className="w-4 h-4 mr-1" />
-                      Email
-                    </Button>
-                    {!(caregiver as any).auth_user_id && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLoginDialog({ open: true, caregiver });
-                        }}
-                      >
-                        <KeyRound className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="orientation">
+            <OrientationTracker />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <AddCaregiverDialog

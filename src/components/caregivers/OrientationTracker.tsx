@@ -39,6 +39,9 @@ export default function OrientationTracker() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [recentReminderIds, setRecentReminderIds] = useState<Set<string>>(new Set());
+
+  const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
   useEffect(() => { void load(); }, []);
 
@@ -65,12 +68,25 @@ export default function OrientationTracker() {
         const pct = p.completed_at ? 100 : Math.min(100, Math.round((completed / TOTAL_SECTIONS) * 100));
         progressMap[p.caregiver_id as string] = pct;
       }
+
+      const since = new Date(Date.now() - REMINDER_COOLDOWN_MS).toISOString();
+      const { data: recent } = await supabase
+        .from("notifications")
+        .select("related_id")
+        .eq("notification_type", "orientation_reminder")
+        .in("related_id", ids)
+        .gte("created_at", since);
+      setRecentReminderIds(new Set((recent || []).map((n: any) => n.related_id).filter(Boolean)));
     }
     setRows((cgs || []).map((c) => ({ ...c, percentage: progressMap[c.id] || 0 })) as Row[]);
     setLoading(false);
   }
 
   async function sendReminder(row: Row) {
+    if (recentReminderIds.has(row.id)) {
+      toast({ title: "Reminder already sent", description: "A reminder was queued within the last 24 hours." });
+      return;
+    }
     setSendingId(row.id);
     const { error } = await supabase.from("notifications").insert({
       user_id: row.user_id,
@@ -87,6 +103,7 @@ export default function OrientationTracker() {
     if (error) {
       toast({ title: "Reminder failed", description: error.message, variant: "destructive" });
     } else {
+      setRecentReminderIds((prev) => new Set(prev).add(row.id));
       toast({ title: "Reminder queued", description: `Sent to ${row.first_name} ${row.last_name}` });
     }
   }

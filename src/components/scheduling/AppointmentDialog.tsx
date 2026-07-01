@@ -295,6 +295,21 @@ export function AppointmentDialog({
 
           {conflict && <ConflictAlert conflict={conflict} />}
 
+          {caregiverNotCleared && (
+            <div
+              role="alert"
+              className="rounded-md border border-warning/40 bg-warning/10 text-warning-foreground p-3 text-sm flex gap-2"
+            >
+              <span className="font-semibold text-warning">⚠</span>
+              <div>
+                <p className="font-medium text-warning">Caregiver not cleared to schedule</p>
+                <p className="text-muted-foreground">
+                  This caregiver has not completed orientation and cannot be scheduled. Go to Orientation Tracker to send a reminder.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_time">Start Time</Label>

@@ -100,25 +100,44 @@ export default function OrientationTracker() {
       return;
     }
     setSendingId(row.id);
-    const { error } = await supabase.from("notifications").insert({
+    const subject = "Complete Your Orientation";
+    const message = "Please complete your orientation to be cleared for scheduling.";
+    const { data, error } = await supabase.from("notifications").insert({
       user_id: row.user_id,
       notification_type: "orientation_reminder",
       recipient_email: row.email,
       recipient_phone: row.phone,
-      subject: "Complete Your Orientation",
-      message: "Please complete your orientation to be cleared for scheduling.",
+      subject,
+      message,
       email_sent: false,
       sms_sent: false,
       related_id: row.id,
-    });
+    }).select("id, created_at").single();
     setSendingId(null);
     if (error) {
       toast({ title: "Reminder failed", description: error.message, variant: "destructive" });
     } else {
       setRecentReminderIds((prev) => new Set(prev).add(row.id));
-      toast({ title: "Reminder queued", description: `Sent to ${row.first_name} ${row.last_name}` });
+      const channels = [row.email ? "Email" : null, row.phone ? "SMS" : null].filter(Boolean).join(" + ") || "In-app";
+      const queuedAt = data?.created_at ? new Date(data.created_at) : new Date();
+      sonnerToast.success(`Reminder queued for ${row.first_name} ${row.last_name}`, {
+        description: (
+          <div className="space-y-1 text-xs">
+            <div><span className="font-semibold">Type:</span> orientation_reminder</div>
+            <div><span className="font-semibold">Channels:</span> {channels}</div>
+            {row.email && <div><span className="font-semibold">Email:</span> <span className="font-mono">{row.email}</span></div>}
+            {row.phone && <div><span className="font-semibold">SMS:</span> <span className="font-mono">{row.phone}</span></div>}
+            <div><span className="font-semibold">Subject:</span> {subject}</div>
+            <div><span className="font-semibold">Message:</span> {message}</div>
+            <div><span className="font-semibold">Queued:</span> {queuedAt.toLocaleString()}</div>
+            {data?.id && <div><span className="font-semibold">Notification ID:</span> <span className="font-mono">{data.id}</span></div>}
+          </div>
+        ),
+        duration: 8000,
+      });
     }
   }
+
 
   const notCleared = rows.filter((r) => !r.cleared_to_schedule);
   const atRisk = notCleared.filter((r) => {

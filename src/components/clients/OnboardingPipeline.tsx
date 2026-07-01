@@ -12,8 +12,9 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, User, Eye } from "lucide-react";
+import { Calendar, User, Eye, AlertCircle, Inbox, RefreshCw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Assessment = {
   id: string;

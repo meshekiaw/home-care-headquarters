@@ -141,6 +141,17 @@ export default function OrientationTracker() {
         },
       });
 
+      if (row.phone && notificationId) {
+        supabase.functions.invoke('send-sms', { body: { notification_id: notificationId } })
+          .then(({ error: smsErr }) => {
+            if (smsErr) {
+              sonnerToast.error('SMS delivery failed', { description: smsErr.message });
+            } else {
+              sonnerToast.success('SMS dispatched via Twilio', { description: `Sent to ${row.phone}` });
+            }
+          });
+      }
+
       sonnerToast.success(`Reminder queued for ${row.first_name} ${row.last_name}`, {
         description: (
           <div className="space-y-1 text-xs">

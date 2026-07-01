@@ -22,6 +22,7 @@ interface Caregiver {
   id: string;
   first_name: string;
   last_name: string;
+  cleared_to_schedule: boolean | null;
 }
 
 interface AppointmentDialogProps {
@@ -99,7 +100,7 @@ export function AppointmentDialog({
     try {
       const [clientsRes, caregiversRes] = await Promise.all([
         supabase.from("clients").select("id, first_name, last_name").eq("status", "active"),
-        supabase.from("caregivers").select("id, first_name, last_name").eq("status", "active"),
+        supabase.from("caregivers").select("id, first_name, last_name, cleared_to_schedule").eq("status", "active"),
       ]);
 
       if (clientsRes.data) setClients(clientsRes.data);
@@ -138,8 +139,24 @@ export function AppointmentDialog({
 
   const handleCaregiverChange = async (caregiverId: string) => {
     setFormData((prev) => ({ ...prev, caregiver_id: caregiverId }));
+    // Re-verify clearance against the DB at selection time (in case list is stale)
+    if (caregiverId) {
+      const { data } = await supabase
+        .from("caregivers")
+        .select("cleared_to_schedule")
+        .eq("id", caregiverId)
+        .maybeSingle();
+      if (data) {
+        setCaregivers((prev) =>
+          prev.map((c) => (c.id === caregiverId ? { ...c, cleared_to_schedule: data.cleared_to_schedule } : c))
+        );
+      }
+    }
     await runConflictCheck(caregiverId, formData.start_time, formData.end_time);
   };
+
+  const selectedCaregiver = caregivers.find((c) => c.id === formData.caregiver_id);
+  const caregiverNotCleared = !!formData.caregiver_id && selectedCaregiver?.cleared_to_schedule === false;
 
   const handleTimeChange = async (field: "start_time" | "end_time", value: string) => {
     const newFormData = { ...formData, [field]: value };
@@ -153,6 +170,7 @@ export function AppointmentDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (caregiverNotCleared) return;
     setSaving(true);
 
     try {
@@ -277,6 +295,21 @@ export function AppointmentDialog({
 
           {conflict && <ConflictAlert conflict={conflict} />}
 
+          {caregiverNotCleared && (
+            <div
+              role="alert"
+              className="rounded-md border border-warning/40 bg-warning/10 text-warning-foreground p-3 text-sm flex gap-2"
+            >
+              <span className="font-semibold text-warning">⚠</span>
+              <div>
+                <p className="font-medium text-warning">Caregiver not cleared to schedule</p>
+                <p className="text-muted-foreground">
+                  This caregiver has not completed orientation and cannot be scheduled. Go to Orientation Tracker to send a reminder.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_time">Start Time</Label>
@@ -350,7 +383,7 @@ export function AppointmentDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={saving || (conflict?.hasConflict ?? false)}>
+            <Button type="submit" disabled={saving || caregiverNotCleared || (conflict?.hasConflict ?? false)}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {appointment ? "Update" : "Create"}
             </Button>

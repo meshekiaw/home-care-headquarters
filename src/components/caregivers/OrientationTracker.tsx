@@ -7,6 +7,16 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AlertTriangle, Users, Send, Eye, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -40,6 +50,7 @@ export default function OrientationTracker() {
   const [loading, setLoading] = useState(true);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [recentReminderIds, setRecentReminderIds] = useState<Set<string>>(new Set());
+  const [confirmRow, setConfirmRow] = useState<Row | null>(null);
 
   const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
@@ -202,7 +213,7 @@ export default function OrientationTracker() {
                             <Button
                               size="sm"
                               variant={recentlySent ? "outline" : "default"}
-                              onClick={() => sendReminder(r)}
+                              onClick={() => setConfirmRow(r)}
                               disabled={sendingId === r.id || recentlySent}
                               title={recentlySent ? "Reminder sent within last 24 hours" : undefined}
                             >
@@ -225,6 +236,36 @@ export default function OrientationTracker() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!confirmRow} onOpenChange={(o) => !o && setConfirmRow(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send orientation reminder?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmRow && (
+                <>
+                  A reminder will be queued for <strong>{confirmRow.first_name} {confirmRow.last_name}</strong>
+                  {confirmRow.email ? <> via email (<span className="font-mono">{confirmRow.email}</span>)</> : null}
+                  {confirmRow.phone ? <> and SMS (<span className="font-mono">{confirmRow.phone}</span>)</> : null}
+                  . They won't be reminded again for 24 hours.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const row = confirmRow;
+                setConfirmRow(null);
+                if (row) void sendReminder(row);
+              }}
+            >
+              Send Reminder
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import AddCaregiverDialog from "@/components/caregivers/AddCaregiverDialog";
 import BulkImportDialog from "@/components/caregivers/BulkImportDialog";
 import CreateLoginDialog from "@/components/caregivers/CreateLoginDialog";
+import OrientationTracker from "@/components/caregivers/OrientationTracker";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";

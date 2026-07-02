@@ -141,10 +141,29 @@ export function useLmsAssignments() {
     courseId: string,
     caregiverIds: string[],
     dueDate?: string
-  ): Promise<{ ok: boolean; assignmentIds: string[] }> => {
-    if (!user) return { ok: false, assignmentIds: [] };
+  ): Promise<{ ok: boolean; assignmentIds: string[]; skipped: number }> => {
+    if (!user) return { ok: false, assignmentIds: [], skipped: 0 };
     try {
-      const inserts = caregiverIds.map((cid) => ({
+      // Filter out caregivers already assigned to this course
+      const { data: existing, error: exErr } = await supabase
+        .from("lms_assignments")
+        .select("caregiver_id")
+        .eq("course_id", courseId)
+        .in("caregiver_id", caregiverIds);
+      if (exErr) throw exErr;
+      const existingIds = new Set((existing || []).map((r: any) => r.caregiver_id));
+      const newIds = caregiverIds.filter((id) => !existingIds.has(id));
+      const skipped = caregiverIds.length - newIds.length;
+
+      if (newIds.length === 0) {
+        toast({
+          title: "Already assigned",
+          description: `All selected caregiver(s) already have this course.`,
+        });
+        return { ok: true, assignmentIds: [], skipped };
+      }
+
+      const inserts = newIds.map((cid) => ({
         user_id: user.id,
         course_id: courseId,
         caregiver_id: cid,
@@ -153,12 +172,15 @@ export function useLmsAssignments() {
       }));
       const { data, error } = await supabase.from("lms_assignments").insert(inserts as any).select("id");
       if (error) throw error;
-      toast({ title: `Course assigned to ${caregiverIds.length} caregiver(s)` });
+      toast({
+        title: `Course assigned to ${newIds.length} caregiver(s)`,
+        description: skipped > 0 ? `${skipped} skipped (already assigned).` : undefined,
+      });
       fetchAssignments();
-      return { ok: true, assignmentIds: (data || []).map((r: any) => r.id) };
+      return { ok: true, assignmentIds: (data || []).map((r: any) => r.id), skipped };
     } catch (error: any) {
       toast({ title: "Error assigning course", description: error.message, variant: "destructive" });
-      return { ok: false, assignmentIds: [] };
+      return { ok: false, assignmentIds: [], skipped: 0 };
     }
   };
 
@@ -172,5 +194,17 @@ export function useLmsAssignments() {
     }
   };
 
-  return { assignments, loading, assignCourse, updateAssignment, refetch: fetchAssignments };
+  const deleteAssignment = async (id: string) => {
+    try {
+      const { error } = await supabase.from("lms_assignments").delete().eq("id", id);
+      if (error) throw error;
+      toast({ title: "Assignment removed" });
+      fetchAssignments();
+    } catch (error: any) {
+      toast({ title: "Error removing assignment", description: error.message, variant: "destructive" });
+    }
+  };
+
+  return { assignments, loading, assignCourse, updateAssignment, deleteAssignment, refetch: fetchAssignments };
 }
+

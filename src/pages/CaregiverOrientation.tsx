@@ -91,8 +91,7 @@ import OrientationSection from "@/components/orientation/OrientationSection";
 import OrientationQuiz from "@/components/orientation/OrientationQuiz";
 import OrientationConfirmation from "@/components/orientation/OrientationConfirmation";
 import { useOrientationModules, useOrientationQuizzes, useOrientationProgress } from "@/hooks/useOrientation";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lock as LockIcon } from "lucide-react";
 
 function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
   const { modules, loading: modulesLoading } = useOrientationModules();

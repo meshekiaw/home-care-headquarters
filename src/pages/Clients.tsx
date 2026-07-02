@@ -296,12 +296,13 @@ export default function Clients() {
           </div>
         </div>
 
-        <Tabs defaultValue="list" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="list">Client List</TabsTrigger>
             <TabsTrigger value="intake">New Intake</TabsTrigger>
             <TabsTrigger value="pipeline">Onboarding Pipeline</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="list" className="space-y-6">
 

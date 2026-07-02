@@ -91,7 +91,8 @@ interface Client {
 type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
 
 export default function Clients() {
-  const [activeTab, setActiveTab] = useState("list");
+  const initialTab = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "pipeline" ? "pipeline" : "list";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

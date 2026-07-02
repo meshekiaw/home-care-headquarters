@@ -88,7 +88,7 @@ export default function ClientNew() {
       if (!user) throw new Error("You must be logged in to add a client");
 
       // Insert client
-      const { error } = await supabase.from('clients').insert([{
+      const { data: inserted, error } = await supabase.from('clients').insert([{
         first_name: validated.first_name,
         last_name: validated.last_name,
         email: validated.email || null,
@@ -107,16 +107,32 @@ export default function ClientNew() {
         client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
         status: validated.status,
         user_id: user.id,
-      }]);
+      }]).select('id').single();
 
       if (error) throw error;
 
+      // Create initial assessment (deadline auto-set by trigger; also set due_date 48h out)
+      const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+      const { error: aErr } = await supabase.from('client_assessments').insert([{
+        client_id: inserted.id,
+        user_id: user.id,
+        assessment_type: 'initial',
+        assessment_name: 'Initial Home Assessment',
+        status: 'pending',
+        family_name: validated.emergency_contact_name || null,
+        family_phone: validated.emergency_contact_phone || null,
+        notes: validated.notes || null,
+        assessment_deadline: deadline,
+        due_date: deadline,
+      }]);
+      if (aErr) throw aErr;
+
       toast({
-        title: "Client added successfully!",
-        description: `${validated.first_name} ${validated.last_name} has been added to your clients.`,
+        title: "Client added and initial assessment created.",
+        description: "View in Onboarding Pipeline.",
       });
 
-      navigate("/clients");
+      navigate("/clients?tab=pipeline");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};

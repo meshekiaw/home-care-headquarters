@@ -32,11 +32,16 @@ export default function NeedsActionNow() {
   async function load() {
     setLoading(true);
     try {
+      // Only surface recent intakes (created within the last 7 days).
+      // Older assessments are pre-existing clients already in care.
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
       const { data: aData } = await supabase
         .from("client_assessments")
         .select("id, client_id, assessment_name, status, due_date")
         .neq("status", "completed")
         .not("due_date", "is", null)
+        .gte("created_at", sevenDaysAgo)
         .order("due_date", { ascending: true });
 
       const { data: cgData } = await supabase

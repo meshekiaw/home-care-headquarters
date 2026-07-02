@@ -407,6 +407,31 @@ export default function LmsTraining() {
 
       <AddCourseDialog open={addCourseOpen} onOpenChange={setAddCourseOpen} />
       <AssignCourseDialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen} />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove assignment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the assignment ({deleteTarget?.label}), including its progress and score. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (deleteTarget) {
+                  await deleteAssignment(deleteTarget.id);
+                  setDeleteTarget(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

@@ -401,6 +401,15 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating…</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Intake Packet</>}
             </Button>
+            <Button
+              type="button"
+              onClick={onSaveClient}
+              disabled={saving || !form.clientName.trim()}
+              variant="secondary"
+              className="w-full"
+            >
+              {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving…</> : <><Save className="w-4 h-4 mr-2" /> Save Client & Create Assessment</>}
+            </Button>
           </form>
         </CardContent>
       </Card>

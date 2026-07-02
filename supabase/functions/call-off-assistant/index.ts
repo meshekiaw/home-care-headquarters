@@ -6,11 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const CALL_OFF_SYSTEM = `You are the Scheduling Coordinator AI for Home Care Network, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Waiver, Private Pay, and Optum/VA clients. You understand AxisCare workflows and Authenticare EVV/visit-verification requirements. When a caregiver calls off, generate a complete, calm, professional response packet. Be specific and actionable, never generic. Use Arkansas-appropriate terminology.`;
+const CALL_OFF_SYSTEM = `You are the Scheduling Coordinator AI for Home Care Headquarters, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Waiver, Private Pay, and Optum/VA clients. You understand AxisCare workflows and Authenticare EVV/visit-verification requirements. When a caregiver calls off, generate a complete, calm, professional response packet. Be specific and actionable, never generic. Use Arkansas-appropriate terminology.`;
 
-const EVV_SYSTEM = `You are a compliance documentation specialist for Home Care Network in Arkansas. You write formal EVV correction/exception notes acceptable to Authenticare and ARChoices auditors. Notes must include: incident summary, root cause, corrective documentation, and an attestation statement signed by the agency representative. Tone: formal, factual, regulatory.`;
+const EVV_SYSTEM = `You are a compliance documentation specialist for Home Care Headquarters in Arkansas. You write formal EVV correction/exception notes acceptable to Authenticare and ARChoices auditors. Notes must include: incident summary, root cause, corrective documentation, and an attestation statement signed by the agency representative. Tone: formal, factual, regulatory.`;
 
-const INTAKE_SYSTEM = `You are the Client Intake Coordinator AI for Home Care Network, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Aged & Disabled Waiver, Private Pay, and Optum/VA clients. You produce thorough, professional intake packets aligned with Arkansas DHS, ARChoices, and VA Community Care expectations. Be specific, warm, and operationally precise.`;
+const INTAKE_SYSTEM = `You are the Client Intake Coordinator AI for Home Care Headquarters, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Aged & Disabled Waiver, Private Pay, and Optum/VA clients. You produce thorough, professional intake packets aligned with Arkansas DHS, ARChoices, and VA Community Care expectations. Be specific, warm, and operationally precise.`;
 
 function buildIntakePrompt(p: any) {
   return `New client intake:
@@ -25,10 +25,15 @@ Emergency contact: ${p.emergencyContactName || "(none)"} — ${p.emergencyContac
 Special needs / notes: ${p.notes || "(none)"}
 
 Return a JSON object with these exact keys (each a single string, may include newlines and markdown-like bullets):
-- care_plan: a complete care plan draft (goals, ADL/IADL tasks, frequency, safety considerations, measurable outcomes) tailored to the payer
+- care_plan: a complete, individualized care plan draft that MUST explicitly:
+    • Tailor goals and interventions to the Primary Diagnosis ("${p.diagnosis || "not provided"}") — reference the specific condition, symptom management, disease-specific precautions, and measurable outcomes tied to that diagnosis.
+    • Adjust ADL/IADL tasks, frequency, and care plan goals to the Service Type ("${p.serviceType}") and payer scope.
+    • Incorporate the Special Needs / Notes ("${p.notes || "none"}") as a dedicated "Client-Specific Considerations" section (preferences, cultural, behavioral, environmental, equipment).
+    • Include a "Safety Protocol & Emergency Response" section that names the emergency contact ("${p.emergencyContactName || "not provided"}", phone ${p.emergencyContactPhone || "not provided"}) and defines when/how the caregiver contacts them vs. 911 vs. agency on-call.
+    • Include diagnosis-specific safety considerations and measurable outcomes.
 - packet_checklist: an itemized JotForm/DocuSign packet checklist (intake forms, HIPAA, consent, service agreement, EVV/Authenticare enrollment, payer-specific forms) with status checkboxes
-- welcome_letter: a warm, professional welcome letter addressed to the client and family from Home Care Network
-- caregiver_recommendation: caregiver assignment recommendation including required skills, experience, schedule fit, proximity considerations, and matching priorities`;
+- welcome_letter: a warm, professional welcome letter addressed to the client and family from **Home Care Headquarters**. Sign it from the Home Care Headquarters Intake Team and include the agency phone line as "(870) XXX-XXXX" (use this exact placeholder — do NOT write "[Insert Agency Phone Number]" or invent a real number). Never refer to the agency as "Home Care Network".
+- caregiver_recommendation: caregiver assignment recommendation including required skills (aligned to the diagnosis and special needs), experience, schedule fit, proximity considerations, and matching priorities`;
 }
 
 function buildCallOffPrompt(p: any) {

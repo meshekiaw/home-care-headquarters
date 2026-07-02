@@ -28,9 +28,10 @@ const SECTIONS = [
 const SERVICE_TYPES = ["Personal Care", "Attendant Care", "Respite", "Companion", "Skilled Nursing"];
 const PAYERS = ["ARChoices/Medicaid", "DHS Aged & Disabled Waiver", "Private Pay", "Optum/VA"];
 
-export default function ClientIntakeForm() {
+export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } = {}) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<Record<string, string> | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);

@@ -10,8 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
-  Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send,
+  Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send, Trash2,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
 import AddCourseDialog from "@/components/lms/AddCourseDialog";
@@ -23,10 +27,11 @@ import { useToast } from "@/hooks/use-toast";
 export default function LmsTraining() {
   const navigate = useNavigate();
   const { courses, loading: coursesLoading } = useLmsCourses();
-  const { assignments, loading: assignmentsLoading, refetch } = useLmsAssignments();
+  const { assignments, loading: assignmentsLoading, refetch, deleteAssignment } = useLmsAssignments();
   const [searchQuery, setSearchQuery] = useState("");
   const [addCourseOpen, setAddCourseOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null);
   const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
@@ -283,9 +288,27 @@ export default function LmsTraining() {
                           ) : "—"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => resendNotification(a.id)} title="Resend notification">
-                            <Send className="w-4 h-4" />
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => resendNotification(a.id)} title="Resend notification">
+                              <Send className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              title="Remove assignment"
+                              onClick={() =>
+                                setDeleteTarget({
+                                  id: a.id,
+                                  label: `${a.course?.title || "course"} for ${
+                                    a.caregiver ? `${a.caregiver.first_name} ${a.caregiver.last_name}` : "caregiver"
+                                  }`,
+                                })
+                              }
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

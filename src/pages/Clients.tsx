@@ -91,6 +91,7 @@ interface Client {
 type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
 
 export default function Clients() {
+  const [activeTab, setActiveTab] = useState("list");
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

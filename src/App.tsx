@@ -37,6 +37,9 @@ import CaregiverApplication from "./pages/CaregiverApplication";
 import AuditLog from "./pages/AuditLog";
 import CaregiverAvailability from "./pages/CaregiverAvailability";
 import CaregiverTraining from "./pages/CaregiverTraining";
+import LmsCoursePlayer from "./pages/LmsCoursePlayer";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 

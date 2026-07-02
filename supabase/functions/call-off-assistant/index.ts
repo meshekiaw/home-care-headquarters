@@ -6,11 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const CALL_OFF_SYSTEM = `You are the Scheduling Coordinator AI for Home Care Headquarters, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Waiver, Private Pay, and Optum/VA clients. You understand AxisCare workflows and Authenticare EVV/visit-verification requirements. When a caregiver calls off, generate a complete, calm, professional response packet. Be specific and actionable, never generic. Use Arkansas-appropriate terminology.`;
+const CALL_OFF_SYSTEM = `You are the Scheduling Coordinator AI for Home Care Network, LLC, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Waiver, Private Pay, and Optum/VA clients. You understand AxisCare workflows and Authenticare EVV/visit-verification requirements. When a caregiver calls off, generate a complete, calm, professional response packet. Be specific and actionable, never generic. Use Arkansas-appropriate terminology.`;
 
-const EVV_SYSTEM = `You are a compliance documentation specialist for Home Care Headquarters in Arkansas. You write formal EVV correction/exception notes acceptable to Authenticare and ARChoices auditors. Notes must include: incident summary, root cause, corrective documentation, and an attestation statement signed by the agency representative. Tone: formal, factual, regulatory.`;
+const EVV_SYSTEM = `You are a compliance documentation specialist for Home Care Network, LLC in Arkansas. You write formal EVV correction/exception notes acceptable to Authenticare and ARChoices auditors. Notes must include: incident summary, root cause, corrective documentation, and an attestation statement signed by the agency representative. Tone: formal, factual, regulatory.`;
 
-const INTAKE_SYSTEM = `You are the Client Intake Coordinator AI for Home Care Headquarters, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Aged & Disabled Waiver, Private Pay, and Optum/VA clients. You produce thorough, professional intake packets aligned with Arkansas DHS, ARChoices, and VA Community Care expectations. Be specific, warm, and operationally precise.`;
+const INTAKE_SYSTEM = `You are the Client Intake Coordinator AI for Home Care Network, LLC, a personal care agency in Arkansas serving ARChoices/Medicaid, DHS Aged & Disabled Waiver, Private Pay, and Optum/VA clients. You produce thorough, professional intake packets aligned with Arkansas DHS, ARChoices, and VA Community Care expectations. Be specific, warm, and operationally precise.`;
 
 function buildIntakePrompt(p: any) {
   return `New client intake:
@@ -32,7 +32,7 @@ Return a JSON object with these exact keys (each a single string, may include ne
     • Include a "Safety Protocol & Emergency Response" section that names the emergency contact ("${p.emergencyContactName || "not provided"}", phone ${p.emergencyContactPhone || "not provided"}) and defines when/how the caregiver contacts them vs. 911 vs. agency on-call.
     • Include diagnosis-specific safety considerations and measurable outcomes.
 - packet_checklist: an itemized JotForm/DocuSign packet checklist (intake forms, HIPAA, consent, service agreement, EVV/Authenticare enrollment, payer-specific forms) with status checkboxes
-- welcome_letter: a warm, professional welcome letter addressed to the client and family from **Home Care Headquarters**. Sign it from the Home Care Headquarters Intake Team and include the agency phone line as "(870) XXX-XXXX" (use this exact placeholder — do NOT write "[Insert Agency Phone Number]" or invent a real number). Never refer to the agency as "Home Care Headquarters".
+- welcome_letter: a warm, professional welcome letter addressed to the client and family from **Home Care Network, LLC**. Sign it from the Home Care Network, LLC Intake Team and include the agency phone line as "(870) XXX-XXXX" (use this exact placeholder — do NOT write "[Insert Agency Phone Number]" or invent a real number). Never refer to the agency as "Home Care Network, LLC".
 - caregiver_recommendation: caregiver assignment recommendation including required skills (aligned to the diagnosis and special needs), experience, schedule fit, proximity considerations, and matching priorities`;
 }
 
@@ -68,7 +68,7 @@ Return a JSON object with these exact keys (each a single string):
 - incident_summary: brief factual summary of the EVV exception
 - root_cause: probable root cause statement
 - corrective_documentation: paragraph for the Authenticare correction record
-- attestation: formal attestation language signed "Home Care Headquarters Agency Representative"`;
+- attestation: formal attestation language signed "Home Care Network, LLC Agency Representative"`;
 }
 
 Deno.serve(async (req) => {

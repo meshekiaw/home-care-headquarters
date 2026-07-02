@@ -160,7 +160,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       doc.setFontSize(9);
       doc.setTextColor(...MUTED);
       doc.text(
-        `Home Care Headquarters — Confidential Intake Packet`,
+        `Home Care Network, LLC — Confidential Intake Packet`,
         margin,
         pageH - 24
       );
@@ -188,7 +188,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
     doc.text("Client Intake Packet", margin, 80);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.text("Home Care Headquarters", margin, 110);
+    doc.text("Home Care Network, LLC", margin, 110);
     doc.text(new Date().toLocaleDateString(), margin, 130);
 
     y = 200;
@@ -437,7 +437,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
             <div className="mx-auto max-w-3xl bg-white shadow-lg rounded-md overflow-hidden">
               <div className="bg-[rgb(20,60,120)] text-white px-8 py-8">
                 <h1 className="text-2xl font-bold">Client Intake Packet</h1>
-                <p className="text-sm opacity-90 mt-1">Home Care Headquarters</p>
+                <p className="text-sm opacity-90 mt-1">Home Care Network, LLC</p>
                 <p className="text-xs opacity-80">{new Date().toLocaleDateString()}</p>
               </div>
               <div className="px-8 py-6 border-b">
@@ -484,7 +484,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
               ))}
 
               <div className="px-8 py-3 text-xs text-gray-500 text-center">
-                Home Care Headquarters — Confidential Intake Packet
+                Home Care Network, LLC — Confidential Intake Packet
               </div>
             </div>
           </div>

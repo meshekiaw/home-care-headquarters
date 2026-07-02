@@ -662,8 +662,9 @@ export default function Clients() {
           </TabsContent>
 
           <TabsContent value="intake">
-            <ClientIntakeForm />
+            <ClientIntakeForm onSaved={() => { setActiveTab("pipeline"); fetchClients(); }} />
           </TabsContent>
+
 
           <TabsContent value="pipeline">
             <OnboardingPipeline />

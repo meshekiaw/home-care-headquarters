@@ -91,6 +91,7 @@ interface Client {
 type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
 
 export default function Clients() {
+  const [activeTab, setActiveTab] = useState("list");
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -296,12 +297,13 @@ export default function Clients() {
           </div>
         </div>
 
-        <Tabs defaultValue="list" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="list">Client List</TabsTrigger>
             <TabsTrigger value="intake">New Intake</TabsTrigger>
             <TabsTrigger value="pipeline">Onboarding Pipeline</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="list" className="space-y-6">
 
@@ -660,8 +662,9 @@ export default function Clients() {
           </TabsContent>
 
           <TabsContent value="intake">
-            <ClientIntakeForm />
+            <ClientIntakeForm onSaved={() => { setActiveTab("pipeline"); fetchClients(); }} />
           </TabsContent>
+
 
           <TabsContent value="pipeline">
             <OnboardingPipeline />

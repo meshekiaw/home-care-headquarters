@@ -142,17 +142,43 @@ export default function Clients() {
     let failed = 0;
 
     for (const client of parsedClients) {
-      const { error } = await supabase.from('clients').insert({
-        ...client,
-        user_id: user.id,
-      });
+      const { data: inserted, error } = await supabase
+        .from('clients')
+        .insert({ ...client, user_id: user.id })
+        .select('id')
+        .single();
 
-      if (error) {
+      if (error || !inserted) {
         console.error("Failed to import client:", client, error);
         failed++;
-      } else {
-        success++;
+        continue;
       }
+
+      // Ensure an initial pending assessment exists for this client
+      const { data: existing } = await supabase
+        .from('client_assessments')
+        .select('id')
+        .eq('client_id', inserted.id)
+        .limit(1);
+
+      if (!existing || existing.length === 0) {
+        const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        const { error: aErr } = await supabase.from('client_assessments').insert({
+          client_id: inserted.id,
+          user_id: user.id,
+          assessment_type: 'initial',
+          assessment_name: 'Initial Home Assessment',
+          status: 'pending',
+          due_date: deadline.toISOString().slice(0, 10),
+          assessment_deadline: deadline.toISOString(),
+          family_name: (client as any).emergency_contact_name || null,
+          family_phone: (client as any).emergency_contact_phone || null,
+          notes: (client as any).notes || null,
+        });
+        if (aErr) console.error("Failed to create initial assessment:", inserted.id, aErr);
+      }
+
+      success++;
     }
 
     if (success > 0) {

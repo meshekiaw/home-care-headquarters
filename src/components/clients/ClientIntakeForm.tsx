@@ -79,6 +79,67 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
     }
   };
 
+  const onSaveClient = async () => {
+    if (!form.clientName.trim()) {
+      toast({ title: "Client name required", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userData?.user) throw new Error("Not signed in");
+      const userId = userData.user.id;
+
+      const parts = form.clientName.trim().split(/\s+/);
+      const firstName = parts[0];
+      const lastName = parts.slice(1).join(" ") || "-";
+
+      const { data: client, error: cErr } = await supabase
+        .from("clients")
+        .insert({
+          user_id: userId,
+          first_name: firstName,
+          last_name: lastName,
+          date_of_birth: form.dob || null,
+          address: form.address || null,
+          emergency_contact_name: form.emergencyContactName || null,
+          emergency_contact_phone: form.emergencyContactPhone || null,
+          notes: form.notes || null,
+          client_hours: form.authorizedHours ? Number(form.authorizedHours) : null,
+        })
+        .select("id")
+        .single();
+      if (cErr) throw cErr;
+
+      const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
+      const dueDate = deadline.toISOString().slice(0, 10);
+
+      const { error: aErr } = await supabase.from("client_assessments").insert({
+        user_id: userId,
+        client_id: client.id,
+        assessment_type: "initial",
+        assessment_name: "Initial Home Assessment",
+        status: "pending",
+        due_date: dueDate,
+        assessment_deadline: deadline.toISOString(),
+        family_name: form.emergencyContactName || null,
+        family_phone: form.emergencyContactPhone || null,
+        notes: form.notes || null,
+      });
+      if (aErr) throw aErr;
+
+      toast({
+        title: "Client saved",
+        description: "Client saved and assessment created. Check Onboarding Pipeline to track progress.",
+      });
+      onSaved?.();
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const buildPdf = (): jsPDF | null => {
     if (!result) return null;
     const doc = new jsPDF({ unit: "pt", format: "letter" });

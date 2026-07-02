@@ -32,7 +32,7 @@ Return a JSON object with these exact keys (each a single string, may include ne
     • Include a "Safety Protocol & Emergency Response" section that names the emergency contact ("${p.emergencyContactName || "not provided"}", phone ${p.emergencyContactPhone || "not provided"}) and defines when/how the caregiver contacts them vs. 911 vs. agency on-call.
     • Include diagnosis-specific safety considerations and measurable outcomes.
 - packet_checklist: an itemized JotForm/DocuSign packet checklist (intake forms, HIPAA, consent, service agreement, EVV/Authenticare enrollment, payer-specific forms) with status checkboxes
-- welcome_letter: a warm, professional welcome letter addressed to the client and family from **Home Care Headquarters**. Sign it from the Home Care Headquarters Intake Team and include the agency phone line as "(870) XXX-XXXX" (use this exact placeholder — do NOT write "[Insert Agency Phone Number]" or invent a real number). Never refer to the agency as "Home Care Network".
+- welcome_letter: a warm, professional welcome letter addressed to the client and family from **Home Care Headquarters**. Sign it from the Home Care Headquarters Intake Team and include the agency phone line as "(870) XXX-XXXX" (use this exact placeholder — do NOT write "[Insert Agency Phone Number]" or invent a real number). Never refer to the agency as "Home Care Headquarters".
 - caregiver_recommendation: caregiver assignment recommendation including required skills (aligned to the diagnosis and special needs), experience, schedule fit, proximity considerations, and matching priorities`;
 }
 
@@ -68,7 +68,7 @@ Return a JSON object with these exact keys (each a single string):
 - incident_summary: brief factual summary of the EVV exception
 - root_cause: probable root cause statement
 - corrective_documentation: paragraph for the Authenticare correction record
-- attestation: formal attestation language signed "Home Care Network Agency Representative"`;
+- attestation: formal attestation language signed "Home Care Headquarters Agency Representative"`;
 }
 
 Deno.serve(async (req) => {

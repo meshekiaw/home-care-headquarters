@@ -17,7 +17,7 @@ export const orientationSections: OrientationSection[] = [
     sectionNumber: 1,
     title: "Employee Handbook Orientation",
     content: `
-      <h3>Home Care Network, LLC.</h3>
+      <h3>Home Care Headquarters</h3>
       <h2>Employee Handbook Orientation</h2>
       <p>Slide-by-slide training based on your employee handbook, with separate narration audio included.</p>
       <p>Includes a dedicated EVV section with the required escalation instruction:</p>
@@ -68,7 +68,7 @@ export const orientationSections: OrientationSection[] = [
         <li>The handbook is a guide to agency policies, expectations, and standards.</li>
         <li>It is <strong>not a contract</strong> of employment and does not guarantee employment for any set period.</li>
         <li>Employment is <strong>at-will</strong>: the employee or the agency may end employment at any time, subject to law.</li>
-        <li>Policies may be changed, modified, or updated by Home Care Network as needed.</li>
+        <li>Policies may be changed, modified, or updated by Home Care Headquarters as needed.</li>
         <li>Employees are expected to know current policy and follow it every shift.</li>
       </ul>
       <h4>Why this matters</h4>
@@ -86,7 +86,7 @@ export const orientationSections: OrientationSection[] = [
         points: 1,
       },
       {
-        questionText: "What type of employment does Home Care Network practice?",
+        questionText: "What type of employment does Home Care Headquarters practice?",
         options: ["Contract-based", "At-will employment", "Union-based", "Fixed-term only"],
         correctAnswer: "At-will employment",
         points: 1,
@@ -99,7 +99,7 @@ export const orientationSections: OrientationSection[] = [
     content: `
       <h3>Our Standard of Care and Professional Conduct</h3>
       <ul>
-        <li>Home Care Network is dedicated to competent, professional service for every client.</li>
+        <li>Home Care Headquarters is dedicated to competent, professional service for every client.</li>
         <li>Employees must act with respect, safety, honesty, and professionalism at all times.</li>
         <li>Every shift reflects on the agency, the client experience, and your job performance.</li>
         <li>Infractions may be used as grounds for discipline when policy is not followed.</li>
@@ -140,7 +140,7 @@ export const orientationSections: OrientationSection[] = [
     `,
     quizQuestions: [
       {
-        questionText: "Hiring decisions at Home Care Network are based on:",
+        questionText: "Hiring decisions at Home Care Headquarters are based on:",
         options: ["Personal connections", "Position-related criteria", "Seniority only", "Random selection"],
         correctAnswer: "Position-related criteria",
         points: 1,
@@ -338,7 +338,7 @@ export const orientationSections: OrientationSection[] = [
       </ul>
       <h4>Appearance Examples</h4>
       <ul>
-        <li><strong>Appropriate:</strong> Home Care Network T-shirt, scrubs, khaki pants, collared shirt, tennis shoes.</li>
+        <li><strong>Appropriate:</strong> Home Care Headquarters T-shirt, scrubs, khaki pants, collared shirt, tennis shoes.</li>
         <li><strong>Not appropriate:</strong> jeans, shorts, flip flops, torn clothing, unkempt appearance.</li>
       </ul>
       <p>Your appearance affects client trust and agency image.</p>
@@ -346,7 +346,7 @@ export const orientationSections: OrientationSection[] = [
     quizQuestions: [
       {
         questionText: "Which of the following is NOT appropriate work attire?",
-        options: ["Scrubs", "Khaki pants", "Flip flops", "Home Care Network T-shirt"],
+        options: ["Scrubs", "Khaki pants", "Flip flops", "Home Care Headquarters T-shirt"],
         correctAnswer: "Flip flops",
         points: 1,
       },
@@ -560,7 +560,7 @@ export const orientationSections: OrientationSection[] = [
       <ul>
         <li>Provide care <strong>exactly</strong> as outlined in the care plan.</li>
         <li>If the client or family asks for care not listed, <strong>contact the office immediately</strong>.</li>
-        <li>Do not provide unauthorized care without Home Care Network approval.</li>
+        <li>Do not provide unauthorized care without Home Care Headquarters approval.</li>
         <li>Documentation must reflect the care plan goals and the services actually provided.</li>
         <li>Records are legal documents.</li>
       </ul>
@@ -585,7 +585,7 @@ export const orientationSections: OrientationSection[] = [
     content: `
       <h3>Medication Policy: Strict Limits</h3>
       <ul>
-        <li>Home Care Network staff are <strong>not authorized to administer medication</strong>.</li>
+        <li>Home Care Headquarters staff are <strong>not authorized to administer medication</strong>.</li>
         <li>Allowed actions are limited to bringing medication to the client, placing it on a level surface, opening the container, and offering water or fluid.</li>
         <li>Employees may not place medication in the client's hand, remove it from the container, give shots, place it in the mouth, under the tongue, or in suppository form.</li>
         <li>The handbook is strict: medication violations may result in <strong>immediate termination</strong>.</li>
@@ -599,7 +599,7 @@ export const orientationSections: OrientationSection[] = [
     `,
     quizQuestions: [
       {
-        questionText: "Can Home Care Network caregivers administer medication to clients?",
+        questionText: "Can Home Care Headquarters caregivers administer medication to clients?",
         options: ["Yes, if prescribed", "Yes, for OTC medications", "No, caregivers are not authorized to administer medication", "Only with family permission"],
         correctAnswer: "No, caregivers are not authorized to administer medication",
         points: 1,
@@ -612,7 +612,7 @@ export const orientationSections: OrientationSection[] = [
     content: `
       <h3>Medication: Hand-over-Hand and OTC Limits</h3>
       <ul>
-        <li>The handbook says Home Care Network does <strong>not allow hand-over-hand medication support</strong> under agency policy.</li>
+        <li>The handbook says Home Care Headquarters does <strong>not allow hand-over-hand medication support</strong> under agency policy.</li>
         <li>If a client cannot take their own medication, it is the caregiver's responsibility to inform the office.</li>
         <li>The policy also restricts over-the-counter and topical items such as cough drops, creams, salves, and natural remedies.</li>
         <li>Do not assume something is allowed just because it is common or sold without a prescription.</li>

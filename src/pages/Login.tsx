@@ -22,8 +22,10 @@ export default function Login() {
 
   // Redirect if already logged in, based on role
   useEffect(() => {
-    if (user && !roleLoading && role) {
-      const defaultPath = role === "caregiver" ? "/my-dashboard" : "/dashboard";
+    if (user && !roleLoading) {
+      // If no role yet, send to /my-dashboard so ProtectedRoute can show the
+      // "Setting up your account" state instead of leaving the user on /login.
+      const defaultPath = role === "admin" ? "/dashboard" : "/my-dashboard";
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname || defaultPath;
       navigate(from, { replace: true });
     }

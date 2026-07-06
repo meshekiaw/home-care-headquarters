@@ -40,6 +40,8 @@ import CaregiverTraining from "./pages/CaregiverTraining";
 import LmsCoursePlayer from "./pages/LmsCoursePlayer";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AuthMagicLink from "./pages/AuthMagicLink";
+import Unsubscribe from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,9 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/magic-link" element={<AuthMagicLink />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
+
             
             {/* Admin-only routes */}
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><Dashboard /></ProtectedRoute>} />

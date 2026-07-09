@@ -23,6 +23,7 @@ import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeWithRefresh } from "@/lib/invokeWithRefresh";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LmsTraining() {

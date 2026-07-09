@@ -283,10 +283,48 @@ export default function LmsTraining() {
                 className="pl-10"
               />
             </div>
+            {selectedIds.length > 0 && (
+              <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-4 py-2">
+                <p className="text-sm font-medium">{selectedIds.length} selected</p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>Clear</Button>
+                  <Button variant="outline" size="sm" onClick={resendBulk} loading={bulkSending}>
+                    <Send className="w-4 h-4 mr-2" /> Resend selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setBulkDeleteOpen(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete selected
+                  </Button>
+                </div>
+              </div>
+            )}
             <Card>
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          filteredAssignments.length > 0 &&
+                          filteredAssignments.every((a) => selectedIds.includes(a.id))
+                        }
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            const ids = new Set(selectedIds);
+                            filteredAssignments.forEach((a) => ids.add(a.id));
+                            setSelectedIds(Array.from(ids));
+                          } else {
+                            const filteredSet = new Set(filteredAssignments.map((a) => a.id));
+                            setSelectedIds(selectedIds.filter((id) => !filteredSet.has(id)));
+                          }
+                        }}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead>Caregiver</TableHead>
                     <TableHead>Course</TableHead>
                     <TableHead>Due Date</TableHead>
@@ -300,13 +338,24 @@ export default function LmsTraining() {
                 <TableBody>
                   {filteredAssignments.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                         No assignments found. Assign a course to get started.
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredAssignments.map((a: any) => (
-                      <TableRow key={a.id}>
+                      <TableRow key={a.id} data-state={selectedIds.includes(a.id) ? "selected" : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.includes(a.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedIds((prev) =>
+                                checked ? [...prev, a.id] : prev.filter((id) => id !== a.id)
+                              );
+                            }}
+                            aria-label={`Select ${a.caregiver?.first_name || "row"}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           {a.caregiver ? `${a.caregiver.first_name} ${a.caregiver.last_name}` : "Unknown"}
                         </TableCell>
@@ -356,6 +405,7 @@ export default function LmsTraining() {
                 </TableBody>
               </Table>
             </Card>
+
           </TabsContent>
 
           <TabsContent value="overdue" className="space-y-4">

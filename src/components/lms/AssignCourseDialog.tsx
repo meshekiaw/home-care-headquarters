@@ -113,7 +113,8 @@ export default function AssignCourseDialog({ open, onOpenChange }: Props) {
     }
     if (allAssignmentIds.length > 0) {
       try {
-        const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+        const { invokeWithRefresh } = await import("@/lib/invokeWithRefresh");
+        const { error } = await invokeWithRefresh("send-lms-assignment-notification", {
           body: { assignment_ids: allAssignmentIds },
         });
         if (error) throw error;

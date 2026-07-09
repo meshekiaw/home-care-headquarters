@@ -194,7 +194,11 @@ serve(async (req) => {
         dueDate: i.due_date ?? null,
       }));
 
-      const idempotencyKey = `lms-assign-${items.map((i: any) => i.id).sort().join("-")}`;
+      // Scope idempotency key to recipient — if the caregiver's email changes,
+      // a new key is generated so the send isn't rejected as recipient_mismatch
+      // against the previously-notified address.
+      const recipientTag = cg.email.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 40);
+      const idempotencyKey = `lms-assign-${items.map((i: any) => i.id).sort().join("-")}-${recipientTag}`;
       let emailed = false;
       let emailError: string | null = null;
       try {

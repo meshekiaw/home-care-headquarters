@@ -23,6 +23,7 @@ import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeWithRefresh } from "@/lib/invokeWithRefresh";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LmsTraining() {
@@ -43,7 +44,7 @@ export default function LmsTraining() {
 
   const resendNotification = async (assignmentId: string) => {
     try {
-      const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+      const { error } = await invokeWithRefresh("send-lms-assignment-notification", {
         body: { assignment_ids: [assignmentId] },
       });
       if (error) throw error;
@@ -58,7 +59,7 @@ export default function LmsTraining() {
     if (selectedIds.length === 0) return;
     setBulkSending(true);
     try {
-      const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+      const { error } = await invokeWithRefresh("send-lms-assignment-notification", {
         body: { assignment_ids: selectedIds },
       });
       if (error) throw error;

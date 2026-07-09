@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
   Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send, Trash2,
@@ -32,6 +33,10 @@ export default function LmsTraining() {
   const [addCourseOpen, setAddCourseOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
@@ -46,6 +51,41 @@ export default function LmsTraining() {
       refetch();
     } catch (e: any) {
       toast({ title: "Failed to send notification", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const resendBulk = async () => {
+    if (selectedIds.length === 0) return;
+    setBulkSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+        body: { assignment_ids: selectedIds },
+      });
+      if (error) throw error;
+      toast({ title: `Notifications sent`, description: `Re-sent ${selectedIds.length} notification(s).` });
+      setSelectedIds([]);
+      refetch();
+    } catch (e: any) {
+      toast({ title: "Failed to send notifications", description: e.message, variant: "destructive" });
+    } finally {
+      setBulkSending(false);
+    }
+  };
+
+  const deleteBulk = async () => {
+    if (selectedIds.length === 0) return;
+    setBulkDeleting(true);
+    try {
+      const { error } = await supabase.from("lms_assignments").delete().in("id", selectedIds);
+      if (error) throw error;
+      toast({ title: `Removed ${selectedIds.length} assignment(s)` });
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+      refetch();
+    } catch (e: any) {
+      toast({ title: "Failed to delete", description: e.message, variant: "destructive" });
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -243,10 +283,48 @@ export default function LmsTraining() {
                 className="pl-10"
               />
             </div>
+            {selectedIds.length > 0 && (
+              <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-4 py-2">
+                <p className="text-sm font-medium">{selectedIds.length} selected</p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>Clear</Button>
+                  <Button variant="outline" size="sm" onClick={resendBulk} loading={bulkSending}>
+                    <Send className="w-4 h-4 mr-2" /> Resend selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setBulkDeleteOpen(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete selected
+                  </Button>
+                </div>
+              </div>
+            )}
             <Card>
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          filteredAssignments.length > 0 &&
+                          filteredAssignments.every((a) => selectedIds.includes(a.id))
+                        }
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            const ids = new Set(selectedIds);
+                            filteredAssignments.forEach((a) => ids.add(a.id));
+                            setSelectedIds(Array.from(ids));
+                          } else {
+                            const filteredSet = new Set(filteredAssignments.map((a) => a.id));
+                            setSelectedIds(selectedIds.filter((id) => !filteredSet.has(id)));
+                          }
+                        }}
+                        aria-label="Select all"
+                      />
+                    </TableHead>
                     <TableHead>Caregiver</TableHead>
                     <TableHead>Course</TableHead>
                     <TableHead>Due Date</TableHead>
@@ -260,13 +338,24 @@ export default function LmsTraining() {
                 <TableBody>
                   {filteredAssignments.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                         No assignments found. Assign a course to get started.
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredAssignments.map((a: any) => (
-                      <TableRow key={a.id}>
+                      <TableRow key={a.id} data-state={selectedIds.includes(a.id) ? "selected" : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.includes(a.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedIds((prev) =>
+                                checked ? [...prev, a.id] : prev.filter((id) => id !== a.id)
+                              );
+                            }}
+                            aria-label={`Select ${a.caregiver?.first_name || "row"}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           {a.caregiver ? `${a.caregiver.first_name} ${a.caregiver.last_name}` : "Unknown"}
                         </TableCell>
@@ -316,6 +405,7 @@ export default function LmsTraining() {
                 </TableBody>
               </Table>
             </Card>
+
           </TabsContent>
 
           <TabsContent value="overdue" className="space-y-4">
@@ -428,6 +518,29 @@ export default function LmsTraining() {
               }}
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.length} assignment(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {selectedIds.length} assignment(s), including their progress and scores. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                deleteBulk();
+              }}
+            >
+              {bulkDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

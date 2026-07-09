@@ -33,6 +33,10 @@ export default function LmsTraining() {
   const [addCourseOpen, setAddCourseOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
@@ -47,6 +51,41 @@ export default function LmsTraining() {
       refetch();
     } catch (e: any) {
       toast({ title: "Failed to send notification", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const resendBulk = async () => {
+    if (selectedIds.length === 0) return;
+    setBulkSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-lms-assignment-notification", {
+        body: { assignment_ids: selectedIds },
+      });
+      if (error) throw error;
+      toast({ title: `Notifications sent`, description: `Re-sent ${selectedIds.length} notification(s).` });
+      setSelectedIds([]);
+      refetch();
+    } catch (e: any) {
+      toast({ title: "Failed to send notifications", description: e.message, variant: "destructive" });
+    } finally {
+      setBulkSending(false);
+    }
+  };
+
+  const deleteBulk = async () => {
+    if (selectedIds.length === 0) return;
+    setBulkDeleting(true);
+    try {
+      const { error } = await supabase.from("lms_assignments").delete().in("id", selectedIds);
+      if (error) throw error;
+      toast({ title: `Removed ${selectedIds.length} assignment(s)` });
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+      refetch();
+    } catch (e: any) {
+      toast({ title: "Failed to delete", description: e.message, variant: "destructive" });
+    } finally {
+      setBulkDeleting(false);
     }
   };
 

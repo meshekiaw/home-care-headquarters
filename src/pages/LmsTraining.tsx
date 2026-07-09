@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
   Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send, Trash2,

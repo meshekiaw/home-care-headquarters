@@ -176,7 +176,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
+        <div className="h-16 shrink-0 flex items-center justify-between px-4 border-b border-sidebar-border">
+
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">HC</span>

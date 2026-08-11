@@ -172,7 +172,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar - Mobile */}
       <aside 
         className={cn(
-          "lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-sidebar text-sidebar-foreground z-50 transform transition-transform duration-300",
+          "lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-sidebar text-sidebar-foreground z-50 flex flex-col transform transition-transform duration-300",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

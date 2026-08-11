@@ -172,11 +172,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar - Mobile */}
       <aside 
         className={cn(
-          "lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-sidebar text-sidebar-foreground z-50 transform transition-transform duration-300",
+          "lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-sidebar text-sidebar-foreground z-50 flex flex-col transform transition-transform duration-300",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
+        <div className="h-16 shrink-0 flex items-center justify-between px-4 border-b border-sidebar-border">
+
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">HC</span>
@@ -191,7 +192,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
         </div>
 
-        <nav className="py-4 px-3 space-y-1">
+        <nav className="flex-1 min-h-0 overflow-y-auto py-4 px-3 space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             const isNotifications = item.path === "/notifications";
@@ -221,7 +222,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-sidebar-border">
+        <div className="shrink-0 p-3 border-t border-sidebar-border bg-sidebar">
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent transition-colors"

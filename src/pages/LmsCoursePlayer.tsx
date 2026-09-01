@@ -451,7 +451,18 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                   <Award className="w-16 h-16 text-success mx-auto" />
                   <h3 className="text-2xl font-bold">Course Completed!</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. Your admin has been notified.</p>
-                  <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {nextCourse ? (
+                      <>
+                        <Button onClick={goNext}>
+                          Next Course: {nextCourse.title} <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
+                        <Button variant="outline" asChild><Link to={backPath}>{backLabel}</Link></Button>
+                      </>
+                    ) : (
+                      <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
@@ -467,7 +478,42 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
             </CardContent>
           </Card>
         )}
+
+        {siblings.length > 1 && (
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="text-base">All your courses</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 divide-y">
+              {siblings.map((s, i) => {
+                const isCurrent = s.id === assignment.id;
+                return (
+                  <div key={s.id} className="flex items-center justify-between gap-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {s.status === "completed" ? (
+                        <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                      ) : (
+                        <PlayCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+                      )}
+                      <span className={`text-sm truncate ${isCurrent ? "font-semibold" : ""}`}>
+                        {i + 1}. {s.title}
+                      </span>
+                    </div>
+                    {isCurrent ? (
+                      <Badge variant="secondary" className="shrink-0">Current</Badge>
+                    ) : (
+                      <Button size="sm" variant="ghost" asChild className="shrink-0">
+                        <Link to={coursePath(s)}>{s.status === "completed" ? "Review" : "Open"}</Link>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
       </div>
+
     </Shell>
   );
 }

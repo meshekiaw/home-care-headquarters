@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import OrientationProgressBar from "@/components/orientation/OrientationProgressBar";
 import OrientationSection from "@/components/orientation/OrientationSection";
 import OrientationQuiz from "@/components/orientation/OrientationQuiz";
@@ -63,16 +63,20 @@ export default function OrientationViewer() {
   };
 
   const handleQuizFail = () => {
-    // Reset audio so they must re-watch
-    setAudioCompleted((prev) => ({ ...prev, [currentSection]: false }));
+    // No lock-out: caregivers may retake the quiz and keep navigating freely.
   };
 
   const handleNext = () => {
     if (currentSection < totalSections) {
       const next = currentSection + 1;
+      const newCompleted = [...new Set([...sectionsCompleted, currentSection])];
       setCurrentSection(next);
       if (!isPreview && caregiverId) {
-        upsertProgress(caregiverId, { current_section: next });
+        // Clicking Next marks the current section complete automatically.
+        upsertProgress(caregiverId, {
+          current_section: next,
+          sections_completed: newCompleted as any,
+        });
       }
     }
   };
@@ -104,9 +108,11 @@ export default function OrientationViewer() {
     );
   }
 
-  const canProceed = isPreview
-    ? audioCompleted[currentSection]
-    : audioCompleted[currentSection] && (quizPassed[currentSection] || sectionsCompleted.includes(currentSection));
+  // Navigation is never locked — caregivers can always move forward.
+  const finalQuizDone =
+    currentQuizQuestions.length === 0 ||
+    quizPassed[currentSection] ||
+    sectionsCompleted.includes(currentSection);
 
   return (
     <DashboardLayout>
@@ -128,7 +134,7 @@ export default function OrientationViewer() {
           completedSections={sectionsCompleted}
         />
 
-        {allSectionsComplete && isLastSection ? (
+        {isLastSection && finalQuizDone ? (
           <OrientationConfirmation
             caregiverName="Caregiver"
             totalSections={totalSections}
@@ -146,7 +152,7 @@ export default function OrientationViewer() {
               sectionNumber={currentSection}
             />
 
-            {audioCompleted[currentSection] && currentQuizQuestions.length > 0 && !sectionsCompleted.includes(currentSection) && (
+            {currentQuizQuestions.length > 0 && !sectionsCompleted.includes(currentSection) && (
               <OrientationQuiz
                 sectionNumber={currentSection}
                 questions={currentQuizQuestions}
@@ -161,8 +167,7 @@ export default function OrientationViewer() {
               <Button variant="outline" onClick={handlePrev} disabled={currentSection === 1}>
                 <ArrowLeft className="w-4 h-4 mr-2" /> Previous
               </Button>
-              <Button onClick={handleNext} disabled={!canProceed || isLastSection}>
-                {!canProceed && <Lock className="w-4 h-4 mr-2" />}
+              <Button onClick={handleNext} disabled={isLastSection}>
                 Next <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>

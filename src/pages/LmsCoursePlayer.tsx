@@ -30,9 +30,37 @@ interface Assignment {
     description: string | null;
     content_type: string;
     content_body: string | null;
+    content_url: string | null;
     duration_minutes: number | null;
     passing_score: number | null;
   };
+}
+
+function embedUrl(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
+
+function CourseVideo({ url }: { url: string }) {
+  const embed = embedUrl(url);
+  return (
+    <div className="mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
+      {embed ? (
+        <iframe
+          src={embed}
+          title="Course video"
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <video src={url} controls className="w-full h-full" />
+      )}
+    </div>
+  );
 }
 
 interface QuizQuestion {

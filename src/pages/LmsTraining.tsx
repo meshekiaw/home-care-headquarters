@@ -206,7 +206,7 @@ export default function LmsTraining() {
               <Button variant="outline" onClick={copyPortalLink}>
                 <Copy className="w-4 h-4 mr-2" /> Copy link
               </Button>
-              <Button variant="outline" onClick={() => window.open("/caregiver-training", "_blank")}>
+              <Button variant="outline" onClick={() => window.open(portalUrl, "_blank")}>
                 Preview
               </Button>
             </div>

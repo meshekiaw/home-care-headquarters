@@ -108,10 +108,11 @@ export default function CaregiverPortal() {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/caregiver-training`,
+        emailRedirectTo: caregiverPortalUrl(),
         shouldCreateUser: false,
       },
     });
+
     setSending(false);
     if (error) {
       toast({ title: "Could not send link", description: error.message, variant: "destructive" });

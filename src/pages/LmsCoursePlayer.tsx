@@ -38,14 +38,33 @@ interface Assignment {
 
 function embedUrl(url: string): string | null {
   const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}?enablejsapi=1`;
   const vimeo = url.match(/vimeo\.com\/(\d+)/);
   if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
   return null;
 }
 
-function CourseVideo({ url }: { url: string }) {
+function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
   const embed = embedUrl(url);
+
+  useEffect(() => {
+    if (!embed || !onEnded) return;
+    const handler = (e: MessageEvent) => {
+      const origin = e.origin || "";
+      if (!/youtube\.com|vimeo\.com/.test(origin)) return;
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        // YouTube: info.playerState === 0 (ended). Vimeo: event === "ended"
+        if (data?.event === "ended") onEnded();
+        if (data?.info?.playerState === 0) onEnded();
+      } catch {
+        /* non-JSON message, ignore */
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [embed, onEnded]);
+
   return (
     <div className="mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
       {embed ? (
@@ -57,7 +76,7 @@ function CourseVideo({ url }: { url: string }) {
           allowFullScreen
         />
       ) : (
-        <video src={url} controls className="w-full h-full" />
+        <video src={url} controls className="w-full h-full" onEnded={onEnded} />
       )}
     </div>
   );
@@ -71,6 +90,14 @@ interface QuizQuestion {
   points: number;
   sort_order: number;
 }
+
+interface SiblingAssignment {
+  id: string;
+  status: string;
+  title: string;
+  content_type: string;
+}
+
 
 export default function LmsCoursePlayer({ standalone = false }: { standalone?: boolean }) {
   const { assignmentId } = useParams<{ assignmentId: string }>();

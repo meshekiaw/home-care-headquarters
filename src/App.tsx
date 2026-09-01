@@ -64,6 +64,10 @@ const App = () => (
             <Route path="/auth/magic-link" element={<AuthMagicLink />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
 
+            {/* Caregiver training portal — single shareable link */}
+            <Route path="/caregiver-training" element={<CaregiverPortal />} />
+            <Route path="/caregiver-training/course/:assignmentId" element={<ProtectedRoute allowedRoles={["caregiver"]}><LmsCoursePlayer standalone /></ProtectedRoute>} />
+
             
             {/* Admin-only routes */}
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><Dashboard /></ProtectedRoute>} />

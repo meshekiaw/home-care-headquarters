@@ -426,30 +426,30 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
         {step === "quiz" && (
           <Card>
-            <CardHeader className="border-b">
-              <CardTitle className="text-lg">Quiz</CardTitle>
+            <CardHeader className="border-b px-4 sm:px-6">
+              <CardTitle className="text-base sm:text-lg">Quiz</CardTitle>
               <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 80}%.</p>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 px-4 sm:px-6 space-y-6">
               {questions.map((q, idx) => {
                 const opts: string[] = Array.isArray(q.options) ? q.options : [];
                 return (
                   <div key={q.id} className="space-y-2">
-                    <p className="font-medium">{idx + 1}. {q.question_text}</p>
+                    <p className="font-medium text-base">{idx + 1}. {q.question_text}</p>
                     <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))}>
                       {opts.map((opt, i) => (
-                        <div key={i} className="flex items-center space-x-2">
-                          <RadioGroupItem value={opt} id={`${q.id}-${i}`} />
-                          <Label htmlFor={`${q.id}-${i}`} className="cursor-pointer font-normal">{opt}</Label>
+                        <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
+                          <RadioGroupItem value={opt} id={`${q.id}-${i}`} className="mt-0.5" />
+                          <Label htmlFor={`${q.id}-${i}`} className="cursor-pointer font-normal text-base leading-snug flex-1">{opt}</Label>
                         </div>
                       ))}
                     </RadioGroup>
                   </div>
                 );
               })}
-              <div className="flex justify-between pt-4 border-t">
-                <Button variant="outline" onClick={() => setStep("content")} disabled={submitting}>Back to content</Button>
-                <Button onClick={handleSubmitQuiz} loading={submitting}>Submit Quiz</Button>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t">
+                <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" onClick={() => setStep("content")} disabled={submitting}>Back to content</Button>
+                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleSubmitQuiz} loading={submitting}>Submit Quiz</Button>
               </div>
             </CardContent>
           </Card>
@@ -457,39 +457,40 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
         {step === "result" && result && (
           <Card className={result.passed ? "border-success/40" : "border-destructive/40"}>
-            <CardContent className="pt-8 text-center space-y-4">
+            <CardContent className="pt-8 px-4 sm:px-6 text-center space-y-4">
               {result.passed ? (
                 <>
-                  <Award className="w-16 h-16 text-success mx-auto" />
-                  <h3 className="text-2xl font-bold">Course Completed!</h3>
+                  <Award className="w-14 h-14 sm:w-16 sm:h-16 text-success mx-auto" />
+                  <h3 className="text-xl sm:text-2xl font-bold">Course Completed!</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. Your admin has been notified.</p>
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-2">
                     {nextCourse ? (
                       <>
-                        <Button onClick={goNext}>
-                          Next Course: {nextCourse.title} <ArrowRight className="w-4 h-4 ml-1" />
+                        <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={goNext}>
+                          <span className="truncate">Next Course: {nextCourse.title}</span> <ArrowRight className="w-4 h-4 ml-1 shrink-0" />
                         </Button>
-                        <Button variant="outline" asChild><Link to={backPath}>{backLabel}</Link></Button>
+                        <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>{backLabel}</Link></Button>
                       </>
                     ) : (
-                      <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
+                      <Button className="h-11 w-full sm:w-auto sm:h-10" asChild><Link to={backPath}>{backLabel}</Link></Button>
                     )}
                   </div>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-16 h-16 text-destructive mx-auto" />
-                  <h3 className="text-2xl font-bold">Not Quite There</h3>
+                  <XCircle className="w-14 h-14 sm:w-16 sm:h-16 text-destructive mx-auto" />
+                  <h3 className="text-xl sm:text-2xl font-bold">Not Quite There</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 80}% to pass.</p>
-                  <div className="flex justify-center gap-2">
-                    <Button variant="outline" asChild><Link to={backPath}>Back</Link></Button>
-                    <Button onClick={retryQuiz}>Review & Retry</Button>
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-center gap-2">
+                    <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>Back</Link></Button>
+                    <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={retryQuiz}>Review & Retry</Button>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
         )}
+
 
         {siblings.length > 1 && (
           <Card>

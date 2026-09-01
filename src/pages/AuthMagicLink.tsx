@@ -24,7 +24,7 @@ export default function AuthMagicLink() {
     | "recovery"
     | "invite"
     | "email";
-  const next = params.get("next") || "/my-training";
+  const next = params.get("next") || "/caregiver-training";
 
   const [status, setStatus] = useState<"idle" | "verifying" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

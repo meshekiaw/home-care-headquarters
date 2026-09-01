@@ -114,7 +114,7 @@ export const template = {
       { title: 'HIPAA Privacy Basics', dueDate: '2026-08-01' },
       { title: 'Infection Control Refresher', dueDate: null },
     ],
-    loginUrl: 'https://homecareheadquarters.org/auth/magic-link?token_hash=preview&type=magiclink&next=/my-training',
+    loginUrl: 'https://homecareheadquarters.org/auth/magic-link?token_hash=preview&type=magiclink&next=/caregiver-training',
     supportEmail: 'homcarenetwork4@gmail.com',
   },
 } satisfies TemplateEntry

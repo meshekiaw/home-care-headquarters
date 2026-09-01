@@ -134,6 +134,9 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [contentRead, setContentRead] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ score: number; passed: boolean; results: Record<string, { correct: boolean; correct_answer: string }> } | null>(null);
+  const [siblings, setSiblings] = useState<SiblingAssignment[]>([]);
+  const [videoEnded, setVideoEnded] = useState(false);
+
 
   const load = useCallback(async () => {
     if (!user || !assignmentId) return;

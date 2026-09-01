@@ -310,6 +310,32 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
   const course = assignment.lms_courses;
 
+  const coursePath = (s: SiblingAssignment) =>
+    s.content_type === "orientation"
+      ? "/my-orientation"
+      : `${standalone ? "/caregiver-training" : "/my-training"}/course/${s.id}`;
+
+  const currentIndex = siblings.findIndex((s) => s.id === assignment.id);
+  const nextCourse =
+    siblings.slice(currentIndex + 1).find((s) => s.status !== "completed") ||
+    siblings.find((s) => s.id !== assignment.id && s.status !== "completed") ||
+    null;
+  const totalCourses = siblings.length;
+  const completedCourses = siblings.filter(
+    (s) => s.status === "completed" || (s.id === assignment.id && result?.passed)
+  ).length;
+
+  const goNext = () => {
+    if (!nextCourse) return;
+    setStep("content");
+    setResult(null);
+    setAnswers({});
+    setQuestions([]);
+    setVideoEnded(false);
+    setContentRead(false);
+    navigate(coursePath(nextCourse));
+  };
+
   return (
     <Shell>
       <div className="max-w-4xl mx-auto space-y-6">
@@ -321,6 +347,20 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
             <Badge className="bg-success/10 text-success border-success/20"><CheckCircle2 className="w-3 h-3 mr-1" />Completed</Badge>
           )}
         </div>
+
+        {totalCourses > 0 && (
+          <Card>
+            <CardContent className="py-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">Your training progress</span>
+                <span className="text-muted-foreground">
+                  {completedCourses} of {totalCourses} courses completed
+                </span>
+              </div>
+              <Progress value={Math.round((completedCourses / totalCourses) * 100)} className="h-2" />
+            </CardContent>
+          </Card>
+        )}
 
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="w-6 h-6 text-primary" />{course.title}</h2>
@@ -340,7 +380,25 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               <CardTitle className="flex items-center gap-2 text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              {course.content_url && <CourseVideo url={course.content_url} />}
+              {course.content_url && <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />}
+              {videoEnded && (
+                <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success" /> Video finished
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleContinueToQuiz} loading={submitting}>
+                      {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
+                    </Button>
+                    {nextCourse && (
+                      <Button size="sm" variant="outline" onClick={goNext}>
+                        Next Course <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}

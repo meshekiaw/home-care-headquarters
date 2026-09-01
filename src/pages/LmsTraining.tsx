@@ -43,7 +43,7 @@ export default function LmsTraining() {
 
   const loading = coursesLoading || assignmentsLoading;
 
-  const portalUrl = `${window.location.origin}/caregiver-training`;
+  const portalUrl = caregiverPortalUrl();
 
   const copyPortalLink = async () => {
     try {

@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
   Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send, Trash2,
+  Link as LinkIcon, Copy,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -41,6 +42,17 @@ export default function LmsTraining() {
   const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
+
+  const portalUrl = `${window.location.origin}/caregiver-training`;
+
+  const copyPortalLink = async () => {
+    try {
+      await navigator.clipboard.writeText(portalUrl);
+      toast({ title: "Link copied", description: "Share it with your caregivers." });
+    } catch {
+      toast({ title: "Copy failed", description: portalUrl, variant: "destructive" });
+    }
+  };
 
   const resendNotification = async (assignmentId: string) => {
     try {

@@ -225,7 +225,22 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     setContentRead(false);
   };
 
-  if (loading) {
+  if (!authLoading && !user) {
+    return (
+      <Shell>
+        <div className="max-w-md mx-auto text-center py-12 space-y-3">
+          <p className="font-medium">Sign in to view this course</p>
+          <p className="text-sm text-muted-foreground">
+            Enter your email on the training portal and we'll send you a secure link.
+          </p>
+          <Button asChild><Link to="/caregiver-training">Go to training portal</Link></Button>
+        </div>
+      </Shell>
+    );
+  }
+
+  if (loading || authLoading) {
+
     return (
       <Shell>
         <div className="space-y-4 max-w-4xl mx-auto">

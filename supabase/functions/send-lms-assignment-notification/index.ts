@@ -54,7 +54,7 @@ async function buildMagicLink(
     type: "magiclink",
     email,
     options: {
-      redirectTo: `${SITE_URL}/my-training`,
+      redirectTo: `${SITE_URL}/caregiver-training`,
     },
   });
   if (error) throw new Error(`generateLink failed: ${error.message}`);
@@ -64,7 +64,7 @@ async function buildMagicLink(
     `${SITE_URL}/auth/magic-link` +
     `?token_hash=${encodeURIComponent(hashed_token)}` +
     `&type=magiclink` +
-    `&next=${encodeURIComponent("/my-training")}`;
+    `&next=${encodeURIComponent("/caregiver-training")}`;
   return { url, hashed_token };
 }
 

@@ -214,6 +214,15 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
   useEffect(() => { load(); }, [load]);
 
+  // Reset player state when navigating to a different course
+  useEffect(() => {
+    setStep("content");
+    setResult(null);
+    setAnswers({});
+    setVideoEnded(false);
+    setContentRead(false);
+  }, [assignmentId]);
+
   const handleContinueToQuiz = async () => {
     if (!assignment) return;
     setContentRead(true);

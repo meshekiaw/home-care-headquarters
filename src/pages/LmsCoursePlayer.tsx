@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 
 interface Assignment {

@@ -140,14 +140,19 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
   };
 
   const handleQuizFail = () => {
-    setAudioCompleted((prev) => ({ ...prev, [currentSection]: false }));
+    // No lock-out: caregivers may retake the quiz and keep navigating freely.
   };
 
   const handleNext = () => {
     if (currentSection < totalSections) {
       const next = currentSection + 1;
+      // Clicking Next marks the current section complete automatically.
+      const newCompleted = [...new Set([...sectionsCompleted, currentSection])];
       setCurrentSection(next);
-      upsertProgress(caregiverId, { current_section: next });
+      upsertProgress(caregiverId, {
+        current_section: next,
+        sections_completed: newCompleted as any,
+      });
     }
   };
 

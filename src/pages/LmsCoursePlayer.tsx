@@ -374,8 +374,8 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
         )}
 
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="w-6 h-6 text-primary" />{course.title}</h2>
-          {course.description && <p className="text-muted-foreground mt-1">{course.description}</p>}
+          <h2 className="text-xl sm:text-2xl font-bold flex items-start gap-2"><BookOpen className="w-6 h-6 text-primary shrink-0 mt-0.5" /><span className="min-w-0 break-words">{course.title}</span></h2>
+          {course.description && <p className="text-sm sm:text-base text-muted-foreground mt-1">{course.description}</p>}
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
             {course.duration_minutes && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{course.duration_minutes} min</span>}
             {assignment.due_date && <span>Due: {format(new Date(assignment.due_date), "MMM d, yyyy")}</span>}
@@ -386,23 +386,23 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
         <Progress value={step === "content" ? 25 : step === "quiz" ? 60 : 100} className="h-2" />
 
         {step === "content" && (
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2 text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 px-4 sm:px-6">
               {course.content_url && <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />}
               {videoEnded && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success" /> Video finished
                   </p>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={handleContinueToQuiz} loading={submitting}>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button className="h-11 w-full sm:w-auto sm:h-9" onClick={handleContinueToQuiz} loading={submitting}>
                       {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
                     </Button>
                     {nextCourse && (
-                      <Button size="sm" variant="outline" onClick={goNext}>
+                      <Button className="h-11 w-full sm:w-auto sm:h-9" variant="outline" onClick={goNext}>
                         Next Course <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     )}
@@ -411,17 +411,18 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               )}
 
               <div
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert break-words"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}
               />
               <div className="mt-8 flex justify-end">
-                <Button onClick={handleContinueToQuiz} loading={submitting}>
+                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
                   {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
+
 
         {step === "quiz" && (
           <Card>

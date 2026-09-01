@@ -236,8 +236,6 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
               <Button onClick={handleNext} disabled={isLastSection}>
                 Next <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-                Next <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
             </div>
           </div>
         ) : (

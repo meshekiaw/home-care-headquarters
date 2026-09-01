@@ -292,20 +292,33 @@ export default function CaregiverPortal() {
   return (
     <PortalShell onSignOut={handleSignOut}>
       <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-bold">Welcome, {caregiver.first_name}</h2>
-          <p className="text-muted-foreground">
-            {assignments.length === 0
-              ? "No training assigned yet."
-              : `${completedCount} of ${assignments.length} course(s) completed.`}
-          </p>
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-bold">Welcome, {caregiver.first_name}</h2>
+            <p className="text-muted-foreground">
+              {assignments.length === 0
+                ? "No training assigned yet."
+                : "Work through your courses below — you can start any course at any time."}
+            </p>
+          </div>
           {assignments.length > 0 && (
-            <Progress
-              value={Math.round((completedCount / assignments.length) * 100)}
-              className="h-2 mt-3 max-w-sm"
-            />
+            <Card>
+              <CardContent className="py-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">Your training progress</span>
+                  <span className="text-muted-foreground">
+                    {completedCount} of {assignments.length} courses completed
+                  </span>
+                </div>
+                <Progress
+                  value={Math.round((completedCount / assignments.length) * 100)}
+                  className="h-3"
+                />
+              </CardContent>
+            </Card>
           )}
         </div>
+
 
         <section className="space-y-3">
           <h3 className="text-lg font-semibold flex items-center gap-2">

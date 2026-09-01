@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 
 interface Assignment {
@@ -38,14 +38,33 @@ interface Assignment {
 
 function embedUrl(url: string): string | null {
   const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}?enablejsapi=1`;
   const vimeo = url.match(/vimeo\.com\/(\d+)/);
   if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
   return null;
 }
 
-function CourseVideo({ url }: { url: string }) {
+function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
   const embed = embedUrl(url);
+
+  useEffect(() => {
+    if (!embed || !onEnded) return;
+    const handler = (e: MessageEvent) => {
+      const origin = e.origin || "";
+      if (!/youtube\.com|vimeo\.com/.test(origin)) return;
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        // YouTube: info.playerState === 0 (ended). Vimeo: event === "ended"
+        if (data?.event === "ended") onEnded();
+        if (data?.info?.playerState === 0) onEnded();
+      } catch {
+        /* non-JSON message, ignore */
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [embed, onEnded]);
+
   return (
     <div className="mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
       {embed ? (
@@ -57,7 +76,7 @@ function CourseVideo({ url }: { url: string }) {
           allowFullScreen
         />
       ) : (
-        <video src={url} controls className="w-full h-full" />
+        <video src={url} controls className="w-full h-full" onEnded={onEnded} />
       )}
     </div>
   );
@@ -71,6 +90,14 @@ interface QuizQuestion {
   points: number;
   sort_order: number;
 }
+
+interface SiblingAssignment {
+  id: string;
+  status: string;
+  title: string;
+  content_type: string;
+}
+
 
 export default function LmsCoursePlayer({ standalone = false }: { standalone?: boolean }) {
   const { assignmentId } = useParams<{ assignmentId: string }>();
@@ -107,6 +134,9 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [contentRead, setContentRead] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ score: number; passed: boolean; results: Record<string, { correct: boolean; correct_answer: string }> } | null>(null);
+  const [siblings, setSiblings] = useState<SiblingAssignment[]>([]);
+  const [videoEnded, setVideoEnded] = useState(false);
+
 
   const load = useCallback(async () => {
     if (!user || !assignmentId) return;
@@ -163,10 +193,35 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       setResult({ score: a.score ?? 100, passed: true, results: {} });
     }
 
+    // Load the caregiver's full assigned course list (for progress + next/jump)
+    const { data: all } = await supabase
+      .from("lms_assignments")
+      .select("id, status, lms_courses(title, content_type)")
+      .eq("caregiver_id", cg.id)
+      .order("due_date", { ascending: true, nullsFirst: false });
+    setSiblings(
+      ((all as any[]) || []).map((r) => ({
+        id: r.id,
+        status: r.status,
+        title: r.lms_courses?.title ?? "Course",
+        content_type: r.lms_courses?.content_type ?? "text",
+      }))
+    );
+
     setLoading(false);
+
   }, [user, assignmentId, toast, navigate]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Reset player state when navigating to a different course
+  useEffect(() => {
+    setStep("content");
+    setResult(null);
+    setAnswers({});
+    setVideoEnded(false);
+    setContentRead(false);
+  }, [assignmentId]);
 
   const handleContinueToQuiz = async () => {
     if (!assignment) return;
@@ -264,6 +319,32 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
   const course = assignment.lms_courses;
 
+  const coursePath = (s: SiblingAssignment) =>
+    s.content_type === "orientation"
+      ? "/my-orientation"
+      : `${standalone ? "/caregiver-training" : "/my-training"}/course/${s.id}`;
+
+  const currentIndex = siblings.findIndex((s) => s.id === assignment.id);
+  const nextCourse =
+    siblings.slice(currentIndex + 1).find((s) => s.status !== "completed") ||
+    siblings.find((s) => s.id !== assignment.id && s.status !== "completed") ||
+    null;
+  const totalCourses = siblings.length;
+  const completedCourses = siblings.filter(
+    (s) => s.status === "completed" || (s.id === assignment.id && result?.passed)
+  ).length;
+
+  const goNext = () => {
+    if (!nextCourse) return;
+    setStep("content");
+    setResult(null);
+    setAnswers({});
+    setQuestions([]);
+    setVideoEnded(false);
+    setContentRead(false);
+    navigate(coursePath(nextCourse));
+  };
+
   return (
     <Shell>
       <div className="max-w-4xl mx-auto space-y-6">
@@ -275,6 +356,20 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
             <Badge className="bg-success/10 text-success border-success/20"><CheckCircle2 className="w-3 h-3 mr-1" />Completed</Badge>
           )}
         </div>
+
+        {totalCourses > 0 && (
+          <Card>
+            <CardContent className="py-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">Your training progress</span>
+                <span className="text-muted-foreground">
+                  {completedCourses} of {totalCourses} courses completed
+                </span>
+              </div>
+              <Progress value={Math.round((completedCourses / totalCourses) * 100)} className="h-2" />
+            </CardContent>
+          </Card>
+        )}
 
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="w-6 h-6 text-primary" />{course.title}</h2>
@@ -294,7 +389,25 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               <CardTitle className="flex items-center gap-2 text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              {course.content_url && <CourseVideo url={course.content_url} />}
+              {course.content_url && <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />}
+              {videoEnded && (
+                <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success" /> Video finished
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleContinueToQuiz} loading={submitting}>
+                      {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
+                    </Button>
+                    {nextCourse && (
+                      <Button size="sm" variant="outline" onClick={goNext}>
+                        Next Course <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}
@@ -347,7 +460,18 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                   <Award className="w-16 h-16 text-success mx-auto" />
                   <h3 className="text-2xl font-bold">Course Completed!</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. Your admin has been notified.</p>
-                  <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {nextCourse ? (
+                      <>
+                        <Button onClick={goNext}>
+                          Next Course: {nextCourse.title} <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
+                        <Button variant="outline" asChild><Link to={backPath}>{backLabel}</Link></Button>
+                      </>
+                    ) : (
+                      <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
@@ -363,7 +487,42 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
             </CardContent>
           </Card>
         )}
+
+        {siblings.length > 1 && (
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="text-base">All your courses</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 divide-y">
+              {siblings.map((s, i) => {
+                const isCurrent = s.id === assignment.id;
+                return (
+                  <div key={s.id} className="flex items-center justify-between gap-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {s.status === "completed" ? (
+                        <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                      ) : (
+                        <PlayCircle className="w-4 h-4 text-muted-foreground shrink-0" />
+                      )}
+                      <span className={`text-sm truncate ${isCurrent ? "font-semibold" : ""}`}>
+                        {i + 1}. {s.title}
+                      </span>
+                    </div>
+                    {isCurrent ? (
+                      <Badge variant="secondary" className="shrink-0">Current</Badge>
+                    ) : (
+                      <Button size="sm" variant="ghost" asChild className="shrink-0">
+                        <Link to={coursePath(s)}>{s.status === "completed" ? "Review" : "Open"}</Link>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
       </div>
+
     </Shell>
   );
 }

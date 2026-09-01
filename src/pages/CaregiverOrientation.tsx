@@ -175,7 +175,11 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
     );
   }
 
-  const canProceed = audioCompleted[currentSection] && (quizPassed[currentSection] || sectionsCompleted.includes(currentSection));
+  // Navigation is never locked — caregivers can always move forward.
+  const finalQuizDone =
+    currentQuizQuestions.length === 0 ||
+    quizPassed[currentSection] ||
+    sectionsCompleted.includes(currentSection);
 
   // Get caregiver name for certificate
   const caregiverData = progressList.find(p => p.caregiver_id === caregiverId);
@@ -186,7 +190,7 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
         <div>
           <h2 className="text-2xl font-bold">New Hire Orientation</h2>
           <p className="text-muted-foreground">
-            Complete all sections, pass each quiz, and confirm to finish.
+            Move through the sections at your own pace, then pass the final quiz to finish.
           </p>
         </div>
 
@@ -196,7 +200,7 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
           completedSections={sectionsCompleted}
         />
 
-        {allSectionsComplete && isLastSection ? (
+        {isLastSection && finalQuizDone ? (
           <OrientationConfirmation
             caregiverName="Caregiver"
             totalSections={totalSections}
@@ -214,7 +218,7 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
               sectionNumber={currentSection}
             />
 
-            {audioCompleted[currentSection] && currentQuizQuestions.length > 0 && !sectionsCompleted.includes(currentSection) && (
+            {currentQuizQuestions.length > 0 && !sectionsCompleted.includes(currentSection) && (
               <OrientationQuiz
                 sectionNumber={currentSection}
                 questions={currentQuizQuestions}
@@ -229,8 +233,9 @@ function OrientationViewerInner({ caregiverId }: { caregiverId: string }) {
               <Button variant="outline" onClick={handlePrev} disabled={currentSection === 1}>
                 <ArrowLeft className="w-4 h-4 mr-2" /> Previous
               </Button>
-              <Button onClick={handleNext} disabled={!canProceed || isLastSection}>
-                {!canProceed && <LockIcon className="w-4 h-4 mr-2" />}
+              <Button onClick={handleNext} disabled={isLastSection}>
+                Next <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
                 Next <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>

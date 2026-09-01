@@ -107,18 +107,19 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const Shell = ({ children }: { children: React.ReactNode }) =>
     standalone ? (
       <div className="min-h-screen bg-muted/30">
-        <header className="border-b bg-card">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+        <header className="border-b bg-card sticky top-0 z-30">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
               <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-semibold leading-tight">Caregiver Training Portal</h1>
-              <p className="text-xs text-muted-foreground">Home Care Headquarters</p>
+            <div className="min-w-0">
+              <h1 className="font-semibold leading-tight text-sm sm:text-base truncate">Caregiver Training Portal</h1>
+              <p className="text-xs text-muted-foreground truncate">Home Care Headquarters</p>
             </div>
           </div>
         </header>
-        <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
+        <main className="max-w-4xl mx-auto px-4 py-4 sm:py-6">{children}</main>
+
       </div>
     ) : (
       <CaregiverLayout>{children}</CaregiverLayout>

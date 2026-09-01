@@ -96,7 +96,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       <CaregiverLayout>{children}</CaregiverLayout>
     );
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);

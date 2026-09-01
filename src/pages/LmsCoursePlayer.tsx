@@ -66,7 +66,7 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
   }, [embed, onEnded]);
 
   return (
-    <div className="mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
+    <div className="-mx-8 sm:mx-0 w-[calc(100%+4rem)] sm:w-full mb-6 sm:rounded-lg overflow-hidden border-y sm:border bg-black aspect-video">
       {embed ? (
         <iframe
           src={embed}
@@ -76,11 +76,12 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
           allowFullScreen
         />
       ) : (
-        <video src={url} controls className="w-full h-full" onEnded={onEnded} />
+        <video src={url} controls playsInline className="w-full h-full" onEnded={onEnded} />
       )}
     </div>
   );
 }
+
 
 interface QuizQuestion {
   id: string;
@@ -106,18 +107,19 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const Shell = ({ children }: { children: React.ReactNode }) =>
     standalone ? (
       <div className="min-h-screen bg-muted/30">
-        <header className="border-b bg-card">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+        <header className="border-b bg-card sticky top-0 z-30">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
               <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-semibold leading-tight">Caregiver Training Portal</h1>
-              <p className="text-xs text-muted-foreground">Home Care Headquarters</p>
+            <div className="min-w-0">
+              <h1 className="font-semibold leading-tight text-sm sm:text-base truncate">Caregiver Training Portal</h1>
+              <p className="text-xs text-muted-foreground truncate">Home Care Headquarters</p>
             </div>
           </div>
         </header>
-        <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
+        <main className="max-w-4xl mx-auto px-4 py-4 sm:py-6">{children}</main>
+
       </div>
     ) : (
       <CaregiverLayout>{children}</CaregiverLayout>
@@ -372,8 +374,8 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
         )}
 
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="w-6 h-6 text-primary" />{course.title}</h2>
-          {course.description && <p className="text-muted-foreground mt-1">{course.description}</p>}
+          <h2 className="text-xl sm:text-2xl font-bold flex items-start gap-2"><BookOpen className="w-6 h-6 text-primary shrink-0 mt-0.5" /><span className="min-w-0 break-words">{course.title}</span></h2>
+          {course.description && <p className="text-sm sm:text-base text-muted-foreground mt-1">{course.description}</p>}
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
             {course.duration_minutes && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{course.duration_minutes} min</span>}
             {assignment.due_date && <span>Due: {format(new Date(assignment.due_date), "MMM d, yyyy")}</span>}
@@ -384,23 +386,23 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
         <Progress value={step === "content" ? 25 : step === "quiz" ? 60 : 100} className="h-2" />
 
         {step === "content" && (
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2 text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 px-4 sm:px-6">
               {course.content_url && <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />}
               {videoEnded && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success" /> Video finished
                   </p>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={handleContinueToQuiz} loading={submitting}>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button className="h-11 w-full sm:w-auto sm:h-9" onClick={handleContinueToQuiz} loading={submitting}>
                       {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
                     </Button>
                     {nextCourse && (
-                      <Button size="sm" variant="outline" onClick={goNext}>
+                      <Button className="h-11 w-full sm:w-auto sm:h-9" variant="outline" onClick={goNext}>
                         Next Course <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     )}
@@ -409,11 +411,11 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               )}
 
               <div
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert break-words"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}
               />
               <div className="mt-8 flex justify-end">
-                <Button onClick={handleContinueToQuiz} loading={submitting}>
+                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
                   {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
                 </Button>
               </div>
@@ -421,32 +423,33 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           </Card>
         )}
 
+
         {step === "quiz" && (
           <Card>
-            <CardHeader className="border-b">
-              <CardTitle className="text-lg">Quiz</CardTitle>
+            <CardHeader className="border-b px-4 sm:px-6">
+              <CardTitle className="text-base sm:text-lg">Quiz</CardTitle>
               <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 80}%.</p>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 px-4 sm:px-6 space-y-6">
               {questions.map((q, idx) => {
                 const opts: string[] = Array.isArray(q.options) ? q.options : [];
                 return (
                   <div key={q.id} className="space-y-2">
-                    <p className="font-medium">{idx + 1}. {q.question_text}</p>
+                    <p className="font-medium text-base">{idx + 1}. {q.question_text}</p>
                     <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))}>
                       {opts.map((opt, i) => (
-                        <div key={i} className="flex items-center space-x-2">
-                          <RadioGroupItem value={opt} id={`${q.id}-${i}`} />
-                          <Label htmlFor={`${q.id}-${i}`} className="cursor-pointer font-normal">{opt}</Label>
+                        <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
+                          <RadioGroupItem value={opt} id={`${q.id}-${i}`} className="mt-0.5" />
+                          <Label htmlFor={`${q.id}-${i}`} className="cursor-pointer font-normal text-base leading-snug flex-1">{opt}</Label>
                         </div>
                       ))}
                     </RadioGroup>
                   </div>
                 );
               })}
-              <div className="flex justify-between pt-4 border-t">
-                <Button variant="outline" onClick={() => setStep("content")} disabled={submitting}>Back to content</Button>
-                <Button onClick={handleSubmitQuiz} loading={submitting}>Submit Quiz</Button>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t">
+                <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" onClick={() => setStep("content")} disabled={submitting}>Back to content</Button>
+                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleSubmitQuiz} loading={submitting}>Submit Quiz</Button>
               </div>
             </CardContent>
           </Card>
@@ -454,33 +457,33 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
         {step === "result" && result && (
           <Card className={result.passed ? "border-success/40" : "border-destructive/40"}>
-            <CardContent className="pt-8 text-center space-y-4">
+            <CardContent className="pt-8 px-4 sm:px-6 text-center space-y-4">
               {result.passed ? (
                 <>
-                  <Award className="w-16 h-16 text-success mx-auto" />
-                  <h3 className="text-2xl font-bold">Course Completed!</h3>
+                  <Award className="w-14 h-14 sm:w-16 sm:h-16 text-success mx-auto" />
+                  <h3 className="text-xl sm:text-2xl font-bold">Course Completed!</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. Your admin has been notified.</p>
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-2">
                     {nextCourse ? (
                       <>
-                        <Button onClick={goNext}>
-                          Next Course: {nextCourse.title} <ArrowRight className="w-4 h-4 ml-1" />
+                        <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={goNext}>
+                          <span className="truncate">Next Course: {nextCourse.title}</span> <ArrowRight className="w-4 h-4 ml-1 shrink-0" />
                         </Button>
-                        <Button variant="outline" asChild><Link to={backPath}>{backLabel}</Link></Button>
+                        <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>{backLabel}</Link></Button>
                       </>
                     ) : (
-                      <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
+                      <Button className="h-11 w-full sm:w-auto sm:h-10" asChild><Link to={backPath}>{backLabel}</Link></Button>
                     )}
                   </div>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-16 h-16 text-destructive mx-auto" />
-                  <h3 className="text-2xl font-bold">Not Quite There</h3>
+                  <XCircle className="w-14 h-14 sm:w-16 sm:h-16 text-destructive mx-auto" />
+                  <h3 className="text-xl sm:text-2xl font-bold">Not Quite There</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 80}% to pass.</p>
-                  <div className="flex justify-center gap-2">
-                    <Button variant="outline" asChild><Link to={backPath}>Back</Link></Button>
-                    <Button onClick={retryQuiz}>Review & Retry</Button>
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-center gap-2">
+                    <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>Back</Link></Button>
+                    <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={retryQuiz}>Review & Retry</Button>
                   </div>
                 </>
               )}
@@ -488,16 +491,17 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           </Card>
         )}
 
+
         {siblings.length > 1 && (
           <Card>
-            <CardHeader className="border-b">
+            <CardHeader className="border-b px-4 sm:px-6">
               <CardTitle className="text-base">All your courses</CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 divide-y">
+            <CardContent className="pt-2 px-4 sm:px-6 divide-y">
               {siblings.map((s, i) => {
                 const isCurrent = s.id === assignment.id;
                 return (
-                  <div key={s.id} className="flex items-center justify-between gap-3 py-2">
+                  <div key={s.id} className="flex items-center justify-between gap-3 py-3">
                     <div className="flex items-center gap-2 min-w-0">
                       {s.status === "completed" ? (
                         <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
@@ -511,13 +515,14 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                     {isCurrent ? (
                       <Badge variant="secondary" className="shrink-0">Current</Badge>
                     ) : (
-                      <Button size="sm" variant="ghost" asChild className="shrink-0">
+                      <Button size="sm" variant="ghost" asChild className="shrink-0 h-10 px-3">
                         <Link to={coursePath(s)}>{s.status === "completed" ? "Review" : "Open"}</Link>
                       </Button>
                     )}
                   </div>
                 );
               })}
+
             </CardContent>
           </Card>
         )}

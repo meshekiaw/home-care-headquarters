@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { format, isPast, differenceInDays } from "date-fns";
 import { downloadLmsCertificate } from "@/utils/lmsCertificatePdf";
+import { caregiverPortalUrl } from "@/lib/publicOrigin";
+
 
 interface PortalAssignment {
   id: string;

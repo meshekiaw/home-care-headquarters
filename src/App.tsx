@@ -42,6 +42,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AuthMagicLink from "./pages/AuthMagicLink";
 import Unsubscribe from "./pages/Unsubscribe";
+import CaregiverPortal from "./pages/CaregiverPortal";
 
 const queryClient = new QueryClient();
 

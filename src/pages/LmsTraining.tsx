@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { caregiverPortalUrl } from "@/lib/publicOrigin";
+
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
   Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send, Trash2,
@@ -43,7 +45,7 @@ export default function LmsTraining() {
 
   const loading = coursesLoading || assignmentsLoading;
 
-  const portalUrl = `${window.location.origin}/caregiver-training`;
+  const portalUrl = caregiverPortalUrl();
 
   const copyPortalLink = async () => {
     try {
@@ -204,7 +206,7 @@ export default function LmsTraining() {
               <Button variant="outline" onClick={copyPortalLink}>
                 <Copy className="w-4 h-4 mr-2" /> Copy link
               </Button>
-              <Button variant="outline" onClick={() => window.open("/caregiver-training", "_blank")}>
+              <Button variant="outline" onClick={() => window.open(portalUrl, "_blank")}>
                 Preview
               </Button>
             </div>

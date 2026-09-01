@@ -193,7 +193,23 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       setResult({ score: a.score ?? 100, passed: true, results: {} });
     }
 
+    // Load the caregiver's full assigned course list (for progress + next/jump)
+    const { data: all } = await supabase
+      .from("lms_assignments")
+      .select("id, status, lms_courses(title, content_type)")
+      .eq("caregiver_id", cg.id)
+      .order("due_date", { ascending: true, nullsFirst: false });
+    setSiblings(
+      ((all as any[]) || []).map((r) => ({
+        id: r.id,
+        status: r.status,
+        title: r.lms_courses?.title ?? "Course",
+        content_type: r.lms_courses?.content_type ?? "text",
+      }))
+    );
+
     setLoading(false);
+
   }, [user, assignmentId, toast, navigate]);
 
   useEffect(() => { load(); }, [load]);

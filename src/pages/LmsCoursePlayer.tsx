@@ -494,14 +494,14 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
         {siblings.length > 1 && (
           <Card>
-            <CardHeader className="border-b">
+            <CardHeader className="border-b px-4 sm:px-6">
               <CardTitle className="text-base">All your courses</CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 divide-y">
+            <CardContent className="pt-2 px-4 sm:px-6 divide-y">
               {siblings.map((s, i) => {
                 const isCurrent = s.id === assignment.id;
                 return (
-                  <div key={s.id} className="flex items-center justify-between gap-3 py-2">
+                  <div key={s.id} className="flex items-center justify-between gap-3 py-3">
                     <div className="flex items-center gap-2 min-w-0">
                       {s.status === "completed" ? (
                         <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
@@ -515,13 +515,14 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                     {isCurrent ? (
                       <Badge variant="secondary" className="shrink-0">Current</Badge>
                     ) : (
-                      <Button size="sm" variant="ghost" asChild className="shrink-0">
+                      <Button size="sm" variant="ghost" asChild className="shrink-0 h-10 px-3">
                         <Link to={coursePath(s)}>{s.status === "completed" ? "Review" : "Open"}</Link>
                       </Button>
                     )}
                   </div>
                 );
               })}
+
             </CardContent>
           </Card>
         )}

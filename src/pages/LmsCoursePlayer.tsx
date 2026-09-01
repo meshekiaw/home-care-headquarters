@@ -66,7 +66,7 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
   }, [embed, onEnded]);
 
   return (
-    <div className="mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
+    <div className="-mx-4 sm:mx-0 mb-6 sm:rounded-lg overflow-hidden border-y sm:border bg-black aspect-video w-[calc(100%+2rem)] sm:w-full">
       {embed ? (
         <iframe
           src={embed}
@@ -76,11 +76,12 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
           allowFullScreen
         />
       ) : (
-        <video src={url} controls className="w-full h-full" onEnded={onEnded} />
+        <video src={url} controls playsInline className="w-full h-full" onEnded={onEnded} />
       )}
     </div>
   );
 }
+
 
 interface QuizQuestion {
   id: string;

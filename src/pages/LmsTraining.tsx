@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   BookOpen, GraduationCap, AlertTriangle, CheckCircle2, Clock,
   Search, Plus, Users, TrendingUp, BarChart3, FileText, Download, Send, Trash2,
+  Link as LinkIcon, Copy,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -41,6 +42,17 @@ export default function LmsTraining() {
   const { toast } = useToast();
 
   const loading = coursesLoading || assignmentsLoading;
+
+  const portalUrl = `${window.location.origin}/caregiver-training`;
+
+  const copyPortalLink = async () => {
+    try {
+      await navigator.clipboard.writeText(portalUrl);
+      toast({ title: "Link copied", description: "Share it with your caregivers." });
+    } catch {
+      toast({ title: "Copy failed", description: portalUrl, variant: "destructive" });
+    }
+  };
 
   const resendNotification = async (assignmentId: string) => {
     try {
@@ -174,6 +186,32 @@ export default function LmsTraining() {
             </Button>
           </div>
         </div>
+
+        {/* Shareable caregiver portal link */}
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="pt-6 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <div className="min-w-0">
+              <p className="font-semibold flex items-center gap-2">
+                <LinkIcon className="w-4 h-4 text-primary" /> Caregiver Training Portal link
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Share this one link with caregivers. They sign in with their email and see only their own
+                orientation and in-service courses.
+              </p>
+              <code className="text-xs break-all text-foreground">{portalUrl}</code>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button variant="outline" onClick={copyPortalLink}>
+                <Copy className="w-4 h-4 mr-2" /> Copy link
+              </Button>
+              <Button variant="outline" onClick={() => window.open("/caregiver-training", "_blank")}>
+                Preview
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

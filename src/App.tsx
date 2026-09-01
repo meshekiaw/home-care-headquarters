@@ -42,6 +42,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AuthMagicLink from "./pages/AuthMagicLink";
 import Unsubscribe from "./pages/Unsubscribe";
+import CaregiverPortal from "./pages/CaregiverPortal";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,10 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/auth/magic-link" element={<AuthMagicLink />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+
+            {/* Caregiver training portal — single shareable link */}
+            <Route path="/caregiver-training" element={<CaregiverPortal />} />
+            <Route path="/caregiver-training/course/:assignmentId" element={<ProtectedRoute allowedRoles={["caregiver"]}><LmsCoursePlayer standalone /></ProtectedRoute>} />
 
             
             {/* Admin-only routes */}

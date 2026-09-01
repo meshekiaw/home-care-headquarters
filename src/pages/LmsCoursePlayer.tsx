@@ -30,9 +30,37 @@ interface Assignment {
     description: string | null;
     content_type: string;
     content_body: string | null;
+    content_url: string | null;
     duration_minutes: number | null;
     passing_score: number | null;
   };
+}
+
+function embedUrl(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
+
+function CourseVideo({ url }: { url: string }) {
+  const embed = embedUrl(url);
+  return (
+    <div className="mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
+      {embed ? (
+        <iframe
+          src={embed}
+          title="Course video"
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <video src={url} controls className="w-full h-full" />
+      )}
+    </div>
+  );
 }
 
 interface QuizQuestion {
@@ -44,8 +72,29 @@ interface QuizQuestion {
   sort_order: number;
 }
 
-export default function LmsCoursePlayer() {
+export default function LmsCoursePlayer({ standalone = false }: { standalone?: boolean }) {
   const { assignmentId } = useParams<{ assignmentId: string }>();
+  const backPath = standalone ? "/caregiver-training" : "/my-training";
+  const backLabel = standalone ? "Back to My Courses" : "Back to My Training";
+  const Shell = ({ children }: { children: React.ReactNode }) =>
+    standalone ? (
+      <div className="min-h-screen bg-muted/30">
+        <header className="border-b bg-card">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-semibold leading-tight">Caregiver Training Portal</h1>
+              <p className="text-xs text-muted-foreground">Home Care Headquarters</p>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
+      </div>
+    ) : (
+      <CaregiverLayout>{children}</CaregiverLayout>
+    );
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -73,7 +122,7 @@ export default function LmsCoursePlayer() {
 
     const { data, error } = await supabase
       .from("lms_assignments")
-      .select("id, course_id, caregiver_id, status, due_date, completed_at, score, progress_percentage, started_at, lms_courses(id, title, description, content_type, content_body, duration_minutes, passing_score)")
+      .select("id, course_id, caregiver_id, status, due_date, completed_at, score, progress_percentage, started_at, lms_courses(id, title, description, content_type, content_body, content_url, duration_minutes, passing_score)")
       .eq("id", assignmentId)
       .eq("caregiver_id", cg.id)
       .maybeSingle();
@@ -178,34 +227,34 @@ export default function LmsCoursePlayer() {
 
   if (loading) {
     return (
-      <CaregiverLayout>
+      <Shell>
         <div className="space-y-4 max-w-4xl mx-auto">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-96" />
         </div>
-      </CaregiverLayout>
+      </Shell>
     );
   }
 
   if (!assignment) {
     return (
-      <CaregiverLayout>
+      <Shell>
         <div className="max-w-4xl mx-auto text-center py-12">
           <p className="text-muted-foreground mb-4">This training assignment could not be loaded.</p>
-          <Button asChild variant="outline"><Link to="/my-training"><ArrowLeft className="w-4 h-4 mr-2" />Back to My Training</Link></Button>
+          <Button asChild variant="outline"><Link to={backPath}><ArrowLeft className="w-4 h-4 mr-2" />{backLabel}</Link></Button>
         </div>
-      </CaregiverLayout>
+      </Shell>
     );
   }
 
   const course = assignment.lms_courses;
 
   return (
-    <CaregiverLayout>
+    <Shell>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between gap-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/my-training"><ArrowLeft className="w-4 h-4 mr-1" /> Back to My Training</Link>
+            <Link to={backPath}><ArrowLeft className="w-4 h-4 mr-1" /> {backLabel}</Link>
           </Button>
           {assignment.status === "completed" && (
             <Badge className="bg-success/10 text-success border-success/20"><CheckCircle2 className="w-3 h-3 mr-1" />Completed</Badge>
@@ -230,6 +279,7 @@ export default function LmsCoursePlayer() {
               <CardTitle className="flex items-center gap-2 text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
+              {course.content_url && <CourseVideo url={course.content_url} />}
               <div
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}
@@ -282,7 +332,7 @@ export default function LmsCoursePlayer() {
                   <Award className="w-16 h-16 text-success mx-auto" />
                   <h3 className="text-2xl font-bold">Course Completed!</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. Your admin has been notified.</p>
-                  <Button asChild><Link to="/my-training">Back to My Training</Link></Button>
+                  <Button asChild><Link to={backPath}>{backLabel}</Link></Button>
                 </>
               ) : (
                 <>
@@ -290,7 +340,7 @@ export default function LmsCoursePlayer() {
                   <h3 className="text-2xl font-bold">Not Quite There</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 80}% to pass.</p>
                   <div className="flex justify-center gap-2">
-                    <Button variant="outline" asChild><Link to="/my-training">Back</Link></Button>
+                    <Button variant="outline" asChild><Link to={backPath}>Back</Link></Button>
                     <Button onClick={retryQuiz}>Review & Retry</Button>
                   </div>
                 </>
@@ -299,6 +349,6 @@ export default function LmsCoursePlayer() {
           </Card>
         )}
       </div>
-    </CaregiverLayout>
+    </Shell>
   );
 }

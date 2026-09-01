@@ -93,7 +93,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
         <main className="max-w-4xl mx-auto px-4 py-6">{children}</main>
       </div>
     ) : (
-      <Shell>{children}</Shell>
+      <CaregiverLayout>{children}</CaregiverLayout>
     );
   const navigate = useNavigate();
   const { user } = useAuth();

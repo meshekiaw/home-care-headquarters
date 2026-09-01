@@ -78,19 +78,9 @@ export default function AssignCourseDialog({ open, onOpenChange }: Props) {
   const toggleCaregiver = (id: string) =>
     setSelectedCaregivers((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
 
-  const allCoursesSelected =
-    filteredCourses.length > 0 && filteredCourses.every((c) => selectedCourses.includes(c.id));
   const allCaregiversSelected =
     filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedCaregivers.includes(c.id));
 
-  const toggleAllCourses = () => {
-    if (allCoursesSelected) {
-      const ids = new Set(filteredCourses.map((c) => c.id));
-      setSelectedCourses((prev) => prev.filter((id) => !ids.has(id)));
-    } else {
-      setSelectedCourses((prev) => Array.from(new Set([...prev, ...filteredCourses.map((c) => c.id)])));
-    }
-  };
 
   const toggleAllCaregivers = () => {
     if (allCaregiversSelected) {

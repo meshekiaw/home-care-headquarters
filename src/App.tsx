@@ -66,7 +66,7 @@ const App = () => (
 
             {/* Caregiver training portal — single shareable link */}
             <Route path="/caregiver-training" element={<CaregiverPortal />} />
-            <Route path="/caregiver-training/course/:assignmentId" element={<ProtectedRoute allowedRoles={["caregiver"]}><LmsCoursePlayer standalone /></ProtectedRoute>} />
+            <Route path="/caregiver-training/course/:assignmentId" element={<LmsCoursePlayer standalone />} />
 
             
             {/* Admin-only routes */}

@@ -269,6 +269,27 @@ export default function OrientationTracker() {
                           <span className="text-xs text-muted-foreground w-10 text-right">{r.percentage}%</span>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const scores = Object.values(r.quizScores || {});
+                          if (scores.length === 0) {
+                            return <span className="text-xs text-muted-foreground">No quizzes taken</span>;
+                          }
+                          const passed = scores.filter((s) => s >= PASSING_SCORE).length;
+                          const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+                          return (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-auto px-2 py-1 text-xs"
+                              onClick={() => setScoresRow(r)}
+                            >
+                              <ClipboardList className="w-3 h-3 mr-1" />
+                              {passed}/{scores.length} passed · avg {avg}%
+                            </Button>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell className="text-sm">{fmt(r.orientation_deadline)}</TableCell>
                       <TableCell className="text-sm">{fmt(r.first_shift_at)}</TableCell>
                       <TableCell className="text-right">

@@ -18,11 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Users, Send, Eye, Loader2 } from "lucide-react";
+import { AlertTriangle, Users, Send, Eye, Loader2, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TOTAL_SECTIONS = 28;
 const AT_RISK_MS = 72 * 60 * 60 * 1000;
+const PASSING_SCORE = 70;
 
 type Row = {
   id: string;
@@ -35,6 +37,7 @@ type Row = {
   orientation_deadline: string | null;
   first_shift_at: string | null;
   percentage: number;
+  quizScores: Record<string, number>;
 };
 
 function fmt(iso: string | null) {
@@ -52,6 +55,7 @@ export default function OrientationTracker() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [recentReminderIds, setRecentReminderIds] = useState<Set<string>>(new Set());
   const [confirmRow, setConfirmRow] = useState<Row | null>(null);
+  const [scoresRow, setScoresRow] = useState<Row | null>(null);
 
   const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
@@ -70,15 +74,17 @@ export default function OrientationTracker() {
     }
     const ids = (cgs || []).map((c) => c.id);
     let progressMap: Record<string, number> = {};
+    const scoresMap: Record<string, Record<string, number>> = {};
     if (ids.length) {
       const { data: prog } = await supabase
         .from("orientation_progress")
-        .select("caregiver_id,sections_completed,completed_at")
+        .select("caregiver_id,sections_completed,completed_at,quiz_scores")
         .in("caregiver_id", ids);
       for (const p of prog || []) {
         const completed = Array.isArray(p.sections_completed) ? p.sections_completed.length : 0;
         const pct = p.completed_at ? 100 : Math.min(100, Math.round((completed / TOTAL_SECTIONS) * 100));
         progressMap[p.caregiver_id as string] = pct;
+        scoresMap[p.caregiver_id as string] = (p.quiz_scores as Record<string, number>) || {};
       }
 
       const since = new Date(Date.now() - REMINDER_COOLDOWN_MS).toISOString();
@@ -90,7 +96,13 @@ export default function OrientationTracker() {
         .gte("created_at", since);
       setRecentReminderIds(new Set((recent || []).map((n: any) => n.related_id).filter(Boolean)));
     }
-    setRows((cgs || []).map((c) => ({ ...c, percentage: progressMap[c.id] || 0 })) as Row[]);
+    setRows(
+      (cgs || []).map((c) => ({
+        ...c,
+        percentage: progressMap[c.id] || 0,
+        quizScores: scoresMap[c.id] || {},
+      })) as Row[]
+    );
     setLoading(false);
   }
 
@@ -217,6 +229,7 @@ export default function OrientationTracker() {
                 <TableHead>Caregiver</TableHead>
                 <TableHead>Cleared</TableHead>
                 <TableHead className="min-w-[180px]">Orientation Progress</TableHead>
+                <TableHead className="min-w-[150px]">Quiz Scores</TableHead>
                 <TableHead>Orientation Deadline</TableHead>
                 <TableHead>First Shift</TableHead>
                 <TableHead className="text-right">Action</TableHead>
@@ -226,14 +239,14 @@ export default function OrientationTracker() {
               {loading ? (
                 [...Array(4)].map((_, i) => (
                   <TableRow key={i}>
-                    {[...Array(6)].map((_, j) => (
+                    {[...Array(7)].map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                     No caregivers found.
                   </TableCell>
                 </TableRow>
@@ -255,6 +268,27 @@ export default function OrientationTracker() {
                           <Progress value={r.percentage} className="h-2 flex-1" />
                           <span className="text-xs text-muted-foreground w-10 text-right">{r.percentage}%</span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const scores = Object.values(r.quizScores || {});
+                          if (scores.length === 0) {
+                            return <span className="text-xs text-muted-foreground">No quizzes taken</span>;
+                          }
+                          const passed = scores.filter((s) => s >= PASSING_SCORE).length;
+                          const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+                          return (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-auto px-2 py-1 text-xs"
+                              onClick={() => setScoresRow(r)}
+                            >
+                              <ClipboardList className="w-3 h-3 mr-1" />
+                              {passed}/{scores.length} passed · avg {avg}%
+                            </Button>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-sm">{fmt(r.orientation_deadline)}</TableCell>
                       <TableCell className="text-sm">{fmt(r.first_shift_at)}</TableCell>
@@ -322,6 +356,38 @@ export default function OrientationTracker() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!scoresRow} onOpenChange={(o) => !o && setScoresRow(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Quiz Scores — {scoresRow?.first_name} {scoresRow?.last_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto space-y-1">
+            {Object.entries(scoresRow?.quizScores || {})
+              .sort((a, b) => Number(a[0]) - Number(b[0]))
+              .map(([section, score]) => (
+                <div key={section} className="flex items-center justify-between text-sm border-b py-2">
+                  <span>Section {section}</span>
+                  <Badge
+                    className={
+                      score >= PASSING_SCORE
+                        ? "bg-success/15 text-success border border-success/30"
+                        : "bg-destructive/15 text-destructive border border-destructive/30"
+                    }
+                  >
+                    {score}% {score >= PASSING_SCORE ? "Passed" : "Failed"}
+                  </Badge>
+                </div>
+              ))}
+            {Object.keys(scoresRow?.quizScores || {}).length === 0 && (
+              <p className="text-sm text-muted-foreground py-4">No quiz attempts recorded yet.</p>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">Passing score: {PASSING_SCORE}%</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

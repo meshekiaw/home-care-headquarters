@@ -17,6 +17,7 @@ import {
 import { format, isPast, differenceInDays } from "date-fns";
 import { downloadLmsCertificate } from "@/utils/lmsCertificatePdf";
 import { caregiverPortalUrl } from "@/lib/publicOrigin";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 
 interface PortalAssignment {

@@ -229,6 +229,7 @@ export default function OrientationTracker() {
                 <TableHead>Caregiver</TableHead>
                 <TableHead>Cleared</TableHead>
                 <TableHead className="min-w-[180px]">Orientation Progress</TableHead>
+                <TableHead className="min-w-[150px]">Quiz Scores</TableHead>
                 <TableHead>Orientation Deadline</TableHead>
                 <TableHead>First Shift</TableHead>
                 <TableHead className="text-right">Action</TableHead>
@@ -238,14 +239,14 @@ export default function OrientationTracker() {
               {loading ? (
                 [...Array(4)].map((_, i) => (
                   <TableRow key={i}>
-                    {[...Array(6)].map((_, j) => (
+                    {[...Array(7)].map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                     No caregivers found.
                   </TableCell>
                 </TableRow>

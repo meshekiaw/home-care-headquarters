@@ -87,7 +87,7 @@ export default function HipaaNotice() {
       <LegalSection heading="Complaints">
         <p>
           If you believe your privacy rights have been violated, you may file a complaint with our Privacy Officer at{" "}
-          <a className="text-primary underline" href="mailto:meshekiaw@gmail.com">meshekiaw@gmail.com</a>, or with the
+          <a className="text-primary underline" href="mailto:privacy@homecareheadquarters.org">privacy@homecareheadquarters.org</a>, or with the
           U.S. Department of Health and Human Services, Office for Civil Rights, 200 Independence Avenue SW, Washington,
           D.C. 20201, by calling 1-877-696-6775, or at{" "}
           <a className="text-primary underline" href="https://www.hhs.gov/ocr/privacy/hipaa/complaints/" target="_blank" rel="noopener noreferrer">
@@ -100,7 +100,7 @@ export default function HipaaNotice() {
       <LegalSection heading="Contact">
         <p>
           Home Care Network — Privacy Officer<br />
-          Email: <a className="text-primary underline" href="mailto:meshekiaw@gmail.com">meshekiaw@gmail.com</a>
+          Email: <a className="text-primary underline" href="mailto:privacy@homecareheadquarters.org">privacy@homecareheadquarters.org</a>
         </p>
       </LegalSection>
     </LegalPageLayout>

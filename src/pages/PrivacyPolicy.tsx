@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
         <p>
           Home Care Network ("we", "us", "our") operates this home care management platform for our clients,
           caregivers, nurses, and administrative staff. Questions about this policy may be sent to{" "}
-          <a className="text-primary underline" href="mailto:meshekiaw@gmail.com">meshekiaw@gmail.com</a>.
+          <a className="text-primary underline" href="mailto:privacy@homecareheadquarters.org">privacy@homecareheadquarters.org</a>.
         </p>
       </LegalSection>
 
@@ -105,7 +105,7 @@ export default function PrivacyPolicy() {
       <LegalSection heading="11. Contact Us">
         <p>
           Home Care Network — Privacy Officer<br />
-          Email: <a className="text-primary underline" href="mailto:meshekiaw@gmail.com">meshekiaw@gmail.com</a>
+          Email: <a className="text-primary underline" href="mailto:privacy@homecareheadquarters.org">privacy@homecareheadquarters.org</a>
         </p>
       </LegalSection>
     </LegalPageLayout>

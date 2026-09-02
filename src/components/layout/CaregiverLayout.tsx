@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Menu,
 } from "lucide-react";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/my-dashboard" },

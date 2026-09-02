@@ -272,6 +272,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="p-4 lg:p-6">
           {children}
         </div>
+        <LegalFooter />
       </main>
     </div>
   );

@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 interface Assignment {
   id: string;

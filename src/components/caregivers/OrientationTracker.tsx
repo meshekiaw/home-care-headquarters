@@ -55,6 +55,7 @@ export default function OrientationTracker() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [recentReminderIds, setRecentReminderIds] = useState<Set<string>>(new Set());
   const [confirmRow, setConfirmRow] = useState<Row | null>(null);
+  const [scoresRow, setScoresRow] = useState<Row | null>(null);
 
   const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
@@ -73,15 +74,17 @@ export default function OrientationTracker() {
     }
     const ids = (cgs || []).map((c) => c.id);
     let progressMap: Record<string, number> = {};
+    const scoresMap: Record<string, Record<string, number>> = {};
     if (ids.length) {
       const { data: prog } = await supabase
         .from("orientation_progress")
-        .select("caregiver_id,sections_completed,completed_at")
+        .select("caregiver_id,sections_completed,completed_at,quiz_scores")
         .in("caregiver_id", ids);
       for (const p of prog || []) {
         const completed = Array.isArray(p.sections_completed) ? p.sections_completed.length : 0;
         const pct = p.completed_at ? 100 : Math.min(100, Math.round((completed / TOTAL_SECTIONS) * 100));
         progressMap[p.caregiver_id as string] = pct;
+        scoresMap[p.caregiver_id as string] = (p.quiz_scores as Record<string, number>) || {};
       }
 
       const since = new Date(Date.now() - REMINDER_COOLDOWN_MS).toISOString();
@@ -93,7 +96,13 @@ export default function OrientationTracker() {
         .gte("created_at", since);
       setRecentReminderIds(new Set((recent || []).map((n: any) => n.related_id).filter(Boolean)));
     }
-    setRows((cgs || []).map((c) => ({ ...c, percentage: progressMap[c.id] || 0 })) as Row[]);
+    setRows(
+      (cgs || []).map((c) => ({
+        ...c,
+        percentage: progressMap[c.id] || 0,
+        quizScores: scoresMap[c.id] || {},
+      })) as Row[]
+    );
     setLoading(false);
   }
 

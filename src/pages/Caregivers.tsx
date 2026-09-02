@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useCaregivers } from "@/hooks/useCaregivers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +25,7 @@ import BulkImportDialog from "@/components/caregivers/BulkImportDialog";
 import CreateLoginDialog from "@/components/caregivers/CreateLoginDialog";
 import OrientationTracker from "@/components/caregivers/OrientationTracker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound } from "lucide-react";
+import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound, Trash2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
@@ -28,6 +39,9 @@ export default function Caregivers() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [loginDialog, setLoginDialog] = useState<{ open: boolean; caregiver: any }>({ open: false, caregiver: null });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleteTargets, setDeleteTargets] = useState<Tables<"caregivers">[] | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   const filteredCaregivers = caregivers.filter((caregiver) => {
@@ -36,6 +50,41 @@ export default function Caregivers() {
     const query = searchQuery.toLowerCase();
     return fullName.includes(query) || specializations.includes(query);
   });
+
+  const allSelected =
+    filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => (checked ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)));
+  };
+
+  const toggleAll = (checked: boolean) => {
+    const ids = filteredCaregivers.map((c) => c.id);
+    setSelectedIds((prev) =>
+      checked ? [...new Set([...prev, ...ids])] : prev.filter((x) => !ids.includes(x))
+    );
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargets) return;
+    setDeleting(true);
+    try {
+      const ids = deleteTargets.map((c) => c.id);
+      const { error } = await supabase.from("caregivers").delete().in("id", ids);
+      if (error) throw error;
+      toast({
+        title: ids.length > 1 ? "Employees deleted" : "Employee deleted",
+        description: `${ids.length} record${ids.length > 1 ? "s" : ""} removed along with all related training assignments and records.`,
+      });
+      setSelectedIds((prev) => prev.filter((x) => !ids.includes(x)));
+      setDeleteTargets(null);
+      await refetch();
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleViewProfile = (caregiver: Tables<"caregivers">) => {
     navigate(`/caregivers/${caregiver.id}`);
@@ -51,6 +100,7 @@ export default function Caregivers() {
         return "bg-muted text-muted-foreground";
     }
   };
+
 
   return (
     <DashboardLayout>
@@ -103,6 +153,38 @@ export default function Caregivers() {
               />
             </div>
 
+            {!loading && filteredCaregivers.length > 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
+                <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={(v) => toggleAll(!!v)}
+                    aria-label="Select all employees"
+                  />
+                  Select All
+                  {selectedIds.length > 0 && (
+                    <span className="text-muted-foreground font-normal">
+                      ({selectedIds.length} selected)
+                    </span>
+                  )}
+                </label>
+                {selectedIds.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() =>
+                      setDeleteTargets(caregivers.filter((c) => selectedIds.includes(c.id)))
+                    }
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Selected ({selectedIds.length})
+                  </Button>
+                )}
+              </div>
+            )}
+
+
+
             {loading ? (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {[...Array(6)].map((_, idx) => (
@@ -145,14 +227,22 @@ export default function Caregivers() {
                 {filteredCaregivers.map((caregiver) => (
                   <Card
                     key={caregiver.id}
-                    className="hover:shadow-elevated transition-shadow cursor-pointer"
+                    className={`hover:shadow-elevated transition-shadow cursor-pointer ${selectedIds.includes(caregiver.id) ? "ring-2 ring-primary" : ""}`}
                     onClick={() => handleViewProfile(caregiver)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
+                        <div onClick={(e) => e.stopPropagation()} className="pt-1">
+                          <Checkbox
+                            checked={selectedIds.includes(caregiver.id)}
+                            onCheckedChange={(v) => toggleOne(caregiver.id, !!v)}
+                            aria-label={`Select ${caregiver.first_name} ${caregiver.last_name}`}
+                          />
+                        </div>
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                           <UserCheck className="w-6 h-6 text-primary" />
                         </div>
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <h3 className="font-semibold truncate">
@@ -216,7 +306,20 @@ export default function Caregivers() {
                             <KeyRound className="w-4 h-4" />
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Delete ${caregiver.first_name} ${caregiver.last_name}`}
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTargets([caregiver]);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
+
                     </CardContent>
                   </Card>
                 ))}
@@ -284,6 +387,38 @@ export default function Caregivers() {
           onSuccess={refetch}
         />
       )}
+
+      <AlertDialog open={!!deleteTargets} onOpenChange={(open) => !open && !deleting && setDeleteTargets(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {deleteTargets?.length === 1 ? "this employee" : `${deleteTargets?.length ?? 0} employees`}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargets?.length === 1 && deleteTargets[0]
+                ? `${deleteTargets[0].first_name} ${deleteTargets[0].last_name} will be permanently deleted.`
+                : "The selected employees will be permanently deleted."}{" "}
+              This also removes all of their training assignments, orientation progress, credentials, skills,
+              availability, client assignments and scheduled appointments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </DashboardLayout>
   );
 }

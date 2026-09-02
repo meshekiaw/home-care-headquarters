@@ -32,7 +32,7 @@ type Row = {
   first_name: string;
   last_name: string;
   email: string | null;
-  phone: string | null
+  phone: string | null;
   cleared_to_schedule: boolean | null;
   orientation_deadline: string | null;
   first_shift_at: string | null;

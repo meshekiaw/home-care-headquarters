@@ -43,6 +43,8 @@ import ResetPassword from "./pages/ResetPassword";
 import AuthMagicLink from "./pages/AuthMagicLink";
 import Unsubscribe from "./pages/Unsubscribe";
 import CaregiverPortal from "./pages/CaregiverPortal";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import HipaaNotice from "./pages/HipaaNotice";
 
 const queryClient = new QueryClient();
 

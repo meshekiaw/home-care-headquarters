@@ -195,14 +195,22 @@ export default function Caregivers() {
                 {filteredCaregivers.map((caregiver) => (
                   <Card
                     key={caregiver.id}
-                    className="hover:shadow-elevated transition-shadow cursor-pointer"
+                    className={`hover:shadow-elevated transition-shadow cursor-pointer ${selectedIds.includes(caregiver.id) ? "ring-2 ring-primary" : ""}`}
                     onClick={() => handleViewProfile(caregiver)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
+                        <div onClick={(e) => e.stopPropagation()} className="pt-1">
+                          <Checkbox
+                            checked={selectedIds.includes(caregiver.id)}
+                            onCheckedChange={(v) => toggleOne(caregiver.id, !!v)}
+                            aria-label={`Select ${caregiver.first_name} ${caregiver.last_name}`}
+                          />
+                        </div>
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                           <UserCheck className="w-6 h-6 text-primary" />
                         </div>
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <h3 className="font-semibold truncate">

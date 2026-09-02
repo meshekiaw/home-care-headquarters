@@ -16,8 +16,8 @@ export default function LegalFooter({ className = "" }: LegalFooterProps) {
           <Link to="/hipaa-notice" className="hover:text-foreground underline-offset-4 hover:underline">
             HIPAA Notice of Privacy Practices
           </Link>
-          <a href="mailto:meshekiaw@gmail.com" className="hover:text-foreground underline-offset-4 hover:underline">
-            meshekiaw@gmail.com
+          <a href="mailto:privacy@homecareheadquarters.org" className="hover:text-foreground underline-offset-4 hover:underline">
+            privacy@homecareheadquarters.org
           </a>
         </nav>
       </div>

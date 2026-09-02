@@ -266,7 +266,20 @@ export default function Caregivers() {
                             <KeyRound className="w-4 h-4" />
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Delete ${caregiver.first_name} ${caregiver.last_name}`}
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTargets([caregiver]);
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
+
                     </CardContent>
                   </Card>
                 ))}

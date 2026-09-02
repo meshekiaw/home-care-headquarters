@@ -120,7 +120,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           </div>
         </header>
         <main className="max-w-4xl mx-auto px-4 py-4 sm:py-6">{children}</main>
-
+        <LegalFooter className="bg-card" />
       </div>
     ) : (
       <CaregiverLayout>{children}</CaregiverLayout>

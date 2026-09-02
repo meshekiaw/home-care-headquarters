@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

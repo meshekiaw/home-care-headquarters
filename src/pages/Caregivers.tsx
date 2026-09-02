@@ -387,6 +387,38 @@ export default function Caregivers() {
           onSuccess={refetch}
         />
       )}
+
+      <AlertDialog open={!!deleteTargets} onOpenChange={(open) => !open && !deleting && setDeleteTargets(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {deleteTargets?.length === 1 ? "this employee" : `${deleteTargets?.length ?? 0} employees`}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargets?.length === 1 && deleteTargets[0]
+                ? `${deleteTargets[0].first_name} ${deleteTargets[0].last_name} will be permanently deleted.`
+                : "The selected employees will be permanently deleted."}{" "}
+              This also removes all of their training assignments, orientation progress, credentials, skills,
+              availability, client assignments and scheduled appointments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </DashboardLayout>
   );
 }

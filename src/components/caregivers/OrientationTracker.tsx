@@ -356,6 +356,38 @@ export default function OrientationTracker() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!scoresRow} onOpenChange={(o) => !o && setScoresRow(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Quiz Scores — {scoresRow?.first_name} {scoresRow?.last_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto space-y-1">
+            {Object.entries(scoresRow?.quizScores || {})
+              .sort((a, b) => Number(a[0]) - Number(b[0]))
+              .map(([section, score]) => (
+                <div key={section} className="flex items-center justify-between text-sm border-b py-2">
+                  <span>Section {section}</span>
+                  <Badge
+                    className={
+                      score >= PASSING_SCORE
+                        ? "bg-success/15 text-success border border-success/30"
+                        : "bg-destructive/15 text-destructive border border-destructive/30"
+                    }
+                  >
+                    {score}% {score >= PASSING_SCORE ? "Passed" : "Failed"}
+                  </Badge>
+                </div>
+              ))}
+            {Object.keys(scoresRow?.quizScores || {}).length === 0 && (
+              <p className="text-sm text-muted-foreground py-4">No quiz attempts recorded yet.</p>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">Passing score: {PASSING_SCORE}%</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

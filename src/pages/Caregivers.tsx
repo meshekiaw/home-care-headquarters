@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useCaregivers } from "@/hooks/useCaregivers";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +25,7 @@ import BulkImportDialog from "@/components/caregivers/BulkImportDialog";
 import CreateLoginDialog from "@/components/caregivers/CreateLoginDialog";
 import OrientationTracker from "@/components/caregivers/OrientationTracker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound } from "lucide-react";
+import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound, Trash2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
@@ -28,6 +39,9 @@ export default function Caregivers() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [loginDialog, setLoginDialog] = useState<{ open: boolean; caregiver: any }>({ open: false, caregiver: null });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleteTargets, setDeleteTargets] = useState<Tables<"caregivers">[] | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   const filteredCaregivers = caregivers.filter((caregiver) => {
@@ -36,6 +50,41 @@ export default function Caregivers() {
     const query = searchQuery.toLowerCase();
     return fullName.includes(query) || specializations.includes(query);
   });
+
+  const allSelected =
+    filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => (checked ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)));
+  };
+
+  const toggleAll = (checked: boolean) => {
+    const ids = filteredCaregivers.map((c) => c.id);
+    setSelectedIds((prev) =>
+      checked ? [...new Set([...prev, ...ids])] : prev.filter((x) => !ids.includes(x))
+    );
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargets) return;
+    setDeleting(true);
+    try {
+      const ids = deleteTargets.map((c) => c.id);
+      const { error } = await supabase.from("caregivers").delete().in("id", ids);
+      if (error) throw error;
+      toast({
+        title: ids.length > 1 ? "Employees deleted" : "Employee deleted",
+        description: `${ids.length} record${ids.length > 1 ? "s" : ""} removed along with all related training assignments and records.`,
+      });
+      setSelectedIds((prev) => prev.filter((x) => !ids.includes(x)));
+      setDeleteTargets(null);
+      await refetch();
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleViewProfile = (caregiver: Tables<"caregivers">) => {
     navigate(`/caregivers/${caregiver.id}`);
@@ -51,6 +100,7 @@ export default function Caregivers() {
         return "bg-muted text-muted-foreground";
     }
   };
+
 
   return (
     <DashboardLayout>

@@ -153,6 +153,38 @@ export default function Caregivers() {
               />
             </div>
 
+            {!loading && filteredCaregivers.length > 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
+                <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={(v) => toggleAll(!!v)}
+                    aria-label="Select all employees"
+                  />
+                  Select All
+                  {selectedIds.length > 0 && (
+                    <span className="text-muted-foreground font-normal">
+                      ({selectedIds.length} selected)
+                    </span>
+                  )}
+                </label>
+                {selectedIds.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() =>
+                      setDeleteTargets(caregivers.filter((c) => selectedIds.includes(c.id)))
+                    }
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Selected ({selectedIds.length})
+                  </Button>
+                )}
+              </div>
+            )}
+
+
+
             {loading ? (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {[...Array(6)].map((_, idx) => (

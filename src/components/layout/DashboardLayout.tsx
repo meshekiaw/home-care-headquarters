@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -272,6 +273,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="p-4 lg:p-6">
           {children}
         </div>
+        <LegalFooter />
       </main>
     </div>
   );

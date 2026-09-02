@@ -43,6 +43,8 @@ import ResetPassword from "./pages/ResetPassword";
 import AuthMagicLink from "./pages/AuthMagicLink";
 import Unsubscribe from "./pages/Unsubscribe";
 import CaregiverPortal from "./pages/CaregiverPortal";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import HipaaNotice from "./pages/HipaaNotice";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +65,8 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/auth/magic-link" element={<AuthMagicLink />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/hipaa-notice" element={<HipaaNotice />} />
 
             {/* Caregiver training portal — single shareable link */}
             <Route path="/caregiver-training" element={<CaregiverPortal />} />

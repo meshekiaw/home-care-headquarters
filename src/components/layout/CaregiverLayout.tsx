@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Menu,
 } from "lucide-react";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/my-dashboard" },
@@ -103,9 +104,12 @@ export default function CaregiverLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 min-w-0 px-4 py-4 md:p-6 overflow-x-hidden">
-        {children}
-      </main>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <main className="flex-1 min-w-0 px-4 py-4 md:p-6 overflow-x-hidden">
+          {children}
+        </main>
+        <LegalFooter />
+      </div>
     </div>
   );
 }

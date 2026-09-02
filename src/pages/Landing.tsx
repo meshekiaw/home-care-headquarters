@@ -234,8 +234,19 @@ export default function Landing() {
               </div>
               <span className="font-semibold">Home Care Headquarters</span>
             </div>
+            <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-sidebar-foreground/70">
+              <Link to="/privacy-policy" className="hover:text-sidebar-foreground underline-offset-4 hover:underline">
+                Privacy Policy
+              </Link>
+              <Link to="/hipaa-notice" className="hover:text-sidebar-foreground underline-offset-4 hover:underline">
+                HIPAA Notice of Privacy Practices
+              </Link>
+              <a href="mailto:meshekiaw@gmail.com" className="hover:text-sidebar-foreground underline-offset-4 hover:underline">
+                meshekiaw@gmail.com
+              </a>
+            </nav>
             <p className="text-sidebar-foreground/60 text-sm">
-              © 2024 Home Care Headquarters. All rights reserved.
+              © {new Date().getFullYear()} Home Care Network. All rights reserved.
             </p>
           </div>
         </div>

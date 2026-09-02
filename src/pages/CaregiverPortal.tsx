@@ -17,6 +17,7 @@ import {
 import { format, isPast, differenceInDays } from "date-fns";
 import { downloadLmsCertificate } from "@/utils/lmsCertificatePdf";
 import { caregiverPortalUrl } from "@/lib/publicOrigin";
+import LegalFooter from "@/components/layout/LegalFooter";
 
 
 interface PortalAssignment {
@@ -61,6 +62,7 @@ function PortalShell({ children, onSignOut }: { children: React.ReactNode; onSig
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 py-6">{children}</main>
+      <LegalFooter className="bg-card" />
     </div>
   );
 }

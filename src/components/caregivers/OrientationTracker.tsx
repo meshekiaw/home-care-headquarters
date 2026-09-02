@@ -18,11 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Users, Send, Eye, Loader2 } from "lucide-react";
+import { AlertTriangle, Users, Send, Eye, Loader2, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TOTAL_SECTIONS = 28;
 const AT_RISK_MS = 72 * 60 * 60 * 1000;
+const PASSING_SCORE = 70;
 
 type Row = {
   id: string;
@@ -30,11 +32,12 @@ type Row = {
   first_name: string;
   last_name: string;
   email: string | null;
-  phone: string | null;
+  phone: string | null
   cleared_to_schedule: boolean | null;
   orientation_deadline: string | null;
   first_shift_at: string | null;
   percentage: number;
+  quizScores: Record<string, number>;
 };
 
 function fmt(iso: string | null) {

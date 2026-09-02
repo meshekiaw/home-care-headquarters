@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     }
 
     const score = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
-    const passingScore = 80;
+    const passingScore = 70;
     const passed = score >= passingScore;
 
     return new Response(

@@ -578,6 +578,7 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Authorization Begin Date</TableHead>
                       <TableHead>Current 618 Date</TableHead>
                       <TableHead>618 Expiration Date</TableHead>
                       <TableHead>Authorization Expiration Date</TableHead>

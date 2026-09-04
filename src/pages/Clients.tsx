@@ -673,15 +673,15 @@ export default function Clients() {
                             <>
                               <TableCell>
                                 <span className="text-sm font-medium text-foreground">
-                                  {fmt(client.authorization_begin_date) ?? '—'}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-sm font-medium text-foreground">
                                   {fmt(dueDate) ?? '—'}
                                 </span>
                               </TableCell>
                               <TableCell>{renderExpiration(client.form_618_expiration_date)}</TableCell>
+                              <TableCell>
+                                <span className="text-sm font-medium text-foreground">
+                                  {fmt(client.authorization_begin_date) ?? '—'}
+                                </span>
+                              </TableCell>
                               <TableCell>{renderExpiration(client.authorization_expiration_date)}</TableCell>
                             </>
                           );

@@ -673,6 +673,11 @@ export default function Clients() {
                             <>
                               <TableCell>
                                 <span className="text-sm font-medium text-foreground">
+                                  {fmt(client.authorization_begin_date) ?? '—'}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm font-medium text-foreground">
                                   {fmt(dueDate) ?? '—'}
                                 </span>
                               </TableCell>

@@ -322,6 +322,17 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
       authExpDate = parseDateString(row.authorization_expiration_date);
     }
 
+    // Parse 618 / authorization begin dates (accept both header styles)
+    const pickDate = (...vals: (string | undefined)[]): string | null => {
+      for (const v of vals) {
+        if (v?.trim()) return parseDateString(v);
+      }
+      return null;
+    };
+    const form618Date = pickDate(row.form_618_date, row["618_date"]);
+    const form618ExpDate = pickDate(row.form_618_expiration_date, row["618_expiration_date"]);
+    const authBeginDate = pickDate(row.authorization_begin_date);
+
     // Only add if no critical errors for this row
     const rowErrors = errors.filter(e => e.row === rowNum);
     const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name');

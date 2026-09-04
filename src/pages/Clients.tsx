@@ -84,6 +84,9 @@ interface Client {
   created_at: string;
   authorization_due_date: string | null;
   authorization_expiration_date: string | null;
+  form_618_date: string | null;
+  form_618_expiration_date: string | null;
+  authorization_begin_date: string | null;
   client_class: string | null;
   client_hours: number | null;
 }

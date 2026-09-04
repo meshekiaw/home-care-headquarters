@@ -215,6 +215,11 @@ export interface ClientCSVRow {
   notes?: string;
   authorization_due_date?: string;
   authorization_expiration_date?: string;
+  form_618_date?: string;
+  form_618_expiration_date?: string;
+  authorization_begin_date?: string;
+  "618_date"?: string;
+  "618_expiration_date"?: string;
   client_class?: string;
   client_hours?: string;
 }
@@ -235,6 +240,9 @@ export interface ParsedClient {
   notes: string | null;
   authorization_due_date: string | null;
   authorization_expiration_date: string | null;
+  form_618_date: string | null;
+  form_618_expiration_date: string | null;
+  authorization_begin_date: string | null;
   client_class: string | null;
   client_hours: number | null;
 }
@@ -314,6 +322,17 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
       authExpDate = parseDateString(row.authorization_expiration_date);
     }
 
+    // Parse 618 / authorization begin dates (accept both header styles)
+    const pickDate = (...vals: (string | undefined)[]): string | null => {
+      for (const v of vals) {
+        if (v?.trim()) return parseDateString(v);
+      }
+      return null;
+    };
+    const form618Date = pickDate(row.form_618_date, row["618_date"]);
+    const form618ExpDate = pickDate(row.form_618_expiration_date, row["618_expiration_date"]);
+    const authBeginDate = pickDate(row.authorization_begin_date);
+
     // Only add if no critical errors for this row
     const rowErrors = errors.filter(e => e.row === rowNum);
     const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name');
@@ -335,6 +354,9 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         notes: row.notes?.trim() || null,
         authorization_due_date: authDueDate,
         authorization_expiration_date: authExpDate,
+        form_618_date: form618Date,
+        form_618_expiration_date: form618ExpDate,
+        authorization_begin_date: authBeginDate,
         client_class: row.client_class?.trim() || null,
         client_hours: row.client_hours?.trim() ? parseFloat(row.client_hours.trim()) : null,
       });
@@ -349,7 +371,7 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
 }
 
 export function generateClientSampleCSV(): string {
-  return `first_name,last_name,email,phone,status,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes
-John,Smith,john.smith@email.com,(555) 123-4567,active,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance
-Mary,Johnson,mary.j@email.com,(555) 987-6543,active,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits`;
+  return `first_name,last_name,email,phone,status,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes,618_date,618_expiration_date,authorization_begin_date,authorization_expiration_date
+John,Smith,john.smith@email.com,(555) 123-4567,active,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance,2026-01-15,2027-01-14,2026-01-15,2027-01-14
+Mary,Johnson,mary.j@email.com,(555) 987-6543,active,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits,2026-02-01,2026-08-01,2026-02-01,2026-08-01`;
 }

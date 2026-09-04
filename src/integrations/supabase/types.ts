@@ -919,6 +919,7 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          authorization_begin_date: string | null
           authorization_due_date: string | null
           authorization_expiration_date: string | null
           city: string | null
@@ -930,6 +931,8 @@ export type Database = {
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           first_name: string
+          form_618_date: string | null
+          form_618_expiration_date: string | null
           id: string
           last_name: string
           notes: string | null
@@ -942,6 +945,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          authorization_begin_date?: string | null
           authorization_due_date?: string | null
           authorization_expiration_date?: string | null
           city?: string | null
@@ -953,6 +957,8 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           first_name: string
+          form_618_date?: string | null
+          form_618_expiration_date?: string | null
           id?: string
           last_name: string
           notes?: string | null
@@ -965,6 +971,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          authorization_begin_date?: string | null
           authorization_due_date?: string | null
           authorization_expiration_date?: string | null
           city?: string | null
@@ -976,6 +983,8 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           first_name?: string
+          form_618_date?: string | null
+          form_618_expiration_date?: string | null
           id?: string
           last_name?: string
           notes?: string | null

@@ -31,6 +31,9 @@ interface Client {
   authorization_expiration_date: string | null;
   client_class: string | null;
   client_hours: number | null;
+  form_618_date?: string | null;
+  form_618_expiration_date?: string | null;
+  authorization_begin_date?: string | null;
 }
 
 interface ClientOverviewProps {
@@ -195,6 +198,18 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
           <div>
             <p className="text-sm text-muted-foreground">Current 618 Date</p>
             <p className="font-medium">{formatDate(client.authorization_due_date)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">618 Date</p>
+            <p className="font-medium">{formatDate(client.form_618_date ?? null)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">618 Expiration Date</p>
+            <p className="font-medium">{formatDate(client.form_618_expiration_date ?? null)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Authorization Begin Date</p>
+            <p className="font-medium">{formatDate(client.authorization_begin_date ?? null)}</p>
           </div>
           {client.authorization_due_date && (() => {
             const isVA = client.client_class === 'VA';

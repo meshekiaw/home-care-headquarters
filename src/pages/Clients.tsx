@@ -578,7 +578,7 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>618 Due Date</TableHead>
+                      <TableHead>Current 618 Date</TableHead>
                       <TableHead>618 Expiration Date</TableHead>
                       <TableHead>Authorization Expiration Date</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
@@ -653,33 +653,30 @@ export default function Clients() {
                           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                           const in30 = new Date(now.getTime() + 30 * 86400000);
                           const in30Str = `${in30.getFullYear()}-${String(in30.getMonth() + 1).padStart(2, '0')}-${String(in30.getDate()).padStart(2, '0')}`;
-                          const isPast = !!dueDate && dueDate <= todayStr;
-                          const isDueSoon = !!dueDate && !isPast && dueDate <= in30Str;
+                          const renderExpiration = (value: string | null | undefined) => {
+                            const formatted = fmt(value);
+                            if (!formatted) return <span className="text-sm text-muted-foreground">—</span>;
+                            const expired = !!value && value <= todayStr;
+                            const soon = !!value && !expired && value <= in30Str;
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-medium ${expired ? 'text-destructive' : soon ? 'text-orange-500' : 'text-foreground'}`}>
+                                  {formatted}
+                                </span>
+                                {expired && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>}
+                                {soon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-orange-500 text-orange-500">Expiring Soon</Badge>}
+                              </div>
+                            );
+                          };
                           return (
                             <>
                               <TableCell>
-                                {dueDate ? (
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-medium ${isPast ? 'text-destructive' : isDueSoon ? 'text-yellow-300' : 'text-muted-foreground'}`}>
-                                      {fmt(dueDate)}
-                                    </span>
-                                    {isPast && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>}
-                                    {isDueSoon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-300 text-yellow-300">Due Soon</Badge>}
-                                  </div>
-                                ) : (
-                                  <span className="text-sm text-muted-foreground">—</span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-sm text-muted-foreground">
-                                  {fmt(client.form_618_expiration_date) ?? '—'}
+                                <span className="text-sm font-medium text-foreground">
+                                  {fmt(dueDate) ?? '—'}
                                 </span>
                               </TableCell>
-                              <TableCell>
-                                <span className="text-sm text-muted-foreground">
-                                  {fmt(client.authorization_expiration_date) ?? '—'}
-                                </span>
-                              </TableCell>
+                              <TableCell>{renderExpiration(client.form_618_expiration_date)}</TableCell>
+                              <TableCell>{renderExpiration(client.authorization_expiration_date)}</TableCell>
                             </>
                           );
                         })()}

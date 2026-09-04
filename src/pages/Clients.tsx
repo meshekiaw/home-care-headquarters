@@ -639,28 +639,48 @@ export default function Clients() {
                           </span>
                         </TableCell>
                         {(() => {
+                          const mdY = { month: '2-digit', day: '2-digit', year: 'numeric' } as const;
+                          const fmt = (d: string | null | undefined) =>
+                            d ? (formatDateOnly(d, mdY) ?? d) : null;
                           const isVA = client.client_class === 'VA';
                           const isOtherClass = ['ARChoices', 'Medicaid', 'Private Pay'].includes(client.client_class || '');
                           const months = isVA ? 6 : isOtherClass ? 12 : 0;
-                          const dueDate = months > 0 ? addMonthsToDate(client.authorization_due_date, months) : client.authorization_due_date;
-                          if (!dueDate) return <TableCell className="text-sm text-muted-foreground">—</TableCell>;
+                          const baseDate = client.authorization_due_date ?? client.form_618_date;
+                          const dueDate = months > 0 && client.authorization_due_date
+                            ? addMonthsToDate(client.authorization_due_date, months)
+                            : baseDate;
                           const now = new Date();
                           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                           const in30 = new Date(now.getTime() + 30 * 86400000);
                           const in30Str = `${in30.getFullYear()}-${String(in30.getMonth() + 1).padStart(2, '0')}-${String(in30.getDate()).padStart(2, '0')}`;
-                          const isPast = dueDate <= todayStr;
-                          const isDueSoon = !isPast && dueDate <= in30Str;
-                          const formatted = formatDateOnly(dueDate, { month: 'short', day: 'numeric', year: 'numeric' }) ?? dueDate;
+                          const isPast = !!dueDate && dueDate <= todayStr;
+                          const isDueSoon = !!dueDate && !isPast && dueDate <= in30Str;
                           return (
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <span className={`text-sm font-medium ${isPast ? 'text-destructive' : isDueSoon ? 'text-yellow-300' : 'text-muted-foreground'}`}>
-                                  {formatted}
+                            <>
+                              <TableCell>
+                                {dueDate ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-sm font-medium ${isPast ? 'text-destructive' : isDueSoon ? 'text-yellow-300' : 'text-muted-foreground'}`}>
+                                      {fmt(dueDate)}
+                                    </span>
+                                    {isPast && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>}
+                                    {isDueSoon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-300 text-yellow-300">Due Soon</Badge>}
+                                  </div>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm text-muted-foreground">
+                                  {fmt(client.form_618_expiration_date) ?? '—'}
                                 </span>
-                                {isPast && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Overdue</Badge>}
-                                {isDueSoon && <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-300 text-yellow-300">Due Soon</Badge>}
-                              </div>
-                            </TableCell>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm text-muted-foreground">
+                                  {fmt(client.authorization_expiration_date) ?? '—'}
+                                </span>
+                              </TableCell>
+                            </>
                           );
                         })()}
                         <TableCell>

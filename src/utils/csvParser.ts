@@ -354,6 +354,9 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         notes: row.notes?.trim() || null,
         authorization_due_date: authDueDate,
         authorization_expiration_date: authExpDate,
+        form_618_date: form618Date,
+        form_618_expiration_date: form618ExpDate,
+        authorization_begin_date: authBeginDate,
         client_class: row.client_class?.trim() || null,
         client_hours: row.client_hours?.trim() ? parseFloat(row.client_hours.trim()) : null,
       });

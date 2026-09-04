@@ -579,6 +579,8 @@ export default function Clients() {
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>618 Due Date</TableHead>
+                      <TableHead>618 Expiration Date</TableHead>
+                      <TableHead>Authorization Expiration Date</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>

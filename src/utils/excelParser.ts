@@ -121,7 +121,7 @@ export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
                 } else {
                   mapped[mappedKey] = value;
                 }
-              } else if (mappedKey === "date_of_birth" || mappedKey === "authorization_due_date" || mappedKey === "authorization_expiration_date") {
+              } else if (["date_of_birth", "authorization_due_date", "authorization_expiration_date", "form_618_date", "form_618_expiration_date", "authorization_begin_date"].includes(mappedKey)) {
                 const normalized = normalizeDate(rawValue);
                 if (normalized) mapped[mappedKey] = normalized; else mapped[mappedKey] = value;
               } else {

@@ -371,7 +371,7 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
 }
 
 export function generateClientSampleCSV(): string {
-  return `first_name,last_name,email,phone,status,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes
-John,Smith,john.smith@email.com,(555) 123-4567,active,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance
-Mary,Johnson,mary.j@email.com,(555) 987-6543,active,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits`;
+  return `first_name,last_name,email,phone,status,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes,618_date,618_expiration_date,authorization_begin_date,authorization_expiration_date
+John,Smith,john.smith@email.com,(555) 123-4567,active,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance,2026-01-15,2027-01-14,2026-01-15,2027-01-14
+Mary,Johnson,mary.j@email.com,(555) 987-6543,active,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits,2026-02-01,2026-08-01,2026-02-01,2026-08-01`;
 }

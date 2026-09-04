@@ -578,6 +578,7 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Authorization Begin Date</TableHead>
                       <TableHead>Current 618 Date</TableHead>
                       <TableHead>618 Expiration Date</TableHead>
                       <TableHead>Authorization Expiration Date</TableHead>
@@ -670,6 +671,11 @@ export default function Clients() {
                           };
                           return (
                             <>
+                              <TableCell>
+                                <span className="text-sm font-medium text-foreground">
+                                  {fmt(client.authorization_begin_date) ?? '—'}
+                                </span>
+                              </TableCell>
                               <TableCell>
                                 <span className="text-sm font-medium text-foreground">
                                   {fmt(dueDate) ?? '—'}

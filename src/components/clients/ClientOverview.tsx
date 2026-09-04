@@ -31,6 +31,9 @@ interface Client {
   authorization_expiration_date: string | null;
   client_class: string | null;
   client_hours: number | null;
+  form_618_date?: string | null;
+  form_618_expiration_date?: string | null;
+  authorization_begin_date?: string | null;
 }
 
 interface ClientOverviewProps {

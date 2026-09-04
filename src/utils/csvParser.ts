@@ -215,6 +215,11 @@ export interface ClientCSVRow {
   notes?: string;
   authorization_due_date?: string;
   authorization_expiration_date?: string;
+  form_618_date?: string;
+  form_618_expiration_date?: string;
+  authorization_begin_date?: string;
+  "618_date"?: string;
+  "618_expiration_date"?: string;
   client_class?: string;
   client_hours?: string;
 }

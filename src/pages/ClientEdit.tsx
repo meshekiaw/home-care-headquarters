@@ -354,6 +354,18 @@ export default function ClientEdit() {
                 <Input id="authorization_expiration_date" type="date" value={formData.authorization_expiration_date} onChange={(e) => handleChange("authorization_expiration_date", e.target.value)} />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="form_618_date">618 Date</Label>
+                <Input id="form_618_date" type="date" value={formData.form_618_date} onChange={(e) => handleChange("form_618_date", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="form_618_expiration_date">618 Expiration Date</Label>
+                <Input id="form_618_expiration_date" type="date" value={formData.form_618_expiration_date} onChange={(e) => handleChange("form_618_expiration_date", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="authorization_begin_date">Authorization Begin Date</Label>
+                <Input id="authorization_begin_date" type="date" value={formData.authorization_begin_date} onChange={(e) => handleChange("authorization_begin_date", e.target.value)} />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="client_class">Client Class</Label>
                 <Select value={formData.client_class} onValueChange={(value) => handleChange("client_class", value)}>
                   <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>

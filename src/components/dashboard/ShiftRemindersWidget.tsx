@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Clock, ArrowRight, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, Clock, ArrowRight, CheckCheck, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInMinutes } from "date-fns";
 import { Link } from "react-router-dom";

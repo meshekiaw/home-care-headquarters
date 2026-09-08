@@ -668,7 +668,7 @@ export default function Clients() {
                             <>
                               <TableCell>
                                 <span className="text-sm font-medium text-foreground">
-                                  {fmt(dueDate) ?? '—'}
+                                  {fmt(current618) ?? '—'}
                                 </span>
                               </TableCell>
                               <TableCell>{renderExpiration(client.form_618_expiration_date)}</TableCell>

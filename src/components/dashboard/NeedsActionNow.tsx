@@ -12,6 +12,7 @@ interface AssessmentRow {
   assessment_name: string | null;
   status: string;
   due_date: string;
+  client_name: string;
 }
 
 interface CaregiverRow {
@@ -38,7 +39,7 @@ export default function NeedsActionNow() {
 
       const { data: aData } = await supabase
         .from("client_assessments")
-        .select("id, client_id, assessment_name, status, due_date")
+        .select("id, client_id, assessment_name, status, due_date, clients:client_id(first_name, last_name)")
         .neq("status", "completed")
         .not("due_date", "is", null)
         .gte("created_at", sevenDaysAgo)
@@ -51,7 +52,20 @@ export default function NeedsActionNow() {
         .not("first_shift_at", "is", null)
         .order("first_shift_at", { ascending: true });
 
-      setAssessments((aData as AssessmentRow[]) || []);
+      // Only keep assessments that still belong to an existing client, so the
+      // card always names a real person instead of an orphaned record id.
+      const mapped: AssessmentRow[] = ((aData as any[]) || [])
+        .filter((a) => a.clients && (a.clients.first_name || a.clients.last_name))
+        .map((a) => ({
+          id: a.id,
+          client_id: a.client_id,
+          assessment_name: a.assessment_name,
+          status: a.status,
+          due_date: a.due_date,
+          client_name: `${a.clients.first_name ?? ""} ${a.clients.last_name ?? ""}`.trim(),
+        }));
+
+      setAssessments(mapped);
       setCaregivers((cgData as CaregiverRow[]) || []);
     } catch (e) {
       console.error("[NeedsActionNow] load failed", e);
@@ -71,9 +85,7 @@ export default function NeedsActionNow() {
     if (Number.isNaN(d)) return { text: "Assessment Pending", urgent: false, show: false };
     const now = Date.now();
     const diff = d - now;
-    // Overdue: deadline is in the past (diff < 0, inclusive of exactly now handled below)
     if (diff < 0) return { text: "Assessment Overdue", urgent: true, show: true };
-    // Due Soon: deadline is now or within the next 12 hours
     if (diff <= TWELVE_HOURS_MS) return { text: "Assessment Due Soon", urgent: true, show: true };
     return { text: "Assessment Pending", urgent: false, show: false };
   }
@@ -119,9 +131,8 @@ export default function NeedsActionNow() {
           </div>
         )}
 
-        {assessments.map((a) => {
+        {visibleAssessments.map((a) => {
           const label = deadlineLabel(a.due_date);
-          if (!label.show) return null;
           return (
             <div
               key={a.id}
@@ -132,7 +143,7 @@ export default function NeedsActionNow() {
                 <div>
                   <p className="text-sm font-semibold text-destructive">{label.text}</p>
                   <p className="text-sm font-medium mt-0.5">
-                    {a.assessment_name || "Assessment"} · Client {a.client_id.slice(0, 8)}
+                    {a.assessment_name || "Assessment"} · {a.client_name}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Status: {a.status} · Due {format(new Date(a.due_date), "PP")} (

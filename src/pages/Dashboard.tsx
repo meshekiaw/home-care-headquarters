@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, addDays, format } from "date-fns";
  import ShiftRemindersWidget from "@/components/dashboard/ShiftRemindersWidget";
 import NeedsActionNow from "@/components/dashboard/NeedsActionNow";
+import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 interface StatCardProps {
   title: string;
@@ -59,6 +61,13 @@ export default function Dashboard() {
   const [todayAppointments, setTodayAppointments] = useState(0);
   const [expiringCredentials, setExpiringCredentials] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const [widgetKey, setWidgetKey] = useState(0);
+  const [upcomingVisits, setUpcomingVisits] = useState<
+    { id: string; client: string; caregiver: string; time: string; status: string }[]
+  >([]);
+  const { toast } = useToast();
+
 
   useEffect(() => {
     async function fetchStats() {
@@ -92,6 +101,26 @@ export default function Dashboard() {
         setCaregiverCount(caregiversResult.count || 0);
         setTodayAppointments(appointmentsResult.count || 0);
         setExpiringCredentials(credentialsResult.count || 0);
+
+        // Real upcoming visits (next scheduled appointments from now on)
+        const { data: visits } = await supabase
+          .from('appointments')
+          .select('id, start_time, status, caregivers:caregiver_id(first_name, last_name), clients:client_id(first_name, last_name)')
+          .gte('start_time', new Date().toISOString())
+          .order('start_time', { ascending: true })
+          .limit(5);
+
+        setUpcomingVisits(
+          ((visits as any[]) || [])
+            .filter((v) => v.clients && v.caregivers)
+            .map((v) => ({
+              id: v.id,
+              client: `${v.clients.first_name ?? ''} ${v.clients.last_name ?? ''}`.trim(),
+              caregiver: `${v.caregivers.first_name ?? ''} ${v.caregivers.last_name ?? ''}`.trim(),
+              time: format(new Date(v.start_time), 'MMM d, h:mm a'),
+              status: v.status === 'scheduled' ? 'confirmed' : v.status,
+            })),
+        );
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
@@ -102,17 +131,26 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  const alerts = [
-    { type: "warning", message: "3 caregiver certifications expiring this week", time: "2 hours ago" },
-    { type: "info", message: "New schedule conflict detected for tomorrow", time: "4 hours ago" },
-    { type: "success", message: "Weekly compliance report generated", time: "Yesterday" },
-  ];
-
-  const upcomingVisits = [
-    { client: "Eleanor Thompson", caregiver: "Maria Santos", time: "9:00 AM", status: "confirmed" },
-    { client: "Robert Chen", caregiver: "David Wilson", time: "10:30 AM", status: "pending" },
-    { client: "Patricia Davis", caregiver: "Sarah Johnson", time: "2:00 PM", status: "confirmed" },
-  ];
+  async function handleClearAllNotifications() {
+    setClearing(true);
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .not("id", "is", null);
+      if (error) throw error;
+      setWidgetKey((k) => k + 1);
+      toast({ title: "Notifications cleared", description: "All notifications have been removed." });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to clear notifications.",
+        variant: "destructive",
+      });
+    } finally {
+      setClearing(false);
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -123,12 +161,18 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold">Welcome back!</h2>
             <p className="text-muted-foreground">Here's what's happening with your agency today.</p>
           </div>
-          <Link to="/clients/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Client
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleClearAllNotifications} disabled={clearing}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              {clearing ? "Clearing…" : "Clear All Notifications"}
             </Button>
-          </Link>
+            <Link to="/clients/new">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Client
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -162,44 +206,23 @@ export default function Dashboard() {
         {/* Needs Action Now */}
         <NeedsActionNow />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Alerts Section */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg font-semibold">Recent Alerts</CardTitle>
-              <Button variant="ghost" size="sm">View all</Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {alerts.map((alert, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    alert.type === "warning" ? "bg-warning" :
-                    alert.type === "success" ? "bg-success" :
-                    "bg-primary"
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Visits */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg font-semibold">Upcoming Visits</CardTitle>
-              <Link to="/scheduling">
-                <Button variant="ghost" size="sm">
-                  View schedule
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {upcomingVisits.map((visit, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+        {/* Upcoming Visits */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg font-semibold">Upcoming Visits</CardTitle>
+            <Link to="/scheduling">
+              <Button variant="ghost" size="sm">
+                View schedule
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {upcomingVisits.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic">No upcoming visits scheduled</p>
+            ) : (
+              upcomingVisits.map((visit) => (
+                <div key={visit.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Clock className="w-5 h-5 text-primary" />
@@ -212,21 +235,21 @@ export default function Dashboard() {
                   <div className="text-right">
                     <p className="text-sm font-medium">{visit.time}</p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      visit.status === "confirmed" 
-                        ? "bg-success/10 text-success" 
+                      visit.status === "confirmed"
+                        ? "bg-success/10 text-success"
                         : "bg-warning/10 text-warning"
                     }`}>
                       {visit.status}
                     </span>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
          {/* Shift Reminders & Notifications Widget */}
-         <ShiftRemindersWidget />
+         <ShiftRemindersWidget key={widgetKey} />
  
         {/* Quick Actions */}
         <Card>

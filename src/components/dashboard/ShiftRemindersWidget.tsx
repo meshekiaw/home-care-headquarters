@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Clock, ArrowRight, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, Clock, ArrowRight, CheckCheck, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInMinutes } from "date-fns";
 import { Link } from "react-router-dom";
@@ -33,6 +33,7 @@ export default function ShiftRemindersWidget() {
   const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const { toast } = useToast();
 
   const unreadCount = recentNotifications.filter(n => !n.email_sent && !n.sms_sent).length;
@@ -67,6 +68,34 @@ export default function ShiftRemindersWidget() {
       setMarkingRead(false);
     }
   };
+
+  const handleClearAll = async () => {
+    setClearing(true);
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .not('id', 'is', null);
+
+      if (error) throw error;
+
+      setRecentNotifications([]);
+      toast({
+        title: "Notifications cleared",
+        description: "All notifications have been removed.",
+      });
+    } catch (error: any) {
+      console.error('Error clearing notifications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear notifications.",
+        variant: "destructive",
+      });
+    } finally {
+      setClearing(false);
+    }
+  };
+
    useEffect(() => {
      async function fetchData() {
        try {
@@ -240,22 +269,40 @@ export default function ShiftRemindersWidget() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-medium text-muted-foreground">Recent Notifications</h4>
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                disabled={markingRead}
-                className="h-7 text-xs"
-              >
-                {markingRead ? (
-                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                ) : (
-                  <CheckCheck className="w-3 h-3 mr-1" />
-                )}
-                Mark all as read
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMarkAllAsRead}
+                  disabled={markingRead}
+                  className="h-7 text-xs"
+                >
+                  {markingRead ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <CheckCheck className="w-3 h-3 mr-1" />
+                  )}
+                  Mark all as read
+                </Button>
+              )}
+              {recentNotifications.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearAll}
+                  disabled={clearing}
+                  className="h-7 text-xs text-destructive hover:text-destructive"
+                >
+                  {clearing ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3 h-3 mr-1" />
+                  )}
+                  Clear All
+                </Button>
+              )}
+            </div>
           </div>
            {recentNotifications.length === 0 ? (
              <p className="text-sm text-muted-foreground italic">No recent notifications</p>

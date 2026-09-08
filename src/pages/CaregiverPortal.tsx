@@ -40,7 +40,7 @@ interface PortalAssignment {
   };
 }
 
-function PortalShell({ children, onSignOut }: { children: React.ReactNode; onSignOut?: () => void }) {
+export function PortalShell({ children, onSignOut }: { children: React.ReactNode; onSignOut?: () => void }) {
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-card">
@@ -279,7 +279,7 @@ export default function CaregiverPortal() {
                 </Button>
               ) : (
                 <Button size="sm" asChild>
-                  <Link to={isOrientation ? "/my-orientation" : `/caregiver-training/course/${a.id}`}>
+                  <Link to={isOrientation ? "/caregiver-training/orientation" : `/caregiver-training/course/${a.id}`}>
                     {a.status === "in_progress" ? "Continue" : "Start"}
                   </Link>
                 </Button>

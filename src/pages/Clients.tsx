@@ -643,13 +643,8 @@ export default function Clients() {
                           const mdY = { month: '2-digit', day: '2-digit', year: 'numeric' } as const;
                           const fmt = (d: string | null | undefined) =>
                             d ? (formatDateOnly(d, mdY) ?? d) : null;
-                          const isVA = client.client_class === 'VA';
-                          const isOtherClass = ['ARChoices', 'Medicaid', 'Private Pay'].includes(client.client_class || '');
-                          const months = isVA ? 6 : isOtherClass ? 12 : 0;
-                          const baseDate = client.authorization_due_date ?? client.form_618_date;
-                          const dueDate = months > 0 && client.authorization_due_date
-                            ? addMonthsToDate(client.authorization_due_date, months)
-                            : baseDate;
+                          // Always show the actual 618 date on file — never a projected/calculated date
+                          const current618 = client.form_618_date ?? client.authorization_due_date;
                           const now = new Date();
                           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                           const in30 = new Date(now.getTime() + 30 * 86400000);

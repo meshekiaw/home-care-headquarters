@@ -102,17 +102,26 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  const alerts = [
-    { type: "warning", message: "3 caregiver certifications expiring this week", time: "2 hours ago" },
-    { type: "info", message: "New schedule conflict detected for tomorrow", time: "4 hours ago" },
-    { type: "success", message: "Weekly compliance report generated", time: "Yesterday" },
-  ];
-
-  const upcomingVisits = [
-    { client: "Eleanor Thompson", caregiver: "Maria Santos", time: "9:00 AM", status: "confirmed" },
-    { client: "Robert Chen", caregiver: "David Wilson", time: "10:30 AM", status: "pending" },
-    { client: "Patricia Davis", caregiver: "Sarah Johnson", time: "2:00 PM", status: "confirmed" },
-  ];
+  async function handleClearAllNotifications() {
+    setClearing(true);
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .not("id", "is", null);
+      if (error) throw error;
+      setWidgetKey((k) => k + 1);
+      toast({ title: "Notifications cleared", description: "All notifications have been removed." });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to clear notifications.",
+        variant: "destructive",
+      });
+    } finally {
+      setClearing(false);
+    }
+  }
 
   return (
     <DashboardLayout>

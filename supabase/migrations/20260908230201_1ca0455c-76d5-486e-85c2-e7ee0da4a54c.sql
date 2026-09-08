@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.cleanup_notifications_on_record_delete() FROM PUBLIC, anon, authenticated;

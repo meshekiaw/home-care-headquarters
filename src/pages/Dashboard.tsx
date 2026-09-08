@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, addDays, format } from "date-fns";
  import ShiftRemindersWidget from "@/components/dashboard/ShiftRemindersWidget";
 import NeedsActionNow from "@/components/dashboard/NeedsActionNow";
+import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 interface StatCardProps {
   title: string;

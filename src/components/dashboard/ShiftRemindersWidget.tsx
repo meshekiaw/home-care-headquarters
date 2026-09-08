@@ -33,6 +33,7 @@ export default function ShiftRemindersWidget() {
   const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const { toast } = useToast();
 
   const unreadCount = recentNotifications.filter(n => !n.email_sent && !n.sms_sent).length;
@@ -67,6 +68,34 @@ export default function ShiftRemindersWidget() {
       setMarkingRead(false);
     }
   };
+
+  const handleClearAll = async () => {
+    setClearing(true);
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .not('id', 'is', null);
+
+      if (error) throw error;
+
+      setRecentNotifications([]);
+      toast({
+        title: "Notifications cleared",
+        description: "All notifications have been removed.",
+      });
+    } catch (error: any) {
+      console.error('Error clearing notifications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear notifications.",
+        variant: "destructive",
+      });
+    } finally {
+      setClearing(false);
+    }
+  };
+
    useEffect(() => {
      async function fetchData() {
        try {

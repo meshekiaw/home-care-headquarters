@@ -101,6 +101,26 @@ export default function Dashboard() {
         setCaregiverCount(caregiversResult.count || 0);
         setTodayAppointments(appointmentsResult.count || 0);
         setExpiringCredentials(credentialsResult.count || 0);
+
+        // Real upcoming visits (next scheduled appointments from now on)
+        const { data: visits } = await supabase
+          .from('appointments')
+          .select('id, start_time, status, caregivers:caregiver_id(first_name, last_name), clients:client_id(first_name, last_name)')
+          .gte('start_time', new Date().toISOString())
+          .order('start_time', { ascending: true })
+          .limit(5);
+
+        setUpcomingVisits(
+          ((visits as any[]) || [])
+            .filter((v) => v.clients && v.caregivers)
+            .map((v) => ({
+              id: v.id,
+              client: `${v.clients.first_name ?? ''} ${v.clients.last_name ?? ''}`.trim(),
+              caregiver: `${v.caregivers.first_name ?? ''} ${v.caregivers.last_name ?? ''}`.trim(),
+              time: format(new Date(v.start_time), 'MMM d, h:mm a'),
+              status: v.status === 'scheduled' ? 'confirmed' : v.status,
+            })),
+        );
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
@@ -141,12 +161,18 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold">Welcome back!</h2>
             <p className="text-muted-foreground">Here's what's happening with your agency today.</p>
           </div>
-          <Link to="/clients/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Client
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleClearAllNotifications} disabled={clearing}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              {clearing ? "Clearing…" : "Clear All Notifications"}
             </Button>
-          </Link>
+            <Link to="/clients/new">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Client
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}

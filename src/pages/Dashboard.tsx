@@ -249,7 +249,7 @@ export default function Dashboard() {
         </Card>
 
          {/* Shift Reminders & Notifications Widget */}
-         <ShiftRemindersWidget />
+         <ShiftRemindersWidget key={widgetKey} />
  
         {/* Quick Actions */}
         <Card>

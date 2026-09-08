@@ -67,7 +67,7 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
   }, [embed, onEnded]);
 
   return (
-    <div className="-mx-8 sm:mx-0 w-[calc(100%+4rem)] sm:w-full mb-6 sm:rounded-lg overflow-hidden border-y sm:border bg-black aspect-video">
+    <div className="w-full max-w-full mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
       {embed ? (
         <iframe
           src={embed}

@@ -43,6 +43,7 @@ import ResetPassword from "./pages/ResetPassword";
 import AuthMagicLink from "./pages/AuthMagicLink";
 import Unsubscribe from "./pages/Unsubscribe";
 import CaregiverPortal from "./pages/CaregiverPortal";
+import CaregiverPortalOrientation from "./pages/CaregiverPortalOrientation";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import HipaaNotice from "./pages/HipaaNotice";
 
@@ -70,6 +71,7 @@ const App = () => (
 
             {/* Caregiver training portal — single shareable link */}
             <Route path="/caregiver-training" element={<CaregiverPortal />} />
+            <Route path="/caregiver-training/orientation" element={<CaregiverPortalOrientation />} />
             <Route path="/caregiver-training/course/:assignmentId" element={<LmsCoursePlayer standalone />} />
 
             

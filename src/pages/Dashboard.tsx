@@ -59,6 +59,13 @@ export default function Dashboard() {
   const [todayAppointments, setTodayAppointments] = useState(0);
   const [expiringCredentials, setExpiringCredentials] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const [widgetKey, setWidgetKey] = useState(0);
+  const [upcomingVisits, setUpcomingVisits] = useState<
+    { id: string; client: string; caregiver: string; time: string; status: string }[]
+  >([]);
+  const { toast } = useToast();
+
 
   useEffect(() => {
     async function fetchStats() {
@@ -171,44 +178,23 @@ export default function Dashboard() {
         {/* Needs Action Now */}
         <NeedsActionNow />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Alerts Section */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg font-semibold">Recent Alerts</CardTitle>
-              <Button variant="ghost" size="sm">View all</Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {alerts.map((alert, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    alert.type === "warning" ? "bg-warning" :
-                    alert.type === "success" ? "bg-success" :
-                    "bg-primary"
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Visits */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-lg font-semibold">Upcoming Visits</CardTitle>
-              <Link to="/scheduling">
-                <Button variant="ghost" size="sm">
-                  View schedule
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {upcomingVisits.map((visit, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+        {/* Upcoming Visits */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg font-semibold">Upcoming Visits</CardTitle>
+            <Link to="/scheduling">
+              <Button variant="ghost" size="sm">
+                View schedule
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {upcomingVisits.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic">No upcoming visits scheduled</p>
+            ) : (
+              upcomingVisits.map((visit) => (
+                <div key={visit.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Clock className="w-5 h-5 text-primary" />
@@ -221,18 +207,18 @@ export default function Dashboard() {
                   <div className="text-right">
                     <p className="text-sm font-medium">{visit.time}</p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      visit.status === "confirmed" 
-                        ? "bg-success/10 text-success" 
+                      visit.status === "confirmed"
+                        ? "bg-success/10 text-success"
                         : "bg-warning/10 text-warning"
                     }`}>
                       {visit.status}
                     </span>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
          {/* Shift Reminders & Notifications Widget */}
          <ShiftRemindersWidget />

@@ -180,20 +180,26 @@ async function sendEmail(
  
      const results = { sent: 0, skipped: 0, errors: [] as string[] };
  
-     for (const reminder of reminders) {
-       // Check if we already sent this specific reminder for this appointment
-       const notificationType = `shift_reminder_${reminder.reminder_type}`;
-       const { data: existingNotification } = await supabase
-         .from("notifications")
-         .select("id")
-         .eq("related_id", reminder.appointment_id)
-         .eq("notification_type", notificationType)
-         .maybeSingle();
+      for (const reminder of reminders) {
+        // Manual sends always go out; automatic sends are de-duplicated
+        const notificationType = manualAppointmentId
+          ? "shift_reminder_manual"
+          : `shift_reminder_${reminder.reminder_type}`;
+
+        if (!manualAppointmentId) {
+          const { data: existingNotification } = await supabase
+            .from("notifications")
+            .select("id")
+            .eq("related_id", reminder.appointment_id)
+            .eq("notification_type", notificationType)
+            .maybeSingle();
+
+          if (existingNotification) {
+            results.skipped++;
+            continue;
+          }
+        }
  
-       if (existingNotification) {
-         results.skipped++;
-         continue;
-       }
  
        const subject = `⏰ Clock Out Reminder: Shift ending in ${reminder.minutes_left} minutes`;
        const message = `Hi ${reminder.caregiver_name}, your shift "${reminder.title}" with ${reminder.client_name} ends in ${reminder.minutes_left} minutes at ${formatTime(reminder.end_time)}. Please complete your documentation and clock out.`;

@@ -110,7 +110,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>Add New Caregiver</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
@@ -278,7 +278,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="sticky bottom-0 z-10 -mx-6 mt-auto flex justify-end gap-2 border-t bg-background px-6 pb-1 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

@@ -1,7 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { sendAppEmail } from "../_shared/send-app-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,13 +46,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Message must be less than 500 characters");
     }
 
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@resend.dev";
-
-    const emailResponse = await resend.emails.send({
-      from: `Document Signing <${fromEmail}>`,
-      to: [signerEmail],
-      subject: `Signature requested: ${documentName}`,
-      html: `
+    const emailResponse = await sendAppEmail(
+      signerEmail,
+      `Signature requested: ${documentName}`,
+      `
         <!DOCTYPE html>
         <html>
           <head>
@@ -86,11 +81,15 @@ const handler = async (req: Request): Promise<Response> => {
           </body>
         </html>
       `,
-    });
+    );
 
-    console.log("Signature request email sent successfully:", emailResponse);
+    if (!emailResponse.success) {
+      throw new Error(emailResponse.error || "Failed to send signature request email");
+    }
 
-    return new Response(JSON.stringify({ success: true, id: emailResponse.id }), {
+    console.log("Signature request email queued successfully");
+
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

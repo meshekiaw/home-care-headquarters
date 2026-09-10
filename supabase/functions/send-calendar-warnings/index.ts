@@ -50,7 +50,7 @@ async function sendEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "HomeCare <notifications@yourdomain.com>",
+        from: "Home Care Headquarters <notifications@homecareheadquarters.org>",
         to: [to],
         subject,
         html,

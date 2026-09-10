@@ -128,11 +128,11 @@ export function AppointmentDialog({
 
     setCheckingConflicts(true);
     try {
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(appointmentDate);
       const [startHour, startMin] = startTime.split(":").map(Number);
       startDateTime.setHours(startHour, startMin, 0, 0);
 
-      const endDateTime = new Date(selectedDate);
+      const endDateTime = new Date(appointmentDate);
       const [endHour, endMin] = endTime.split(":").map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 
@@ -189,11 +189,11 @@ export function AppointmentDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(appointmentDate);
       const [startHour, startMin] = formData.start_time.split(":").map(Number);
       startDateTime.setHours(startHour, startMin, 0, 0);
 
-      const endDateTime = new Date(selectedDate);
+      const endDateTime = new Date(appointmentDate);
       const [endHour, endMin] = formData.end_time.split(":").map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 

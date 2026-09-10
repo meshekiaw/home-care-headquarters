@@ -56,6 +56,7 @@ export function AppointmentDialog({
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
   const [override, setOverride] = useState(false);

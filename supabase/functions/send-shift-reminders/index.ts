@@ -166,7 +166,12 @@ async function sendEmail(
          start_time: apt.start_time,
          end_time: apt.end_time,
          reminder_type: reminderType,
-         minutes_left: minutesBefore,
+         minutes_left: manualAppointmentId
+           ? Math.max(
+               0,
+               Math.round((new Date(apt.end_time).getTime() - now.getTime()) / 60000)
+             )
+           : minutesBefore,
          user_id: apt.user_id,
        });
      }

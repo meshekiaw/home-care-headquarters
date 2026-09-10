@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, Mail, DollarSign, Award, Clock, Briefcase, Calendar, Shield } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
+import { getExpiryStatus, formatDateOnly } from "@/utils/expiryStatus";
 
 interface CaregiverOverviewTabProps {
   caregiver: Tables<"caregivers">;
@@ -12,6 +13,18 @@ interface CaregiverOverviewTabProps {
 }
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const DATE_FIELDS: { key: string; label: string; tracksExpiry?: boolean }[] = [
+  { key: "hire_date", label: "Hire Date" },
+  { key: "termination_date", label: "Termination Date" },
+  { key: "background_check_date", label: "Background Check Date" },
+  { key: "maltreatment_check_date", label: "Maltreatment Check Date" },
+  { key: "maltreatment_expiration_date", label: "Maltreatment Expiration Date", tracksExpiry: true },
+  { key: "tmu_date", label: "TMU Date" },
+  { key: "tmu_expiration_date", label: "TMU Expiration Date", tracksExpiry: true },
+  { key: "tb_test_date", label: "TB Test Date" },
+  { key: "tb_test_expiration_date", label: "TB Test Expiration Date", tracksExpiry: true },
+];
 
 export default function CaregiverOverviewTab({
   caregiver,
@@ -110,6 +123,43 @@ export default function CaregiverOverviewTab({
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Compliance & Employment Dates */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Compliance & Employment Dates</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {DATE_FIELDS.map(({ key, label, tracksExpiry }) => {
+            const value = (caregiver as any)[key] as string | null;
+            const status = tracksExpiry ? getExpiryStatus(value) : "ok";
+            return (
+              <div key={key}>
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <div className="flex items-center gap-2">
+                  <p
+                    className={`font-medium ${
+                      status === "expired"
+                        ? "text-destructive"
+                        : status === "expiring"
+                        ? "text-warning"
+                        : ""
+                    }`}
+                  >
+                    {value ? formatDateOnly(value) : "Not provided"}
+                  </p>
+                  {status === "expired" && (
+                    <Badge className="text-xs bg-destructive/10 text-destructive">Expired</Badge>
+                  )}
+                  {status === "expiring" && (
+                    <Badge className="text-xs bg-warning/10 text-warning">Expiring Soon</Badge>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
 

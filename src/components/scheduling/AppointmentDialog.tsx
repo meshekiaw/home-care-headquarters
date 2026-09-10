@@ -474,6 +474,22 @@ export function AppointmentDialog({
           </div>
 
           <DialogFooter className="gap-2 shrink-0 border-t p-4 bg-background sm:justify-end">
+            {appointment && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleSendReminderNow}
+                disabled={sendingReminder}
+                className="min-h-11 sm:mr-auto"
+              >
+                {sendingReminder ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <BellRing className="mr-2 h-4 w-4" />
+                )}
+                Send Reminder Now
+              </Button>
+            )}
             {appointment && onDelete && (
               <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving} className="min-h-11">
                 Delete

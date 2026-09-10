@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/hooks/useAppointments";
@@ -52,6 +53,7 @@ export function AppointmentDialog({
   const [saving, setSaving] = useState(false);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
+  const [override, setOverride] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -92,6 +94,7 @@ export function AppointmentDialog({
         });
       }
       setConflict(null);
+      setOverride(false);
     }
   }, [open, appointment, selectedDate, selectedHour]);
 
@@ -157,6 +160,7 @@ export function AppointmentDialog({
 
   const selectedCaregiver = caregivers.find((c) => c.id === formData.caregiver_id);
   const caregiverNotCleared = !!formData.caregiver_id && selectedCaregiver?.cleared_to_schedule === false;
+  const hasWarnings = caregiverNotCleared || (conflict?.hasConflict ?? false);
 
   const handleTimeChange = async (field: "start_time" | "end_time", value: string) => {
     const newFormData = { ...formData, [field]: value };
@@ -170,7 +174,7 @@ export function AppointmentDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (caregiverNotCleared) return;
+    if (caregiverNotCleared && !override) return;
     setSaving(true);
 
     try {
@@ -225,14 +229,15 @@ export function AppointmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="p-6 pb-4 shrink-0 border-b">
           <DialogTitle>
             {appointment ? "Edit Appointment" : "New Appointment"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input
@@ -374,16 +379,31 @@ export function AppointmentDialog({
             />
           </div>
 
-          <DialogFooter className="gap-2">
+            {hasWarnings && (
+              <div className="flex items-start gap-2 rounded-md border p-3">
+                <Checkbox
+                  id="override"
+                  checked={override}
+                  onCheckedChange={(v) => setOverride(v === true)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="override" className="text-sm font-normal leading-snug cursor-pointer">
+                  Override warnings and schedule anyway
+                </Label>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 shrink-0 border-t p-4 bg-background sm:justify-end">
             {appointment && onDelete && (
-              <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving}>
+              <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving} className="min-h-11">
                 Delete
               </Button>
             )}
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="min-h-11">
               Cancel
             </Button>
-            <Button type="submit" disabled={saving || caregiverNotCleared || (conflict?.hasConflict ?? false)}>
+            <Button type="submit" disabled={saving || (hasWarnings && !override)} className="min-h-11">
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {appointment ? "Update" : "Create"}
             </Button>

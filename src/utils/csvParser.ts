@@ -147,11 +147,30 @@ export function validateAndTransform(rows: CaregiverCSVRow[]): ParseResult {
       }
     }
     
+    // Compliance / employment dates
+    const dateField = (value: string | undefined, field: string): string | null => {
+      if (!value?.trim()) return null;
+      const parsed = parseDateString(value);
+      if (!parsed) {
+        errors.push({ row: rowNum, field, message: 'Invalid date format (use YYYY-MM-DD or M/D/YY)' });
+      }
+      return parsed;
+    };
+    const backgroundCheckDate = dateField(row.background_check_date, 'background_check_date');
+    const maltreatmentCheckDate = dateField(row.maltreatment_check_date, 'maltreatment_check_date');
+    const maltreatmentExpirationDate = dateField(row.maltreatment_expiration_date, 'maltreatment_expiration_date');
+    const tmuDate = dateField(row.tmu_date, 'tmu_date');
+    const tmuExpirationDate = dateField(row.tmu_expiration_date, 'tmu_expiration_date');
+    const tbTestDate = dateField(row.tb_test_date, 'tb_test_date');
+    const tbTestExpirationDate = dateField(row.tb_test_expiration_date, 'tb_test_expiration_date');
+    const hireDate = dateField(row.hire_date, 'hire_date');
+    const terminationDate = dateField(row.termination_date, 'termination_date');
+
     // Parse specializations (comma or semicolon separated within quotes)
     let specializations: string[] | null = null;
     if (row.specializations?.trim()) {
       specializations = row.specializations
-        .split(/[;|]/)
+        .split(/[;|,]/)
         .map(s => s.trim())
         .filter(s => s.length > 0);
     }

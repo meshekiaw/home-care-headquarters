@@ -7,7 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/hooks/useAppointments";
 import { checkSchedulingConflicts, type ConflictResult } from "@/hooks/useSchedulingConflicts";
@@ -54,6 +58,7 @@ export function AppointmentDialog({
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
   const [override, setOverride] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState<Date>(selectedDate ?? new Date());
 
   const [formData, setFormData] = useState({
     title: "",
@@ -93,6 +98,9 @@ export function AppointmentDialog({
           notes: "",
         });
       }
+      setAppointmentDate(
+        appointment ? new Date(appointment.start_time) : selectedDate ?? new Date()
+      );
       setConflict(null);
       setOverride(false);
     }

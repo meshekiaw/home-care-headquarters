@@ -102,36 +102,54 @@ async function sendEmail(
  
      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
  
-     // Parse request body for reminder type
-     let reminderType: ReminderType = "10min_before_end";
-     try {
-       const body = await req.json();
-       if (body.reminder_type === "5min_before_end") {
-         reminderType = "5min_before_end";
-       }
-     } catch {
-       // Default to 10min_before_end if no body
-     }
- 
-     const now = new Date();
-     const reminders: ShiftReminder[] = [];
- 
-     // Calculate time windows based on reminder type
-     const minutesBefore = reminderType === "10min_before_end" ? 10 : 5;
-     const windowStart = new Date(now.getTime() + minutesBefore * 60 * 1000);
-     const windowEnd = new Date(now.getTime() + (minutesBefore + 5) * 60 * 1000);
- 
-     const { data: endingAppointments } = await supabase
-       .from("appointments")
-       .select(`
-         id, title, start_time, end_time, user_id,
-         caregiver_id,
-         caregivers (first_name, last_name, email, phone),
-         clients (first_name, last_name)
-       `)
-       .eq("status", "scheduled")
-       .gte("end_time", windowStart.toISOString())
-       .lt("end_time", windowEnd.toISOString());
+      // Parse request body for reminder type / manual trigger
+      let reminderType: ReminderType = "10min_before_end";
+      let manualAppointmentId: string | null = null;
+      try {
+        const body = await req.json();
+        if (body.reminder_type === "5min_before_end") {
+          reminderType = "5min_before_end";
+        }
+        if (typeof body.appointment_id === "string" && body.appointment_id) {
+          manualAppointmentId = body.appointment_id;
+        }
+      } catch {
+        // Default to 10min_before_end if no body
+      }
+
+      const now = new Date();
+      const reminders: ShiftReminder[] = [];
+
+      // Calculate time windows based on reminder type
+      const minutesBefore = reminderType === "10min_before_end" ? 10 : 5;
+      const windowStart = new Date(now.getTime() + minutesBefore * 60 * 1000);
+      const windowEnd = new Date(now.getTime() + (minutesBefore + 5) * 60 * 1000);
+
+      const selectClause = `
+          id, title, start_time, end_time, user_id,
+          caregiver_id,
+          caregivers (first_name, last_name, email, phone),
+          clients (first_name, last_name)
+        `;
+
+      let endingAppointments;
+      if (manualAppointmentId) {
+        // Manual trigger: send immediately for this appointment regardless of timing
+        const { data } = await supabase
+          .from("appointments")
+          .select(selectClause)
+          .eq("id", manualAppointmentId)
+          .limit(1);
+        endingAppointments = data;
+      } else {
+        const { data } = await supabase
+          .from("appointments")
+          .select(selectClause)
+          .eq("status", "scheduled")
+          .gte("end_time", windowStart.toISOString())
+          .lt("end_time", windowEnd.toISOString());
+        endingAppointments = data;
+      }
  
      for (const apt of endingAppointments || []) {
        const caregiver = apt.caregivers as unknown as { first_name: string; last_name: string; email: string | null; phone: string | null } | null;

@@ -7,7 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/hooks/useAppointments";
 import { checkSchedulingConflicts, type ConflictResult } from "@/hooks/useSchedulingConflicts";
@@ -54,6 +58,8 @@ export function AppointmentDialog({
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
   const [override, setOverride] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState<Date>(selectedDate ?? new Date());
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -93,6 +99,9 @@ export function AppointmentDialog({
           notes: "",
         });
       }
+      setAppointmentDate(
+        appointment ? new Date(appointment.start_time) : selectedDate ?? new Date()
+      );
       setConflict(null);
       setOverride(false);
     }
@@ -120,11 +129,11 @@ export function AppointmentDialog({
 
     setCheckingConflicts(true);
     try {
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(appointmentDate);
       const [startHour, startMin] = startTime.split(":").map(Number);
       startDateTime.setHours(startHour, startMin, 0, 0);
 
-      const endDateTime = new Date(selectedDate);
+      const endDateTime = new Date(appointmentDate);
       const [endHour, endMin] = endTime.split(":").map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 
@@ -181,11 +190,11 @@ export function AppointmentDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(appointmentDate);
       const [startHour, startMin] = formData.start_time.split(":").map(Number);
       startDateTime.setHours(startHour, startMin, 0, 0);
 
-      const endDateTime = new Date(selectedDate);
+      const endDateTime = new Date(appointmentDate);
       const [endHour, endMin] = formData.end_time.split(":").map(Number);
       endDateTime.setHours(endHour, endMin, 0, 0);
 
@@ -210,6 +219,11 @@ export function AppointmentDialog({
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving appointment:", error);
+      toast({
+        title: "Could not save appointment",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -238,6 +252,34 @@ export function AppointmentDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn("w-full justify-start text-left font-normal min-h-11")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(appointmentDate, "PPP")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={appointmentDate}
+                  onSelect={(d) => {
+                    if (!d) return;
+                    setAppointmentDate(d);
+                  }}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input

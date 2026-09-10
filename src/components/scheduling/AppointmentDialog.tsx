@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/hooks/useAppointments";
@@ -377,16 +378,31 @@ export function AppointmentDialog({
             />
           </div>
 
-          <DialogFooter className="gap-2">
+            {hasWarnings && (
+              <div className="flex items-start gap-2 rounded-md border p-3">
+                <Checkbox
+                  id="override"
+                  checked={override}
+                  onCheckedChange={(v) => setOverride(v === true)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="override" className="text-sm font-normal leading-snug cursor-pointer">
+                  Override warnings and schedule anyway
+                </Label>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 shrink-0 border-t p-4 bg-background sm:justify-end">
             {appointment && onDelete && (
-              <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving}>
+              <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving} className="min-h-11">
                 Delete
               </Button>
             )}
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="min-h-11">
               Cancel
             </Button>
-            <Button type="submit" disabled={saving || caregiverNotCleared || (conflict?.hasConflict ?? false)}>
+            <Button type="submit" disabled={saving || (hasWarnings && !override)} className="min-h-11">
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {appointment ? "Update" : "Create"}
             </Button>

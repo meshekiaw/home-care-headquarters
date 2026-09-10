@@ -59,6 +59,7 @@ export function AppointmentDialog({
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
   const [override, setOverride] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState<Date>(selectedDate ?? new Date());
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     title: "",

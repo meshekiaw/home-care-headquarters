@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, BellRing } from "lucide-react";
+import { invokeWithRefresh } from "@/lib/invokeWithRefresh";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/hooks/useAppointments";
@@ -55,6 +56,7 @@ export function AppointmentDialog({
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
   const [override, setOverride] = useState(false);
@@ -226,6 +228,41 @@ export function AppointmentDialog({
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendReminderNow = async () => {
+    if (!appointment) return;
+    setSendingReminder(true);
+    try {
+      const { data, error } = await invokeWithRefresh<{ sent: number; errors?: string[] }>(
+        "send-shift-reminders",
+        { body: { appointment_id: appointment.id } },
+      );
+      if (error) throw error;
+
+      if (data && data.sent > 0) {
+        toast({
+          title: "Reminder sent",
+          description: "A clock-out reminder was sent to the assigned caregiver.",
+        });
+      } else {
+        toast({
+          title: "Reminder not sent",
+          description:
+            data?.errors?.[0] ??
+            "No email or phone number on file for the assigned caregiver.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.message ?? "Failed to send the reminder.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingReminder(false);
     }
   };
 
@@ -437,6 +474,22 @@ export function AppointmentDialog({
           </div>
 
           <DialogFooter className="gap-2 shrink-0 border-t p-4 bg-background sm:justify-end">
+            {appointment && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleSendReminderNow}
+                disabled={sendingReminder}
+                className="min-h-11 sm:mr-auto"
+              >
+                {sendingReminder ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <BellRing className="mr-2 h-4 w-4" />
+                )}
+                Send Reminder Now
+              </Button>
+            )}
             {appointment && onDelete && (
               <Button type="button" variant="destructive" onClick={handleDelete} disabled={saving} className="min-h-11">
                 Delete

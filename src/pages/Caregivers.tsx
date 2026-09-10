@@ -30,6 +30,40 @@ import { useNavigate } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
 import { downloadCSV, formatCaregiverForExport } from "@/utils/csvExport";
+import { getExpiryStatus, formatDateOnly } from "@/utils/expiryStatus";
+
+const EXPIRY_FIELDS: { key: string; label: string }[] = [
+  { key: "maltreatment_expiration_date", label: "Maltreatment" },
+  { key: "tmu_expiration_date", label: "TMU" },
+  { key: "tb_test_expiration_date", label: "TB Test" },
+];
+
+function ExpiryBadges({ caregiver }: { caregiver: Record<string, any> }) {
+  const alerts = EXPIRY_FIELDS.map((f) => ({
+    ...f,
+    value: caregiver[f.key] as string | null,
+    status: getExpiryStatus(caregiver[f.key] as string | null),
+  })).filter((a) => a.value && a.status !== "ok");
+
+  if (alerts.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-2">
+      {alerts.map((a) => (
+        <Badge
+          key={a.key}
+          className={`text-xs ${
+            a.status === "expired"
+              ? "bg-destructive/10 text-destructive"
+              : "bg-warning/10 text-warning"
+          }`}
+        >
+          {a.label} {a.status === "expired" ? "expired" : "expires"} {formatDateOnly(a.value)}
+        </Badge>
+      ))}
+    </div>
+  );
+}
 
 export default function Caregivers() {
   const { caregivers, loading, createCaregiver, refetch } = useCaregivers();
@@ -258,6 +292,7 @@ export default function Caregivers() {
                               {caregiver.specializations.length > 1 && ` +${caregiver.specializations.length - 1}`}
                             </p>
                           )}
+                          <ExpiryBadges caregiver={caregiver as any} />
                           <div className="flex items-center gap-4 mt-3">
                             {caregiver.hourly_rate && (
                               <span className="text-sm font-medium text-primary">

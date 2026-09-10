@@ -11,6 +11,15 @@ export interface CaregiverCSVRow {
   state?: string;
   zip_code?: string;
   service_radius_miles?: string;
+  background_check_date?: string;
+  maltreatment_check_date?: string;
+  maltreatment_expiration_date?: string;
+  tmu_date?: string;
+  tmu_expiration_date?: string;
+  tb_test_date?: string;
+  tb_test_expiration_date?: string;
+  hire_date?: string;
+  termination_date?: string;
 }
 
 export interface ParsedCaregiver {
@@ -26,6 +35,15 @@ export interface ParsedCaregiver {
   state: string | null;
   zip_code: string | null;
   service_radius_miles: number | null;
+  background_check_date: string | null;
+  maltreatment_check_date: string | null;
+  maltreatment_expiration_date: string | null;
+  tmu_date: string | null;
+  tmu_expiration_date: string | null;
+  tb_test_date: string | null;
+  tb_test_expiration_date: string | null;
+  hire_date: string | null;
+  termination_date: string | null;
 }
 
 export interface ValidationError {
@@ -129,11 +147,30 @@ export function validateAndTransform(rows: CaregiverCSVRow[]): ParseResult {
       }
     }
     
+    // Compliance / employment dates
+    const dateField = (value: string | undefined, field: string): string | null => {
+      if (!value?.trim()) return null;
+      const parsed = parseDateString(value);
+      if (!parsed) {
+        errors.push({ row: rowNum, field, message: 'Invalid date format (use YYYY-MM-DD or M/D/YY)' });
+      }
+      return parsed;
+    };
+    const backgroundCheckDate = dateField(row.background_check_date, 'background_check_date');
+    const maltreatmentCheckDate = dateField(row.maltreatment_check_date, 'maltreatment_check_date');
+    const maltreatmentExpirationDate = dateField(row.maltreatment_expiration_date, 'maltreatment_expiration_date');
+    const tmuDate = dateField(row.tmu_date, 'tmu_date');
+    const tmuExpirationDate = dateField(row.tmu_expiration_date, 'tmu_expiration_date');
+    const tbTestDate = dateField(row.tb_test_date, 'tb_test_date');
+    const tbTestExpirationDate = dateField(row.tb_test_expiration_date, 'tb_test_expiration_date');
+    const hireDate = dateField(row.hire_date, 'hire_date');
+    const terminationDate = dateField(row.termination_date, 'termination_date');
+
     // Parse specializations (comma or semicolon separated within quotes)
     let specializations: string[] | null = null;
     if (row.specializations?.trim()) {
       specializations = row.specializations
-        .split(/[;|]/)
+        .split(/[;|,]/)
         .map(s => s.trim())
         .filter(s => s.length > 0);
     }
@@ -156,6 +193,15 @@ export function validateAndTransform(rows: CaregiverCSVRow[]): ParseResult {
         state: row.state?.trim() || null,
         zip_code: row.zip_code?.trim() || null,
         service_radius_miles: serviceRadius,
+        background_check_date: backgroundCheckDate,
+        maltreatment_check_date: maltreatmentCheckDate,
+        maltreatment_expiration_date: maltreatmentExpirationDate,
+        tmu_date: tmuDate,
+        tmu_expiration_date: tmuExpirationDate,
+        tb_test_date: tbTestDate,
+        tb_test_expiration_date: tbTestExpirationDate,
+        hire_date: hireDate,
+        termination_date: terminationDate,
       });
     }
   });
@@ -192,9 +238,9 @@ function parseDateString(value: string): string | null {
 }
 
 export function generateSampleCSV(): string {
-  return `first_name,last_name,email,phone,status,hourly_rate,specializations,address,city,state,zip_code,service_radius_miles
-John,Doe,john.doe@email.com,(555) 123-4567,active,25.00,Elder Care|Dementia Care,123 Main St,Springfield,IL,62701,15
-Jane,Smith,jane.smith@email.com,(555) 987-6543,active,28.50,Pediatric Care|Physical Therapy,456 Oak Ave,Chicago,IL,60601,20`;
+  return `first_name,last_name,email,phone,status,hourly_rate,specializations,address,city,state,zip_code,service_radius_miles,background_check_date,maltreatment_check_date,maltreatment_expiration_date,tmu_date,tmu_expiration_date,tb_test_date,tb_test_expiration_date,hire_date,termination_date
+John,Doe,john.doe@email.com,(555) 123-4567,active,25.00,Elder Care|Dementia Care,123 Main St,Springfield,IL,62701,15,2026-01-10,2026-01-12,2027-01-11,2026-01-15,2027-01-14,2026-02-01,2027-01-31,2026-02-05,
+Jane,Smith,jane.smith@email.com,(555) 987-6543,active,28.50,Pediatric Care|Physical Therapy,456 Oak Ave,Chicago,IL,60601,20,2025-11-03,2025-11-05,2026-11-04,2025-11-10,2026-11-09,2025-12-01,2026-11-30,2025-12-08,`;
 }
 
 // ============= Client CSV Parsing =============

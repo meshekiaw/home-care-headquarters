@@ -197,7 +197,9 @@ export default function BulkImportDialog({
                 <code className="bg-muted px-1 rounded">last_name</code>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Optional: email, phone, status, hourly_rate, specializations (pipe-separated), address, city, state, zip_code, service_radius_miles
+                Optional: email, phone, status, hourly_rate, specializations (pipe-separated), address, city, state, zip_code, service_radius_miles,
+                background_check_date, maltreatment_check_date, maltreatment_expiration_date, tmu_date, tmu_expiration_date,
+                tb_test_date, tb_test_expiration_date, hire_date, termination_date
               </p>
             </div>
           </div>

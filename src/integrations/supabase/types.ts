@@ -574,6 +574,7 @@ export type Database = {
         Row: {
           address: string | null
           auth_user_id: string | null
+          background_check_date: string | null
           city: string | null
           cleared_to_schedule: boolean
           created_at: string
@@ -581,9 +582,12 @@ export type Database = {
           email: string | null
           first_name: string
           first_shift_at: string | null
+          hire_date: string | null
           hourly_rate: number | null
           id: string
           last_name: string
+          maltreatment_check_date: string | null
+          maltreatment_expiration_date: string | null
           orientation_deadline: string | null
           phone: string | null
           service_radius_miles: number | null
@@ -591,7 +595,12 @@ export type Database = {
           ssn_encrypted: string | null
           state: string | null
           status: string
+          tb_test_date: string | null
+          tb_test_expiration_date: string | null
           temp_password_sent_at: string | null
+          termination_date: string | null
+          tmu_date: string | null
+          tmu_expiration_date: string | null
           updated_at: string
           user_id: string
           zip_code: string | null
@@ -599,6 +608,7 @@ export type Database = {
         Insert: {
           address?: string | null
           auth_user_id?: string | null
+          background_check_date?: string | null
           city?: string | null
           cleared_to_schedule?: boolean
           created_at?: string
@@ -606,9 +616,12 @@ export type Database = {
           email?: string | null
           first_name: string
           first_shift_at?: string | null
+          hire_date?: string | null
           hourly_rate?: number | null
           id?: string
           last_name: string
+          maltreatment_check_date?: string | null
+          maltreatment_expiration_date?: string | null
           orientation_deadline?: string | null
           phone?: string | null
           service_radius_miles?: number | null
@@ -616,7 +629,12 @@ export type Database = {
           ssn_encrypted?: string | null
           state?: string | null
           status?: string
+          tb_test_date?: string | null
+          tb_test_expiration_date?: string | null
           temp_password_sent_at?: string | null
+          termination_date?: string | null
+          tmu_date?: string | null
+          tmu_expiration_date?: string | null
           updated_at?: string
           user_id: string
           zip_code?: string | null
@@ -624,6 +642,7 @@ export type Database = {
         Update: {
           address?: string | null
           auth_user_id?: string | null
+          background_check_date?: string | null
           city?: string | null
           cleared_to_schedule?: boolean
           created_at?: string
@@ -631,9 +650,12 @@ export type Database = {
           email?: string | null
           first_name?: string
           first_shift_at?: string | null
+          hire_date?: string | null
           hourly_rate?: number | null
           id?: string
           last_name?: string
+          maltreatment_check_date?: string | null
+          maltreatment_expiration_date?: string | null
           orientation_deadline?: string | null
           phone?: string | null
           service_radius_miles?: number | null
@@ -641,7 +663,12 @@ export type Database = {
           ssn_encrypted?: string | null
           state?: string | null
           status?: string
+          tb_test_date?: string | null
+          tb_test_expiration_date?: string | null
           temp_password_sent_at?: string | null
+          termination_date?: string | null
+          tmu_date?: string | null
+          tmu_expiration_date?: string | null
           updated_at?: string
           user_id?: string
           zip_code?: string | null

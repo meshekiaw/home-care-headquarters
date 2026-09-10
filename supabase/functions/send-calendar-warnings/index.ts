@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
+import { sendAppEmail } from "../_shared/send-app-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,37 +37,8 @@ async function sendEmail(
   subject: string,
   html: string
 ): Promise<{ success: boolean; error?: string }> {
-  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-  if (!RESEND_API_KEY) {
-    console.log("RESEND_API_KEY not configured - skipping email");
-    return { success: false, error: "RESEND_API_KEY not configured" };
-  }
-
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Home Care Headquarters <notifications@homecareheadquarters.org>",
-        to: [to],
-        subject,
-        html,
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      return { success: false, error: errText };
-    }
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: (e as Error).message };
-  }
+  return await sendAppEmail(to, subject, html);
 }
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });

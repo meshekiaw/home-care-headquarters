@@ -1,5 +1,6 @@
  import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
  import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { sendAppEmail } from "../_shared/send-app-email.ts";
  
  const corsHeaders = {
    "Access-Control-Allow-Origin": "*",
@@ -7,43 +8,13 @@
      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
  };
  
- async function sendEmail(
-   to: string,
-   subject: string,
-   message: string
- ): Promise<{ success: boolean; error?: string }> {
-   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-   
-   if (!RESEND_API_KEY) {
-     return { success: false, error: "RESEND_API_KEY not configured" };
-   }
- 
-   try {
-     const response = await fetch("https://api.resend.com/emails", {
-       method: "POST",
-       headers: {
-         "Authorization": `Bearer ${RESEND_API_KEY}`,
-         "Content-Type": "application/json",
-       },
-       body: JSON.stringify({
-         from: "Home Care Headquarters <notifications@homecareheadquarters.org>",
-         to: [to],
-         subject,
-         html: `<p>${message}</p>`,
-       }),
-     });
- 
-     if (!response.ok) {
-       const error = await response.text();
-       return { success: false, error };
-     }
- 
-     return { success: true };
-   } catch (error) {
-     return { success: false, error: String(error) };
-   }
- }
- 
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<{ success: boolean; error?: string }> {
+  return await sendAppEmail(to, subject, html);
+}
  async function sendSMS(
    to: string,
    message: string

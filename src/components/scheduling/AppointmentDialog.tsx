@@ -218,6 +218,11 @@ export function AppointmentDialog({
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving appointment:", error);
+      toast({
+        title: "Could not save appointment",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -246,6 +251,34 @@ export function AppointmentDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn("w-full justify-start text-left font-normal min-h-11")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(appointmentDate, "PPP")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={appointmentDate}
+                  onSelect={(d) => {
+                    if (!d) return;
+                    setAppointmentDate(d);
+                  }}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input

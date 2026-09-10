@@ -52,6 +52,7 @@ export function AppointmentDialog({
   const [saving, setSaving] = useState(false);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [conflict, setConflict] = useState<ConflictResult | null>(null);
+  const [override, setOverride] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -92,6 +93,7 @@ export function AppointmentDialog({
         });
       }
       setConflict(null);
+      setOverride(false);
     }
   }, [open, appointment, selectedDate, selectedHour]);
 

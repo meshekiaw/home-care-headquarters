@@ -55,6 +55,15 @@ export function formatCaregiverForExport(caregiver: {
   city?: string | null;
   state?: string | null;
   zip_code?: string | null;
+  background_check_date?: string | null;
+  maltreatment_check_date?: string | null;
+  maltreatment_expiration_date?: string | null;
+  tmu_date?: string | null;
+  tmu_expiration_date?: string | null;
+  tb_test_date?: string | null;
+  tb_test_expiration_date?: string | null;
+  hire_date?: string | null;
+  termination_date?: string | null;
   created_at: string;
 }) {
   return {
@@ -69,6 +78,15 @@ export function formatCaregiverForExport(caregiver: {
     city: caregiver.city || '',
     state: caregiver.state || '',
     zip_code: caregiver.zip_code || '',
+    background_check_date: caregiver.background_check_date || '',
+    maltreatment_check_date: caregiver.maltreatment_check_date || '',
+    maltreatment_expiration_date: caregiver.maltreatment_expiration_date || '',
+    tmu_date: caregiver.tmu_date || '',
+    tmu_expiration_date: caregiver.tmu_expiration_date || '',
+    tb_test_date: caregiver.tb_test_date || '',
+    tb_test_expiration_date: caregiver.tb_test_expiration_date || '',
+    hire_date: caregiver.hire_date || '',
+    termination_date: caregiver.termination_date || '',
     created_at: caregiver.created_at,
   };
 }

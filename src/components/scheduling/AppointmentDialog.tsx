@@ -160,6 +160,7 @@ export function AppointmentDialog({
 
   const selectedCaregiver = caregivers.find((c) => c.id === formData.caregiver_id);
   const caregiverNotCleared = !!formData.caregiver_id && selectedCaregiver?.cleared_to_schedule === false;
+  const hasWarnings = caregiverNotCleared || (conflict?.hasConflict ?? false);
 
   const handleTimeChange = async (field: "start_time" | "end_time", value: string) => {
     const newFormData = { ...formData, [field]: value };

@@ -172,7 +172,7 @@ export function AppointmentDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (caregiverNotCleared) return;
+    if (caregiverNotCleared && !override) return;
     setSaving(true);
 
     try {

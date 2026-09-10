@@ -12,4 +12,5 @@ export interface TemplateEntry {
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'lms-assignment-notification': lmsAssignmentNotification,
+  'system-notification': systemNotification,
 }

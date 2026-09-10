@@ -11,6 +11,15 @@ export interface CaregiverCSVRow {
   state?: string;
   zip_code?: string;
   service_radius_miles?: string;
+  background_check_date?: string;
+  maltreatment_check_date?: string;
+  maltreatment_expiration_date?: string;
+  tmu_date?: string;
+  tmu_expiration_date?: string;
+  tb_test_date?: string;
+  tb_test_expiration_date?: string;
+  hire_date?: string;
+  termination_date?: string;
 }
 
 export interface ParsedCaregiver {
@@ -26,6 +35,15 @@ export interface ParsedCaregiver {
   state: string | null;
   zip_code: string | null;
   service_radius_miles: number | null;
+  background_check_date: string | null;
+  maltreatment_check_date: string | null;
+  maltreatment_expiration_date: string | null;
+  tmu_date: string | null;
+  tmu_expiration_date: string | null;
+  tb_test_date: string | null;
+  tb_test_expiration_date: string | null;
+  hire_date: string | null;
+  termination_date: string | null;
 }
 
 export interface ValidationError {

@@ -229,6 +229,41 @@ export function AppointmentDialog({
     }
   };
 
+  const handleSendReminderNow = async () => {
+    if (!appointment) return;
+    setSendingReminder(true);
+    try {
+      const { data, error } = await invokeWithRefresh<{ sent: number; errors?: string[] }>(
+        "send-shift-reminders",
+        { body: { appointment_id: appointment.id } },
+      );
+      if (error) throw error;
+
+      if (data && data.sent > 0) {
+        toast({
+          title: "Reminder sent",
+          description: "A clock-out reminder was sent to the assigned caregiver.",
+        });
+      } else {
+        toast({
+          title: "Reminder not sent",
+          description:
+            data?.errors?.[0] ??
+            "No email or phone number on file for the assigned caregiver.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.message ?? "Failed to send the reminder.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (appointment && onDelete) {
       setSaving(true);

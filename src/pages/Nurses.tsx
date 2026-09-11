@@ -299,14 +299,25 @@ import { deleteNurses } from "@/lib/deleteNurses";
                            {nurse.status.replace("_", " ")}
                          </Badge>
                        </TableCell>
-                       <TableCell className="text-right">
-                         <Link to={`/nurses/${nurse.id}`}>
-                           <Button variant="ghost" size="sm">
-                             <Eye className="w-4 h-4 mr-1" />
-                             View
-                           </Button>
-                         </Link>
-                       </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Link to={`/nurses/${nurse.id}`}>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTargets([nurse])}
+                            aria-label="Delete nurse"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
                      </TableRow>
                    ))
                  )}

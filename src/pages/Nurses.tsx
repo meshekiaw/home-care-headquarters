@@ -536,6 +536,49 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog
+        open={!!statusTarget}
+        onOpenChange={(open) => !open && !statusSaving && setStatusTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {statusTarget?.status === "active" ? "Deactivate this nurse?" : "Reactivate this nurse?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {statusTarget?.status === "active"
+                ? `${statusTarget?.first_name} ${statusTarget?.last_name} will no longer be able to sign in and will stop receiving 618 alerts. Every assessment they claimed or completed stays in place with their name on it.`
+                : `${statusTarget?.first_name} ${statusTarget?.last_name} will be able to sign in again. You can turn 618 alerts back on afterwards.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={statusSaving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (statusTarget) {
+                  changeStatus(statusTarget, statusTarget.status === "active" ? "inactive" : "active");
+                }
+              }}
+              disabled={statusSaving}
+            >
+              {statusSaving
+                ? "Saving..."
+                : statusTarget?.status === "active"
+                  ? "Deactivate"
+                  : "Reactivate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <EditNurseDialog
+        nurse={editTarget}
+        open={!!editTarget}
+        onOpenChange={(open) => !open && setEditTarget(null)}
+        onSaved={fetchNurses}
+      />
+
       <AddNurseDialog
          open={dialogOpen}
          onOpenChange={setDialogOpen}

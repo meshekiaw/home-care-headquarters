@@ -26,20 +26,26 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user: caller } } = await userClient.auth.getUser();
-    if (!caller) return json({ error: "Unauthorized" }, 401);
-
     const admin = createClient(supabaseUrl, serviceRoleKey);
-    const { data: isAdmin } = await admin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!isAdmin) return json({ error: "Admin access required" }, 403);
+    const bearer = authHeader.replace(/^Bearer\s+/i, "");
+
+    // Trusted server-to-server calls use the service role key; everyone else
+    // must be a signed-in admin.
+    if (bearer !== serviceRoleKey) {
+      const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user: caller } } = await userClient.auth.getUser();
+      if (!caller) return json({ error: "Unauthorized" }, 401);
+
+      const { data: isAdmin } = await admin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", caller.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!isAdmin) return json({ error: "Admin access required" }, 403);
+    }
 
     const body = await req.json();
     const nurseIds: string[] = body.nurse_ids ?? (body.nurse_id ? [body.nurse_id] : []);

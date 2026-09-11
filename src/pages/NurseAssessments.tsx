@@ -21,9 +21,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, Plus, CheckCircle, Loader2 } from "lucide-react";
+import { ClipboardCheck, Plus, CheckCircle, Loader2, Pencil, Trash2, RotateCcw } from "lucide-react";
 
 interface Assessment {
   id: string;
@@ -92,6 +102,104 @@ export default function NurseAssessments() {
     assigned_nurse_id: "",
     notes: "",
   });
+  const [editTarget, setEditTarget] = useState<Assessment | null>(null);
+  const [editForm, setEditForm] = useState({
+    client_id: "",
+    assessment_type: "618",
+    due_date: "",
+    assigned_nurse_id: "",
+    scheduled_date: "",
+    scheduled_time: "",
+    status: "Pending",
+    notes: "",
+  });
+  const [deleteTarget, setDeleteTarget] = useState<Assessment | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  function openEdit(a: Assessment) {
+    setEditTarget(a);
+    setEditForm({
+      client_id: a.client_id,
+      assessment_type: a.assessment_type ?? "618",
+      due_date: a.due_date ?? "",
+      assigned_nurse_id: a.assigned_nurse_id ?? "",
+      scheduled_date: a.scheduled_date ?? "",
+      scheduled_time: a.scheduled_time ? a.scheduled_time.slice(0, 5) : "",
+      status: a.status ?? "Pending",
+      notes: a.notes ?? "",
+    });
+  }
+
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editTarget) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("nurse_assessments")
+        .update({
+          client_id: editForm.client_id,
+          assessment_type: editForm.assessment_type || "618",
+          due_date: editForm.due_date,
+          assigned_nurse_id: editForm.assigned_nurse_id || null,
+          scheduled_date: editForm.scheduled_date || null,
+          scheduled_time: editForm.scheduled_time || null,
+          status: editForm.status,
+          notes: editForm.notes || null,
+          completed_at:
+            editForm.status === "Completed"
+              ? new Date().toISOString()
+              : null,
+        })
+        .eq("id", editTarget.id);
+      if (error) throw error;
+      toast({ title: "Assessment updated" });
+      setEditTarget(null);
+      await loadAll();
+    } catch (error: any) {
+      toast({ title: "Could not save changes", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function unclaim(a: Assessment) {
+    const { error } = await supabase
+      .from("nurse_assessments")
+      .update({
+        assigned_nurse_id: null,
+        scheduled_date: null,
+        scheduled_time: null,
+        claimed_at: null,
+        status: "Pending",
+      })
+      .eq("id", a.id);
+    if (error) {
+      toast({ title: "Could not unclaim", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Assessment unclaimed",
+      description: "It is back in the pending list for another nurse to claim.",
+    });
+    await loadAll();
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("nurse_assessments").delete().eq("id", deleteTarget.id);
+      if (error) throw error;
+      toast({ title: "Assessment deleted" });
+      setDeleteTarget(null);
+      await loadAll();
+    } catch (error: any) {
+      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     void loadAll();
@@ -295,12 +403,44 @@ export default function NurseAssessments() {
                         </td>
                         <td className="p-3">{statusBadge(a.status)}</td>
                         <td className="p-3 text-right">
-                          {a.status !== "Completed" && (
-                            <Button size="sm" variant="outline" onClick={() => markCompleted(a.id)}>
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              Complete
+                          <div className="flex justify-end gap-1 flex-wrap">
+                            {a.status !== "Completed" && (
+                              <Button size="sm" variant="outline" onClick={() => markCompleted(a.id)}>
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Complete
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>
+                              <Pencil className="w-4 h-4 mr-1" />
+                              Edit
                             </Button>
-                          )}
+                            {a.assigned_nurse_id && (
+                              <Button size="sm" variant="ghost" onClick={() => unclaim(a)}>
+                                <RotateCcw className="w-4 h-4 mr-1" />
+                                Unclaim
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => {
+                                if (a.status === "Completed") {
+                                  toast({
+                                    title: "Completed assessments are kept",
+                                    description:
+                                      "This one has a completion record, so it can't be deleted. Edit it instead if something is wrong.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                setDeleteTarget(a);
+                              }}
+                              aria-label="Delete assessment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -378,6 +518,141 @@ export default function NurseAssessments() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Assessment</DialogTitle>
+            <DialogDescription>Changes update this existing assessment.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSave} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Client *</Label>
+              <Select
+                value={editForm.client_id}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, client_id: v }))}
+              >
+                <SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger>
+                <SelectContent>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Assessment type</Label>
+                <Input
+                  value={editForm.assessment_type}
+                  onChange={(e) => setEditForm((f) => ({ ...f, assessment_type: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Due date *</Label>
+                <Input
+                  type="date"
+                  value={editForm.due_date}
+                  onChange={(e) => setEditForm((f) => ({ ...f, due_date: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Assigned nurse</Label>
+              <Select
+                value={editForm.assigned_nurse_id || "unassigned"}
+                onValueChange={(v) =>
+                  setEditForm((f) => ({ ...f, assigned_nurse_id: v === "unassigned" ? "" : v }))
+                }
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {nurses.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>{n.first_name} {n.last_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Scheduled date</Label>
+                <Input
+                  type="date"
+                  value={editForm.scheduled_date}
+                  onChange={(e) => setEditForm((f) => ({ ...f, scheduled_date: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Scheduled time</Label>
+                <Input
+                  type="time"
+                  value={editForm.scheduled_time}
+                  onChange={(e) => setEditForm((f) => ({ ...f, scheduled_time: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select
+                value={editForm.status}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, status: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={editForm.notes}
+                onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                rows={3}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
+              <Button type="submit" disabled={saving || !editForm.client_id || !editForm.due_date}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && !deleting && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this assessment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.clients
+                ? `The ${deleteTarget.assessment_type} assessment for ${deleteTarget.clients.first_name} ${deleteTarget.clients.last_name} will be removed. This can't be undone.`
+                : "This assessment will be removed. This can't be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

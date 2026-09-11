@@ -13,7 +13,7 @@
    TableHeader,
    TableRow,
  } from "@/components/ui/table";
-import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2, Mail } from "lucide-react";
+import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2, Mail, Pencil, UserX, UserCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
@@ -29,6 +29,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
 import { deleteNurses } from "@/lib/deleteNurses";
+import { nurseHistoryCounts } from "@/lib/nurseHistory";
+import { EditNurseDialog, type EditableNurse } from "@/components/nurses/EditNurseDialog";
 import { Switch } from "@/components/ui/switch";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
  
@@ -43,6 +45,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
    license_expiry: string | null;
    status: string;
    created_at: string;
+   specializations?: string[] | null;
    receives_618_notifications?: boolean | null;
  }
  
@@ -53,8 +56,13 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTargets, setDeleteTargets] = useState<Nurse[] | null>(null);
+  const [blockedTargets, setBlockedTargets] = useState<Nurse[]>([]);
   const [deleting, setDeleting] = useState(false);
+  const [checkingHistory, setCheckingHistory] = useState(false);
   const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<EditableNurse | null>(null);
+  const [statusTarget, setStatusTarget] = useState<Nurse | null>(null);
+  const [statusSaving, setStatusSaving] = useState(false);
   const { toast } = useToast();
 
   async function sendInvite(nurse: Nurse) {
@@ -108,6 +116,66 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
 
   const toggleOne = (id: string, checked: boolean) =>
     setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
+
+  async function requestDelete(targets: Nurse[]) {
+    setCheckingHistory(true);
+    try {
+      const counts = await nurseHistoryCounts(targets.map((n) => n.id));
+      const blocked = targets.filter((n) => (counts[n.id] ?? 0) > 0);
+      const deletable = targets.filter((n) => !(counts[n.id] ?? 0));
+      setBlockedTargets(blocked);
+      if (deletable.length > 0) {
+        setDeleteTargets(deletable);
+      } else if (blocked.length > 0) {
+        toast({
+          title: blocked.length > 1 ? "These nurses have history" : "This nurse has history",
+          description:
+            "Assessments are linked to them, so they can't be deleted. Set them to Inactive instead to keep the record and stop their access.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({ title: "Could not check records", description: error.message, variant: "destructive" });
+    } finally {
+      setCheckingHistory(false);
+    }
+  }
+
+  async function changeStatus(nurse: Nurse, nextStatus: "active" | "inactive") {
+    setStatusSaving(true);
+    try {
+      const { error } = await supabase
+        .from("nurses")
+        .update({
+          status: nextStatus,
+          ...(nextStatus === "inactive" ? { receives_618_notifications: false } : {}),
+        })
+        .eq("id", nurse.id);
+      if (error) throw error;
+
+      if (nurse.email) {
+        await supabase.functions.invoke("manage-nurse-account", {
+          body: {
+            action: nextStatus === "inactive" ? "deactivate" : "reactivate",
+            email: nurse.email,
+          },
+        });
+      }
+      toast({
+        title: nextStatus === "inactive" ? "Nurse deactivated" : "Nurse reactivated",
+        description:
+          nextStatus === "inactive"
+            ? `${nurse.first_name} ${nurse.last_name} can no longer sign in and won't get 618 alerts. Their assessment history is unchanged.`
+            : `${nurse.first_name} ${nurse.last_name} can sign in again.`,
+      });
+      setStatusTarget(null);
+      await fetchNurses();
+    } catch (error: any) {
+      toast({ title: "Could not update status", description: error.message, variant: "destructive" });
+    } finally {
+      setStatusSaving(false);
+    }
+  }
 
   async function handleDelete() {
     if (!deleteTargets) return;
@@ -252,10 +320,11 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
             {selectedIds.length > 0 && (
               <Button
                 variant="destructive"
-                onClick={() =>
-                  setDeleteTargets(nurses.filter((n) => selectedIds.includes(n.id)))
-                }
-              >
+                 disabled={checkingHistory}
+                 onClick={() =>
+                   requestDelete(nurses.filter((n) => selectedIds.includes(n.id)))
+                 }
+               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Selected ({selectedIds.length})
               </Button>
@@ -353,35 +422,71 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
                            {nurse.status.replace("_", " ")}
                          </Badge>
                        </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Link to={`/nurses/${nurse.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => sendInvite(nurse)}
-                            disabled={invitingId === nurse.id}
-                            aria-label="Send login invite"
-                          >
-                            <Mail className="w-4 h-4 mr-1" />
-                            {invitingId === nurse.id ? "Sending..." : "Invite"}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleteTargets([nurse])}
-                            aria-label="Delete nurse"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <Switch
+                           checked={nurse.status === "active" && !!nurse.receives_618_notifications}
+                           disabled={nurse.status !== "active"}
+                           onCheckedChange={(checked) => toggle618(nurse, checked)}
+                           aria-label={`618 alerts for ${nurse.first_name} ${nurse.last_name}`}
+                         />
+                       </TableCell>
+                       <TableCell className="text-right">
+                         <div className="flex justify-end gap-1">
+                           <Link to={`/nurses/${nurse.id}`}>
+                             <Button variant="ghost" size="sm">
+                               <Eye className="w-4 h-4 mr-1" />
+                               View
+                             </Button>
+                           </Link>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => setEditTarget(nurse)}
+                             aria-label="Edit nurse"
+                           >
+                             <Pencil className="w-4 h-4 mr-1" />
+                             Edit
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => sendInvite(nurse)}
+                             disabled={invitingId === nurse.id || nurse.status !== "active"}
+                             aria-label="Send login invite"
+                           >
+                             <Mail className="w-4 h-4 mr-1" />
+                             {invitingId === nurse.id ? "Sending..." : "Invite"}
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => setStatusTarget(nurse)}
+                             aria-label={nurse.status === "active" ? "Deactivate nurse" : "Reactivate nurse"}
+                           >
+                             {nurse.status === "active" ? (
+                               <>
+                                 <UserX className="w-4 h-4 mr-1" />
+                                 Deactivate
+                               </>
+                             ) : (
+                               <>
+                                 <UserCheck className="w-4 h-4 mr-1" />
+                                 Reactivate
+                               </>
+                             )}
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             className="text-destructive hover:text-destructive"
+                             onClick={() => requestDelete([nurse])}
+                             disabled={checkingHistory}
+                             aria-label="Delete nurse"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </Button>
+                         </div>
+                       </TableCell>
                      </TableRow>
                    ))
                  )}
@@ -393,7 +498,12 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
  
       <AlertDialog
         open={!!deleteTargets}
-        onOpenChange={(open) => !open && !deleting && setDeleteTargets(null)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) {
+            setDeleteTargets(null);
+            setBlockedTargets([]);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -405,7 +515,14 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
             <AlertDialogDescription>
               {deleteTargets && deleteTargets.length === 1
                 ? `${deleteTargets[0].first_name} ${deleteTargets[0].last_name} will be removed along with their credentials, client assignments and alerts. This can't be undone.`
-                : "These nurses will be removed along with their credentials, client assignments and alerts. This can't be undone."}
+                 : "These nurses will be removed along with their credentials, client assignments and alerts. This can't be undone."}
+              {blockedTargets.length > 0 && (
+                <span className="block mt-2">
+                  {blockedTargets.length} selected nurse{blockedTargets.length > 1 ? "s" : ""} (
+                  {blockedTargets.map((n) => `${n.first_name} ${n.last_name}`).join(", ")}) will be
+                  kept because assessments are linked to them. Deactivate them instead.
+                </span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -423,6 +540,49 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog
+        open={!!statusTarget}
+        onOpenChange={(open) => !open && !statusSaving && setStatusTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {statusTarget?.status === "active" ? "Deactivate this nurse?" : "Reactivate this nurse?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {statusTarget?.status === "active"
+                ? `${statusTarget?.first_name} ${statusTarget?.last_name} will no longer be able to sign in and will stop receiving 618 alerts. Every assessment they claimed or completed stays in place with their name on it.`
+                : `${statusTarget?.first_name} ${statusTarget?.last_name} will be able to sign in again. You can turn 618 alerts back on afterwards.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={statusSaving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (statusTarget) {
+                  changeStatus(statusTarget, statusTarget.status === "active" ? "inactive" : "active");
+                }
+              }}
+              disabled={statusSaving}
+            >
+              {statusSaving
+                ? "Saving..."
+                : statusTarget?.status === "active"
+                  ? "Deactivate"
+                  : "Reactivate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <EditNurseDialog
+        nurse={editTarget}
+        open={!!editTarget}
+        onOpenChange={(open) => !open && setEditTarget(null)}
+        onSaved={fetchNurses}
+      />
 
       <AddNurseDialog
          open={dialogOpen}

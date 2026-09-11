@@ -518,6 +518,141 @@ export default function NurseAssessments() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Assessment</DialogTitle>
+            <DialogDescription>Changes update this existing assessment.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSave} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Client *</Label>
+              <Select
+                value={editForm.client_id}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, client_id: v }))}
+              >
+                <SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger>
+                <SelectContent>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Assessment type</Label>
+                <Input
+                  value={editForm.assessment_type}
+                  onChange={(e) => setEditForm((f) => ({ ...f, assessment_type: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Due date *</Label>
+                <Input
+                  type="date"
+                  value={editForm.due_date}
+                  onChange={(e) => setEditForm((f) => ({ ...f, due_date: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Assigned nurse</Label>
+              <Select
+                value={editForm.assigned_nurse_id || "unassigned"}
+                onValueChange={(v) =>
+                  setEditForm((f) => ({ ...f, assigned_nurse_id: v === "unassigned" ? "" : v }))
+                }
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {nurses.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>{n.first_name} {n.last_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Scheduled date</Label>
+                <Input
+                  type="date"
+                  value={editForm.scheduled_date}
+                  onChange={(e) => setEditForm((f) => ({ ...f, scheduled_date: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Scheduled time</Label>
+                <Input
+                  type="time"
+                  value={editForm.scheduled_time}
+                  onChange={(e) => setEditForm((f) => ({ ...f, scheduled_time: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select
+                value={editForm.status}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, status: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={editForm.notes}
+                onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                rows={3}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
+              <Button type="submit" disabled={saving || !editForm.client_id || !editForm.due_date}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && !deleting && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this assessment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.clients
+                ? `The ${deleteTarget.assessment_type} assessment for ${deleteTarget.clients.first_name} ${deleteTarget.clients.last_name} will be removed. This can't be undone.`
+                : "This assessment will be removed. This can't be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

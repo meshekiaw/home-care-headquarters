@@ -13,10 +13,22 @@
    TableHeader,
    TableRow,
  } from "@/components/ui/table";
- import { Search, Plus, Eye, UserPlus, AlertTriangle } from "lucide-react";
- import { supabase } from "@/integrations/supabase/client";
- import { useToast } from "@/hooks/use-toast";
- import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
+import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
+import { deleteNurses } from "@/lib/deleteNurses";
  
  interface Nurse {
    id: string;

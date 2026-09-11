@@ -195,11 +195,24 @@ import { deleteNurses } from "@/lib/deleteNurses";
                className="pl-10"
              />
            </div>
-           <Button onClick={() => setDialogOpen(true)}>
-             <Plus className="w-4 h-4 mr-2" />
-             Add Nurse
-           </Button>
-         </div>
+          <div className="flex gap-2">
+            {selectedIds.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() =>
+                  setDeleteTargets(nurses.filter((n) => selectedIds.includes(n.id)))
+                }
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedIds.length})
+              </Button>
+            )}
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Nurse
+            </Button>
+          </div>
+        </div>
  
          {/* Nurses Table */}
          <Card>

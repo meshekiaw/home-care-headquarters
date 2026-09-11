@@ -266,8 +266,36 @@ import { deleteNurses } from "@/lib/deleteNurses";
             <TabsContent value="handoffs">
               <HandoffQueueTab nurseId={nurse.id} />
             </TabsContent>
-         </Tabs>
-       </div>
-     </DashboardLayout>
-   );
- }
+        </Tabs>
+      </div>
+
+      <AlertDialog
+        open={confirmDelete}
+        onOpenChange={(open) => !open && !deleting && setConfirmDelete(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this nurse?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {nurse.first_name} {nurse.last_name} will be removed along with their
+              credentials, client assignments and alerts. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DashboardLayout>
+  );
+}

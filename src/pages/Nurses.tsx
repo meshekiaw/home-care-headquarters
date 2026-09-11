@@ -219,8 +219,20 @@ import { deleteNurses } from "@/lib/deleteNurses";
            <CardContent className="p-0">
              <Table>
                <TableHeader>
-                 <TableRow>
-                   <TableHead>Name</TableHead>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        filteredNurses.length > 0 &&
+                        filteredNurses.every((n) => selectedIds.includes(n.id))
+                      }
+                      onCheckedChange={(checked) =>
+                        setSelectedIds(checked ? filteredNurses.map((n) => n.id) : [])
+                      }
+                      aria-label="Select all nurses"
+                    />
+                  </TableHead>
+                  <TableHead>Name</TableHead>
                    <TableHead>License #</TableHead>
                    <TableHead>State</TableHead>
                    <TableHead>License Expiry</TableHead>

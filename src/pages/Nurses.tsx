@@ -77,7 +77,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
     setInvitingId(nurse.id);
     try {
       const { data, error } = await supabase.functions.invoke("invite-nurse", {
-        body: { nurse_id: nurse.id },
+        body: { nurse_id: nurse.id, redirect_origin: window.location.origin },
       });
       if (error) throw error;
       const result = (data as { results?: { success: boolean; error?: string }[] })?.results?.[0];

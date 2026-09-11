@@ -59,9 +59,31 @@ import { deleteNurses } from "@/lib/deleteNurses";
  
  export default function NurseProfile() {
    const { id } = useParams<{ id: string }>();
-   const { toast } = useToast();
-   const [nurse, setNurse] = useState<Nurse | null>(null);
-   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [nurse, setNurse] = useState<Nurse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await deleteNurses([id]);
+      toast({ title: "Nurse deleted", description: "The record was removed." });
+      navigate("/nurses");
+    } catch (error: any) {
+      toast({
+        title: "Error deleting nurse",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
  
    useEffect(() => {
      if (id) {

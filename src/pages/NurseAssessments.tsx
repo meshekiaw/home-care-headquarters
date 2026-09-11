@@ -21,9 +21,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, Plus, CheckCircle, Loader2 } from "lucide-react";
+import { ClipboardCheck, Plus, CheckCircle, Loader2, Pencil, Trash2, RotateCcw } from "lucide-react";
 
 interface Assessment {
   id: string;

@@ -262,7 +262,6 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
                    <TableHead>License Expiry</TableHead>
                    <TableHead>Contact</TableHead>
                    <TableHead>Status</TableHead>
-                  <TableHead>618 Alerts</TableHead>
                    <TableHead>618 Alerts</TableHead>
                    <TableHead className="text-right">Actions</TableHead>
                  </TableRow>

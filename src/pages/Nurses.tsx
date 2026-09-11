@@ -47,8 +47,37 @@ import { deleteNurses } from "@/lib/deleteNurses";
    const [nurses, setNurses] = useState<Nurse[]>([]);
    const [loading, setLoading] = useState(true);
    const [searchQuery, setSearchQuery] = useState("");
-   const [dialogOpen, setDialogOpen] = useState(false);
-   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleteTargets, setDeleteTargets] = useState<Nurse[] | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
+
+  const toggleOne = (id: string, checked: boolean) =>
+    setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
+
+  async function handleDelete() {
+    if (!deleteTargets) return;
+    setDeleting(true);
+    try {
+      await deleteNurses(deleteTargets.map((n) => n.id));
+      toast({
+        title: deleteTargets.length > 1 ? "Nurses deleted" : "Nurse deleted",
+        description: `${deleteTargets.length} record${deleteTargets.length > 1 ? "s" : ""} removed.`,
+      });
+      setSelectedIds([]);
+      setDeleteTargets(null);
+      await fetchNurses();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  }
  
    useEffect(() => {
      fetchNurses();

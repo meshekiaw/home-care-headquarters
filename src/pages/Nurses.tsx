@@ -327,7 +327,40 @@ import { deleteNurses } from "@/lib/deleteNurses";
          </Card>
        </div>
  
-       <AddNurseDialog
+      <AlertDialog
+        open={!!deleteTargets}
+        onOpenChange={(open) => !open && !deleting && setDeleteTargets(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteTargets && deleteTargets.length > 1
+                ? `Delete ${deleteTargets.length} nurses?`
+                : "Delete this nurse?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargets && deleteTargets.length === 1
+                ? `${deleteTargets[0].first_name} ${deleteTargets[0].last_name} will be removed along with their credentials, client assignments and alerts. This can't be undone.`
+                : "These nurses will be removed along with their credentials, client assignments and alerts. This can't be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AddNurseDialog
          open={dialogOpen}
          onOpenChange={setDialogOpen}
          onNurseAdded={fetchNurses}

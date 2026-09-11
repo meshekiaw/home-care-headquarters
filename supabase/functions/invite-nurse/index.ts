@@ -9,6 +9,26 @@ const corsHeaders = {
 
 const APP_ORIGIN = "https://homecareheadquarters.org";
 
+// Allow admins to send invites pointing at a preview/staging origin so the flow
+// can be tested before publishing. Anything unexpected falls back to production.
+function resolveOrigin(raw: unknown): string {
+  if (typeof raw !== "string" || !raw) return APP_ORIGIN;
+  let host: string;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") return APP_ORIGIN;
+    host = url.hostname;
+  } catch {
+    return APP_ORIGIN;
+  }
+  const allowed =
+    host === "homecareheadquarters.org" ||
+    host === "www.homecareheadquarters.org" ||
+    host.endsWith(".lovable.app") ||
+    host.endsWith(".lovableproject.com");
+  return allowed ? `https://${host}` : APP_ORIGIN;
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,

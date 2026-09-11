@@ -1992,6 +1992,81 @@ export type Database = {
           },
         ]
       }
+      nurse_assessments: {
+        Row: {
+          assessment_type: string
+          assigned_nurse_id: string | null
+          claimed_at: string | null
+          client_id: string
+          completed_at: string | null
+          created_at: string
+          created_notification_sent_at: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          reminder_14_sent_at: string | null
+          reminder_7_sent_at: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assessment_type?: string
+          assigned_nurse_id?: string | null
+          claimed_at?: string | null
+          client_id: string
+          completed_at?: string | null
+          created_at?: string
+          created_notification_sent_at?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          reminder_14_sent_at?: string | null
+          reminder_7_sent_at?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assessment_type?: string
+          assigned_nurse_id?: string | null
+          claimed_at?: string | null
+          client_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_notification_sent_at?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          reminder_14_sent_at?: string | null
+          reminder_7_sent_at?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurse_assessments_assigned_nurse_id_fkey"
+            columns: ["assigned_nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nurse_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nurse_credentials: {
         Row: {
           created_at: string
@@ -2067,6 +2142,7 @@ export type Database = {
           license_state: string | null
           notes: string | null
           phone: string | null
+          receives_618_notifications: boolean
           specializations: string[] | null
           state: string | null
           status: string
@@ -2089,6 +2165,7 @@ export type Database = {
           license_state?: string | null
           notes?: string | null
           phone?: string | null
+          receives_618_notifications?: boolean
           specializations?: string[] | null
           state?: string | null
           status?: string
@@ -2111,6 +2188,7 @@ export type Database = {
           license_state?: string | null
           notes?: string | null
           phone?: string | null
+          receives_618_notifications?: boolean
           specializations?: string[] | null
           state?: string | null
           status?: string
@@ -2369,6 +2447,15 @@ export type Database = {
       }
     }
     Functions: {
+      claim_nurse_assessment: {
+        Args: {
+          p_assessment_id: string
+          p_scheduled_date: string
+          p_scheduled_time: string
+        }
+        Returns: Json
+      }
+      current_nurse_id: { Args: never; Returns: string }
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }

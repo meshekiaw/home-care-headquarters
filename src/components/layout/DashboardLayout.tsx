@@ -23,6 +23,7 @@ import {
   CalendarDays,
   Shield,
   Clock,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +40,7 @@ const navItems = [
   { icon: UserCheck, label: "Caregivers", path: "/caregivers" },
   { icon: Clock, label: "Caregiver Availability", path: "/caregiver-availability" },
   { icon: Stethoscope, label: "Nurses", path: "/nurses" },
+  { icon: ClipboardCheck, label: "Nurse Assessments", path: "/assessments" },
   { icon: MessageSquare, label: "Communications", path: "/communications" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
   { icon: FileCheck, label: "Compliance", path: "/compliance" },

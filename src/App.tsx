@@ -46,6 +46,8 @@ import CaregiverPortal from "./pages/CaregiverPortal";
 import CaregiverPortalOrientation from "./pages/CaregiverPortalOrientation";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import HipaaNotice from "./pages/HipaaNotice";
+import NurseAssessments from "./pages/NurseAssessments";
+import AssessmentClaim from "./pages/AssessmentClaim";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,8 @@ const App = () => (
             <Route path="/caregivers/:id" element={<ProtectedRoute allowedRoles={["admin"]}><CaregiverProfile /></ProtectedRoute>} />
             <Route path="/nurses" element={<ProtectedRoute allowedRoles={["admin"]}><Nurses /></ProtectedRoute>} />
             <Route path="/nurses/:id" element={<ProtectedRoute allowedRoles={["admin"]}><NurseProfile /></ProtectedRoute>} />
+            <Route path="/assessments" element={<ProtectedRoute allowedRoles={["admin"]}><NurseAssessments /></ProtectedRoute>} />
+            <Route path="/assessments/:id/claim" element={<ProtectedRoute><AssessmentClaim /></ProtectedRoute>} />
             <Route path="/communications" element={<ProtectedRoute allowedRoles={["admin"]}><Communications /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><Analytics /></ProtectedRoute>} />
             <Route path="/compliance" element={<ProtectedRoute allowedRoles={["admin"]}><Compliance /></ProtectedRoute>} />

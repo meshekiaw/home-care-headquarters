@@ -56,8 +56,13 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTargets, setDeleteTargets] = useState<Nurse[] | null>(null);
+  const [blockedTargets, setBlockedTargets] = useState<Nurse[]>([]);
   const [deleting, setDeleting] = useState(false);
+  const [checkingHistory, setCheckingHistory] = useState(false);
   const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<EditableNurse | null>(null);
+  const [statusTarget, setStatusTarget] = useState<Nurse | null>(null);
+  const [statusSaving, setStatusSaving] = useState(false);
   const { toast } = useToast();
 
   async function sendInvite(nurse: Nurse) {

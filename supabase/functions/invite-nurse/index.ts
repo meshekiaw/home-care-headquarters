@@ -71,6 +71,8 @@ Deno.serve(async (req) => {
     const nurseIds: string[] = body.nurse_ids ?? (body.nurse_id ? [body.nurse_id] : []);
     if (nurseIds.length === 0) return json({ error: "Missing nurse_id" }, 400);
 
+    const origin = resolveOrigin(body.redirect_origin);
+
     const { data: nurses, error: nurseErr } = await admin
       .from("nurses")
       .select("id, first_name, last_name, email")

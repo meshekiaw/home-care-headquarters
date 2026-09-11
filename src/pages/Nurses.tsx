@@ -29,6 +29,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
 import { deleteNurses } from "@/lib/deleteNurses";
+import { Switch } from "@/components/ui/switch";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
  
  interface Nurse {
    id: string;
@@ -41,6 +43,7 @@ import { deleteNurses } from "@/lib/deleteNurses";
    license_expiry: string | null;
    status: string;
    created_at: string;
+   receives_618_notifications?: boolean | null;
  }
  
  export default function Nurses() {
@@ -52,6 +55,27 @@ import { deleteNurses } from "@/lib/deleteNurses";
   const [deleteTargets, setDeleteTargets] = useState<Nurse[] | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
+
+  async function toggle618(nurse: Nurse, enabled: boolean) {
+    setNurses((prev) =>
+      prev.map((n) => (n.id === nurse.id ? { ...n, receives_618_notifications: enabled } : n)),
+    );
+    const { error } = await supabaseClient
+      .from("nurses")
+      .update({ receives_618_notifications: enabled })
+      .eq("id", nurse.id);
+    if (error) {
+      setNurses((prev) =>
+        prev.map((n) => (n.id === nurse.id ? { ...n, receives_618_notifications: !enabled } : n)),
+      );
+      toast({ title: "Could not update alerts", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: enabled ? "618 assessment alerts on" : "618 assessment alerts off",
+      description: `${nurse.first_name} ${nurse.last_name}`,
+    });
+  }
 
   const toggleOne = (id: string, checked: boolean) =>
     setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
@@ -238,19 +262,20 @@ import { deleteNurses } from "@/lib/deleteNurses";
                    <TableHead>License Expiry</TableHead>
                    <TableHead>Contact</TableHead>
                    <TableHead>Status</TableHead>
+                   <TableHead>618 Alerts</TableHead>
                    <TableHead className="text-right">Actions</TableHead>
                  </TableRow>
                </TableHeader>
                <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       Loading nurses...
                     </TableCell>
                   </TableRow>
                 ) : filteredNurses.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       No nurses found
                     </TableCell>
                   </TableRow>

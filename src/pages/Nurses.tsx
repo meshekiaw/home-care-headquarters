@@ -13,7 +13,7 @@
    TableHeader,
    TableRow,
  } from "@/components/ui/table";
-import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2, Mail } from "lucide-react";
+import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2, Mail, Pencil, UserX, UserCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
@@ -29,6 +29,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
 import { deleteNurses } from "@/lib/deleteNurses";
+import { nurseHistoryCounts } from "@/lib/nurseHistory";
+import { EditNurseDialog, type EditableNurse } from "@/components/nurses/EditNurseDialog";
 import { Switch } from "@/components/ui/switch";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
  
@@ -43,6 +45,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
    license_expiry: string | null;
    status: string;
    created_at: string;
+   specializations?: string[] | null;
    receives_618_notifications?: boolean | null;
  }
  

@@ -213,8 +213,9 @@ import { deleteNurses } from "@/lib/deleteNurses";
                    )}
                  </div>
               </div>
+             </div>
             </div>
-            <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+             <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Nurse
             </Button>

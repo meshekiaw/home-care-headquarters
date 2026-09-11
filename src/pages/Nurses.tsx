@@ -242,22 +242,29 @@ import { deleteNurses } from "@/lib/deleteNurses";
                  </TableRow>
                </TableHeader>
                <TableBody>
-                 {loading ? (
-                   <TableRow>
-                     <TableCell colSpan={7} className="text-center py-8">
-                       Loading nurses...
-                     </TableCell>
-                   </TableRow>
-                 ) : filteredNurses.length === 0 ? (
-                   <TableRow>
-                     <TableCell colSpan={7} className="text-center py-8">
-                       No nurses found
-                     </TableCell>
-                   </TableRow>
-                 ) : (
-                   filteredNurses.map((nurse) => (
-                     <TableRow key={nurse.id}>
-                       <TableCell className="font-medium">
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      Loading nurses...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredNurses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      No nurses found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredNurses.map((nurse) => (
+                    <TableRow key={nurse.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.includes(nurse.id)}
+                          onCheckedChange={(checked) => toggleOne(nurse.id, !!checked)}
+                          aria-label={`Select ${nurse.first_name} ${nurse.last_name}`}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
                          {nurse.first_name} {nurse.last_name}
                        </TableCell>
                        <TableCell>{nurse.license_number || "—"}</TableCell>

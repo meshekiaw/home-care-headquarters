@@ -262,19 +262,21 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
                    <TableHead>License Expiry</TableHead>
                    <TableHead>Contact</TableHead>
                    <TableHead>Status</TableHead>
+                  <TableHead>618 Alerts</TableHead>
+                   <TableHead>618 Alerts</TableHead>
                    <TableHead className="text-right">Actions</TableHead>
                  </TableRow>
                </TableHeader>
                <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       Loading nurses...
                     </TableCell>
                   </TableRow>
                 ) : filteredNurses.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       No nurses found
                     </TableCell>
                   </TableRow>

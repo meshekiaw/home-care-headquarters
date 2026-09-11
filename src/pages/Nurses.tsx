@@ -117,6 +117,66 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
   const toggleOne = (id: string, checked: boolean) =>
     setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
 
+  async function requestDelete(targets: Nurse[]) {
+    setCheckingHistory(true);
+    try {
+      const counts = await nurseHistoryCounts(targets.map((n) => n.id));
+      const blocked = targets.filter((n) => (counts[n.id] ?? 0) > 0);
+      const deletable = targets.filter((n) => !(counts[n.id] ?? 0));
+      setBlockedTargets(blocked);
+      if (deletable.length > 0) {
+        setDeleteTargets(deletable);
+      } else if (blocked.length > 0) {
+        toast({
+          title: blocked.length > 1 ? "These nurses have history" : "This nurse has history",
+          description:
+            "Assessments are linked to them, so they can't be deleted. Set them to Inactive instead to keep the record and stop their access.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({ title: "Could not check records", description: error.message, variant: "destructive" });
+    } finally {
+      setCheckingHistory(false);
+    }
+  }
+
+  async function changeStatus(nurse: Nurse, nextStatus: "active" | "inactive") {
+    setStatusSaving(true);
+    try {
+      const { error } = await supabase
+        .from("nurses")
+        .update({
+          status: nextStatus,
+          ...(nextStatus === "inactive" ? { receives_618_notifications: false } : {}),
+        })
+        .eq("id", nurse.id);
+      if (error) throw error;
+
+      if (nurse.email) {
+        await supabase.functions.invoke("manage-nurse-account", {
+          body: {
+            action: nextStatus === "inactive" ? "deactivate" : "reactivate",
+            email: nurse.email,
+          },
+        });
+      }
+      toast({
+        title: nextStatus === "inactive" ? "Nurse deactivated" : "Nurse reactivated",
+        description:
+          nextStatus === "inactive"
+            ? `${nurse.first_name} ${nurse.last_name} can no longer sign in and won't get 618 alerts. Their assessment history is unchanged.`
+            : `${nurse.first_name} ${nurse.last_name} can sign in again.`,
+      });
+      setStatusTarget(null);
+      await fetchNurses();
+    } catch (error: any) {
+      toast({ title: "Could not update status", description: error.message, variant: "destructive" });
+    } finally {
+      setStatusSaving(false);
+    }
+  }
+
   async function handleDelete() {
     if (!deleteTargets) return;
     setDeleting(true);

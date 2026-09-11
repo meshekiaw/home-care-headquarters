@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function useUserRole() {
   const { user } = useAuth();
-  const [role, setRole] = useState<"admin" | "caregiver" | "user" | null>(null);
+  const [role, setRole] = useState<"admin" | "nurse" | "caregiver" | "user" | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,9 +24,10 @@ export function useUserRole() {
         // No role assigned — deny access by default
         setRole(null);
       } else {
-        // Priority: admin > caregiver > user
+        // Priority: admin > nurse > caregiver > user
         const roles = data.map((r) => r.role);
         if (roles.includes("admin")) setRole("admin");
+        else if (roles.includes("nurse")) setRole("nurse");
         else if (roles.includes("caregiver")) setRole("caregiver");
         else setRole("user");
       }
@@ -36,5 +37,11 @@ export function useUserRole() {
     fetchRole();
   }, [user]);
 
-  return { role, isAdmin: role === "admin", isCaregiver: role === "caregiver", loading };
+  return {
+    role,
+    isAdmin: role === "admin",
+    isNurse: role === "nurse",
+    isCaregiver: role === "caregiver",
+    loading,
+  };
 }

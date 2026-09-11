@@ -13,7 +13,7 @@
    TableHeader,
    TableRow,
  } from "@/components/ui/table";
-import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2 } from "lucide-react";
+import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2, Mail } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
@@ -54,7 +54,36 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTargets, setDeleteTargets] = useState<Nurse[] | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  async function sendInvite(nurse: Nurse) {
+    if (!nurse.email) {
+      toast({
+        title: "No email on file",
+        description: `Add an email address for ${nurse.first_name} ${nurse.last_name} first.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setInvitingId(nurse.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("invite-nurse", {
+        body: { nurse_id: nurse.id },
+      });
+      if (error) throw error;
+      const result = (data as { results?: { success: boolean; error?: string }[] })?.results?.[0];
+      if (!result?.success) throw new Error(result?.error || "Invite could not be sent");
+      toast({
+        title: "Invite sent",
+        description: `${nurse.first_name} ${nurse.last_name} will receive a sign-in link at ${nurse.email}. It expires in 24 hours.`,
+      });
+    } catch (err: any) {
+      toast({ title: "Could not send invite", description: err.message, variant: "destructive" });
+    } finally {
+      setInvitingId(null);
+    }
+  }
 
   async function toggle618(nurse: Nurse, enabled: boolean) {
     setNurses((prev) =>
@@ -332,6 +361,16 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
                               View
                             </Button>
                           </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => sendInvite(nurse)}
+                            disabled={invitingId === nurse.id}
+                            aria-label="Send login invite"
+                          >
+                            <Mail className="w-4 h-4 mr-1" />
+                            {invitingId === nurse.id ? "Sending..." : "Invite"}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"

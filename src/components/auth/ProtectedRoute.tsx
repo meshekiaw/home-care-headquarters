@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ("admin" | "caregiver")[];
+  allowedRoles?: ("admin" | "nurse" | "caregiver")[];
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -61,6 +61,11 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   // If caregiver tries to access admin routes, redirect to caregiver dashboard
   if (role === "caregiver" && allowedRoles && !allowedRoles.includes("caregiver")) {
     return <Navigate to="/my-dashboard" replace />;
+  }
+
+  // Nurses only ever see their own assessment screens
+  if (role === "nurse" && allowedRoles && !allowedRoles.includes("nurse")) {
+    return <Navigate to="/nurse" replace />;
   }
 
   // If admin tries to access caregiver-only routes, redirect to admin dashboard

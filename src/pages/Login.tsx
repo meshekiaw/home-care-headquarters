@@ -25,7 +25,8 @@ export default function Login() {
     if (user && !roleLoading) {
       // If no role yet, send to /my-dashboard so ProtectedRoute can show the
       // "Setting up your account" state instead of leaving the user on /login.
-      const defaultPath = role === "admin" ? "/dashboard" : "/my-dashboard";
+      const defaultPath =
+        role === "admin" ? "/dashboard" : role === "nurse" ? "/nurse" : "/my-dashboard";
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname || defaultPath;
       navigate(from, { replace: true });
     }

@@ -4,22 +4,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { ClipboardCheck, Loader2, CheckCircle } from "lucide-react";
 
-interface Assessment {
+interface AssessmentDetail {
   id: string;
   assessment_type: string;
   due_date: string;
   status: string;
   scheduled_date: string | null;
   scheduled_time: string | null;
-  assigned_nurse_id: string | null;
-  clients: { first_name: string; last_name: string } | null;
-  nurses: { first_name: string; last_name: string } | null;
+  notes: string | null;
+  client_name: string;
+  form_618_expiration_date: string | null;
+  is_mine: boolean;
+  claimed_by_name: string | null;
 }
 
 function formatDate(value: string | null) {
@@ -39,11 +42,12 @@ function formatTime(value: string | null) {
 export default function AssessmentClaim() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [assessment, setAssessment] = useState<AssessmentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
+  const [notes, setNotes] = useState("");
   const [claimedMessage, setClaimedMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,25 +57,20 @@ export default function AssessmentClaim() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("nurse_assessments")
-      .select(
-        "id, assessment_type, due_date, status, scheduled_date, scheduled_time, assigned_nurse_id, clients(first_name,last_name), nurses(first_name,last_name)",
-      )
-      .eq("id", id!)
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("nurse_assessment_detail", {
+      p_assessment_id: id!,
+    });
 
     if (error) {
       toast({ title: "Could not load assessment", description: error.message, variant: "destructive" });
     }
-    const row = (data as unknown as Assessment) ?? null;
+    const row = ((data as AssessmentDetail[]) ?? [])[0] ?? null;
     setAssessment(row);
-    if (row?.assigned_nurse_id) {
-      const nurseName = row.nurses
-        ? `${row.nurses.first_name} ${row.nurses.last_name}`
-        : "another nurse";
+    setNotes(row?.notes ?? "");
+
+    if (row && !row.is_mine && row.claimed_by_name) {
       setClaimedMessage(
-        `This assessment has already been claimed by ${nurseName} for ${formatDate(row.scheduled_date)} ${formatTime(row.scheduled_time)}`.trim(),
+        `This assessment has already been claimed by ${row.claimed_by_name} for ${formatDate(row.scheduled_date)} ${formatTime(row.scheduled_time)}`.trim(),
       );
     } else {
       setClaimedMessage(null);
@@ -129,6 +128,44 @@ export default function AssessmentClaim() {
     }
   }
 
+  async function handleComplete() {
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.rpc("complete_nurse_assessment", {
+        p_assessment_id: id!,
+        p_notes: notes,
+      });
+      if (error) throw error;
+      if (!data) {
+        toast({ title: "Could not mark completed", description: "This assessment isn't assigned to you.", variant: "destructive" });
+        return;
+      }
+      toast({ title: "Assessment completed", description: "Your notes have been saved." });
+      await load();
+    } catch (error: any) {
+      toast({ title: "Could not mark completed", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSaveNotes() {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("nurse_assessments")
+        .update({ notes })
+        .eq("id", id!);
+      if (error) throw error;
+      toast({ title: "Notes saved" });
+      await load();
+    } catch (error: any) {
+      toast({ title: "Could not save notes", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b">
@@ -146,8 +183,8 @@ export default function AssessmentClaim() {
         ) : !assessment ? (
           <Card>
             <CardContent className="py-12 text-center space-y-3">
-              <p className="font-medium">This assessment is no longer available.</p>
-              <Button asChild variant="outline"><Link to="/login">Back to sign in</Link></Button>
+              <p className="font-medium">This assessment is no longer available to you.</p>
+              <Button asChild variant="outline"><Link to="/nurse">Back to my assessments</Link></Button>
             </CardContent>
           </Card>
         ) : (
@@ -161,18 +198,18 @@ export default function AssessmentClaim() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Client</p>
-                  <p className="font-medium">
-                    {assessment.clients
-                      ? `${assessment.clients.first_name} ${assessment.clients.last_name}`
-                      : "—"}
-                  </p>
+                  <p className="font-medium">{assessment.client_name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Due date</p>
                   <p className="font-medium">{formatDate(assessment.due_date)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">618 expiration</p>
+                  <p className="font-medium">{formatDate(assessment.form_618_expiration_date)}</p>
                 </div>
               </div>
 
@@ -180,6 +217,37 @@ export default function AssessmentClaim() {
                 <div className="rounded-lg border bg-muted/50 p-4 flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
                   <p className="font-medium">{claimedMessage}</p>
+                </div>
+              ) : assessment.is_mine ? (
+                <div className="space-y-4">
+                  <div className="rounded-lg border bg-muted/50 p-4">
+                    <p className="font-medium">
+                      Scheduled for {formatDate(assessment.scheduled_date)} {formatTime(assessment.scheduled_time)}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Visit notes</Label>
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={5}
+                      placeholder="Add notes about this assessment visit"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button variant="outline" className="min-h-[44px]" onClick={handleSaveNotes} disabled={saving}>
+                      Save notes
+                    </Button>
+                    {assessment.status !== "Completed" && (
+                      <Button className="min-h-[44px] flex-1" onClick={handleComplete} disabled={saving}>
+                        Mark completed
+                      </Button>
+                    )}
+                  </div>
+                  <Button asChild variant="ghost" className="w-full min-h-[44px]">
+                    <Link to="/nurse">Back to my assessments</Link>
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={handleClaim} className="space-y-4">

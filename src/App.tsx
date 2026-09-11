@@ -48,6 +48,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import HipaaNotice from "./pages/HipaaNotice";
 import NurseAssessments from "./pages/NurseAssessments";
 import AssessmentClaim from "./pages/AssessmentClaim";
+import NursePortal from "./pages/NursePortal";
+import NurseInvite from "./pages/NurseInvite";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,7 @@ const App = () => (
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/hipaa-notice" element={<HipaaNotice />} />
+            <Route path="/nurse-invite" element={<NurseInvite />} />
 
             {/* Caregiver training portal — single shareable link */}
             <Route path="/caregiver-training" element={<CaregiverPortal />} />
@@ -89,7 +92,10 @@ const App = () => (
             <Route path="/nurses" element={<ProtectedRoute allowedRoles={["admin"]}><Nurses /></ProtectedRoute>} />
             <Route path="/nurses/:id" element={<ProtectedRoute allowedRoles={["admin"]}><NurseProfile /></ProtectedRoute>} />
             <Route path="/assessments" element={<ProtectedRoute allowedRoles={["admin"]}><NurseAssessments /></ProtectedRoute>} />
-            <Route path="/assessments/:id/claim" element={<ProtectedRoute><AssessmentClaim /></ProtectedRoute>} />
+            <Route path="/assessments/:id/claim" element={<ProtectedRoute allowedRoles={["admin", "nurse"]}><AssessmentClaim /></ProtectedRoute>} />
+
+            {/* Nurse routes (restricted role) */}
+            <Route path="/nurse" element={<ProtectedRoute allowedRoles={["nurse"]}><NursePortal /></ProtectedRoute>} />
             <Route path="/communications" element={<ProtectedRoute allowedRoles={["admin"]}><Communications /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><Analytics /></ProtectedRoute>} />
             <Route path="/compliance" element={<ProtectedRoute allowedRoles={["admin"]}><Compliance /></ProtectedRoute>} />

@@ -498,7 +498,12 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
  
       <AlertDialog
         open={!!deleteTargets}
-        onOpenChange={(open) => !open && !deleting && setDeleteTargets(null)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) {
+            setDeleteTargets(null);
+            setBlockedTargets([]);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>

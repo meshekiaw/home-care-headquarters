@@ -403,12 +403,44 @@ export default function NurseAssessments() {
                         </td>
                         <td className="p-3">{statusBadge(a.status)}</td>
                         <td className="p-3 text-right">
-                          {a.status !== "Completed" && (
-                            <Button size="sm" variant="outline" onClick={() => markCompleted(a.id)}>
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              Complete
+                          <div className="flex justify-end gap-1 flex-wrap">
+                            {a.status !== "Completed" && (
+                              <Button size="sm" variant="outline" onClick={() => markCompleted(a.id)}>
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Complete
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>
+                              <Pencil className="w-4 h-4 mr-1" />
+                              Edit
                             </Button>
-                          )}
+                            {a.assigned_nurse_id && (
+                              <Button size="sm" variant="ghost" onClick={() => unclaim(a)}>
+                                <RotateCcw className="w-4 h-4 mr-1" />
+                                Unclaim
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => {
+                                if (a.status === "Completed") {
+                                  toast({
+                                    title: "Completed assessments are kept",
+                                    description:
+                                      "This one has a completion record, so it can't be deleted. Edit it instead if something is wrong.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                setDeleteTarget(a);
+                              }}
+                              aria-label="Delete assessment"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

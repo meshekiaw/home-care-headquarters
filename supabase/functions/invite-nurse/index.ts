@@ -9,6 +9,26 @@ const corsHeaders = {
 
 const APP_ORIGIN = "https://homecareheadquarters.org";
 
+// Allow admins to send invites pointing at a preview/staging origin so the flow
+// can be tested before publishing. Anything unexpected falls back to production.
+function resolveOrigin(raw: unknown): string {
+  if (typeof raw !== "string" || !raw) return APP_ORIGIN;
+  let host: string;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") return APP_ORIGIN;
+    host = url.hostname;
+  } catch {
+    return APP_ORIGIN;
+  }
+  const allowed =
+    host === "homecareheadquarters.org" ||
+    host === "www.homecareheadquarters.org" ||
+    host.endsWith(".lovable.app") ||
+    host.endsWith(".lovableproject.com");
+  return allowed ? `https://${host}` : APP_ORIGIN;
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -51,6 +71,8 @@ Deno.serve(async (req) => {
     const nurseIds: string[] = body.nurse_ids ?? (body.nurse_id ? [body.nurse_id] : []);
     if (nurseIds.length === 0) return json({ error: "Missing nurse_id" }, 400);
 
+    const origin = resolveOrigin(body.redirect_origin);
+
     const { data: nurses, error: nurseErr } = await admin
       .from("nurses")
       .select("id, first_name, last_name, email")
@@ -87,7 +109,7 @@ Deno.serve(async (req) => {
           .upsert({ user_id: authUserId, role: "nurse" }, { onConflict: "user_id,role" });
         if (roleErr) throw roleErr;
 
-        const link = `${APP_ORIGIN}/nurse-invite?token_hash=${encodeURIComponent(hashedToken)}&type=${linkType}`;
+        const link = `${origin}/nurse-invite?token_hash=${encodeURIComponent(hashedToken)}&type=${linkType}`;
 
         const html = `
           <h2>Your nurse sign-in for Home Care Headquarters</h2>

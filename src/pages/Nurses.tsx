@@ -510,7 +510,14 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
             <AlertDialogDescription>
               {deleteTargets && deleteTargets.length === 1
                 ? `${deleteTargets[0].first_name} ${deleteTargets[0].last_name} will be removed along with their credentials, client assignments and alerts. This can't be undone.`
-                : "These nurses will be removed along with their credentials, client assignments and alerts. This can't be undone."}
+                 : "These nurses will be removed along with their credentials, client assignments and alerts. This can't be undone."}
+              {blockedTargets.length > 0 && (
+                <span className="block mt-2">
+                  {blockedTargets.length} selected nurse{blockedTargets.length > 1 ? "s" : ""} (
+                  {blockedTargets.map((n) => `${n.first_name} ${n.last_name}`).join(", ")}) will be
+                  kept because assessments are linked to them. Deactivate them instead.
+                </span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
           .upsert({ user_id: authUserId, role: "nurse" }, { onConflict: "user_id,role" });
         if (roleErr) throw roleErr;
 
-        const link = `${APP_ORIGIN}/nurse-invite?token_hash=${encodeURIComponent(hashedToken)}&type=${linkType}`;
+        const link = `${origin}/nurse-invite?token_hash=${encodeURIComponent(hashedToken)}&type=${linkType}`;
 
         const html = `
           <h2>Your nurse sign-in for Home Care Headquarters</h2>

@@ -320,10 +320,11 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
             {selectedIds.length > 0 && (
               <Button
                 variant="destructive"
-                onClick={() =>
-                  setDeleteTargets(nurses.filter((n) => selectedIds.includes(n.id)))
-                }
-              >
+                 disabled={checkingHistory}
+                 onClick={() =>
+                   requestDelete(nurses.filter((n) => selectedIds.includes(n.id)))
+                 }
+               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Selected ({selectedIds.length})
               </Button>
@@ -421,35 +422,71 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
                            {nurse.status.replace("_", " ")}
                          </Badge>
                        </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Link to={`/nurses/${nurse.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => sendInvite(nurse)}
-                            disabled={invitingId === nurse.id}
-                            aria-label="Send login invite"
-                          >
-                            <Mail className="w-4 h-4 mr-1" />
-                            {invitingId === nurse.id ? "Sending..." : "Invite"}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleteTargets([nurse])}
-                            aria-label="Delete nurse"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <Switch
+                           checked={nurse.status === "active" && !!nurse.receives_618_notifications}
+                           disabled={nurse.status !== "active"}
+                           onCheckedChange={(checked) => toggle618(nurse, checked)}
+                           aria-label={`618 alerts for ${nurse.first_name} ${nurse.last_name}`}
+                         />
+                       </TableCell>
+                       <TableCell className="text-right">
+                         <div className="flex justify-end gap-1">
+                           <Link to={`/nurses/${nurse.id}`}>
+                             <Button variant="ghost" size="sm">
+                               <Eye className="w-4 h-4 mr-1" />
+                               View
+                             </Button>
+                           </Link>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => setEditTarget(nurse)}
+                             aria-label="Edit nurse"
+                           >
+                             <Pencil className="w-4 h-4 mr-1" />
+                             Edit
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => sendInvite(nurse)}
+                             disabled={invitingId === nurse.id || nurse.status !== "active"}
+                             aria-label="Send login invite"
+                           >
+                             <Mail className="w-4 h-4 mr-1" />
+                             {invitingId === nurse.id ? "Sending..." : "Invite"}
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => setStatusTarget(nurse)}
+                             aria-label={nurse.status === "active" ? "Deactivate nurse" : "Reactivate nurse"}
+                           >
+                             {nurse.status === "active" ? (
+                               <>
+                                 <UserX className="w-4 h-4 mr-1" />
+                                 Deactivate
+                               </>
+                             ) : (
+                               <>
+                                 <UserCheck className="w-4 h-4 mr-1" />
+                                 Reactivate
+                               </>
+                             )}
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             className="text-destructive hover:text-destructive"
+                             onClick={() => requestDelete([nurse])}
+                             disabled={checkingHistory}
+                             aria-label="Delete nurse"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </Button>
+                         </div>
+                       </TableCell>
                      </TableRow>
                    ))
                  )}

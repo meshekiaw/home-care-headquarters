@@ -1,0 +1,1 @@
+ALTER TABLE public.nurses ADD COLUMN IF NOT EXISTS is_test_record boolean NOT NULL DEFAULT false;

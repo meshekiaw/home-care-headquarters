@@ -2060,6 +2060,7 @@ export type Database = {
           first_name: string
           hourly_rate: number | null
           id: string
+          is_test_record: boolean
           last_name: string
           license_expiry: string | null
           license_number: string | null
@@ -2081,6 +2082,7 @@ export type Database = {
           first_name: string
           hourly_rate?: number | null
           id?: string
+          is_test_record?: boolean
           last_name: string
           license_expiry?: string | null
           license_number?: string | null
@@ -2102,6 +2104,7 @@ export type Database = {
           first_name?: string
           hourly_rate?: number | null
           id?: string
+          is_test_record?: boolean
           last_name?: string
           license_expiry?: string | null
           license_number?: string | null

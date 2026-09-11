@@ -2455,6 +2455,10 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_nurse_assessment: {
+        Args: { p_assessment_id: string; p_notes?: string }
+        Returns: boolean
+      }
       current_nurse_id: { Args: never; Returns: string }
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       delete_email: {
@@ -2491,6 +2495,37 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      nurse_assessment_detail: {
+        Args: { p_assessment_id: string }
+        Returns: {
+          assessment_type: string
+          claimed_by_name: string
+          client_name: string
+          due_date: string
+          form_618_expiration_date: string
+          id: string
+          is_mine: boolean
+          notes: string
+          scheduled_date: string
+          scheduled_time: string
+          status: string
+        }[]
+      }
+      nurse_visible_assessments: {
+        Args: never
+        Returns: {
+          assessment_type: string
+          client_name: string
+          due_date: string
+          form_618_expiration_date: string
+          id: string
+          is_mine: boolean
+          notes: string
+          scheduled_date: string
+          scheduled_time: string
+          status: string
+        }[]
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }

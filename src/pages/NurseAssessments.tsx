@@ -102,6 +102,104 @@ export default function NurseAssessments() {
     assigned_nurse_id: "",
     notes: "",
   });
+  const [editTarget, setEditTarget] = useState<Assessment | null>(null);
+  const [editForm, setEditForm] = useState({
+    client_id: "",
+    assessment_type: "618",
+    due_date: "",
+    assigned_nurse_id: "",
+    scheduled_date: "",
+    scheduled_time: "",
+    status: "Pending",
+    notes: "",
+  });
+  const [deleteTarget, setDeleteTarget] = useState<Assessment | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  function openEdit(a: Assessment) {
+    setEditTarget(a);
+    setEditForm({
+      client_id: a.client_id,
+      assessment_type: a.assessment_type ?? "618",
+      due_date: a.due_date ?? "",
+      assigned_nurse_id: a.assigned_nurse_id ?? "",
+      scheduled_date: a.scheduled_date ?? "",
+      scheduled_time: a.scheduled_time ? a.scheduled_time.slice(0, 5) : "",
+      status: a.status ?? "Pending",
+      notes: a.notes ?? "",
+    });
+  }
+
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editTarget) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("nurse_assessments")
+        .update({
+          client_id: editForm.client_id,
+          assessment_type: editForm.assessment_type || "618",
+          due_date: editForm.due_date,
+          assigned_nurse_id: editForm.assigned_nurse_id || null,
+          scheduled_date: editForm.scheduled_date || null,
+          scheduled_time: editForm.scheduled_time || null,
+          status: editForm.status,
+          notes: editForm.notes || null,
+          completed_at:
+            editForm.status === "Completed"
+              ? new Date().toISOString()
+              : null,
+        })
+        .eq("id", editTarget.id);
+      if (error) throw error;
+      toast({ title: "Assessment updated" });
+      setEditTarget(null);
+      await loadAll();
+    } catch (error: any) {
+      toast({ title: "Could not save changes", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function unclaim(a: Assessment) {
+    const { error } = await supabase
+      .from("nurse_assessments")
+      .update({
+        assigned_nurse_id: null,
+        scheduled_date: null,
+        scheduled_time: null,
+        claimed_at: null,
+        status: "Pending",
+      })
+      .eq("id", a.id);
+    if (error) {
+      toast({ title: "Could not unclaim", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "Assessment unclaimed",
+      description: "It is back in the pending list for another nurse to claim.",
+    });
+    await loadAll();
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("nurse_assessments").delete().eq("id", deleteTarget.id);
+      if (error) throw error;
+      toast({ title: "Assessment deleted" });
+      setDeleteTarget(null);
+      await loadAll();
+    } catch (error: any) {
+      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     void loadAll();

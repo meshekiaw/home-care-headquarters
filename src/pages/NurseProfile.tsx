@@ -1,5 +1,5 @@
  import { useState, useEffect } from "react";
- import { useParams, Link } from "react-router-dom";
+ import { useParams, Link, useNavigate } from "react-router-dom";
  import DashboardLayout from "@/components/layout/DashboardLayout";
  import { Button } from "@/components/ui/button";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,10 +14,22 @@
    MapPin,
    AlertCircle,
    FileText,
-   Shield,
- } from "lucide-react";
- import { supabase } from "@/integrations/supabase/client";
- import { useToast } from "@/hooks/use-toast";
+  Shield,
+  Trash2,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { deleteNurses } from "@/lib/deleteNurses";
  import { NurseOverviewTab } from "@/components/nurses/NurseOverviewTab";
  import { NurseCredentialsTab } from "@/components/nurses/NurseCredentialsTab";
  import { AssignedClientsTab } from "@/components/nurses/AssignedClientsTab";
@@ -47,9 +59,31 @@
  
  export default function NurseProfile() {
    const { id } = useParams<{ id: string }>();
-   const { toast } = useToast();
-   const [nurse, setNurse] = useState<Nurse | null>(null);
-   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [nurse, setNurse] = useState<Nurse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await deleteNurses([id]);
+      toast({ title: "Nurse deleted", description: "The record was removed." });
+      navigate("/nurses");
+    } catch (error: any) {
+      toast({
+        title: "Error deleting nurse",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
  
    useEffect(() => {
      if (id) {
@@ -178,10 +212,14 @@
                      </span>
                    )}
                  </div>
-               </div>
+              </div>
              </div>
-           </div>
-         </div>
+            </div>
+             <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Nurse
+            </Button>
+          </div>
  
  
           {/* Tabs */}
@@ -228,8 +266,36 @@
             <TabsContent value="handoffs">
               <HandoffQueueTab nurseId={nurse.id} />
             </TabsContent>
-         </Tabs>
-       </div>
-     </DashboardLayout>
-   );
- }
+        </Tabs>
+      </div>
+
+      <AlertDialog
+        open={confirmDelete}
+        onOpenChange={(open) => !open && !deleting && setConfirmDelete(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this nurse?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {nurse.first_name} {nurse.last_name} will be removed along with their
+              credentials, client assignments and alerts. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DashboardLayout>
+  );
+}

@@ -13,10 +13,22 @@
    TableHeader,
    TableRow,
  } from "@/components/ui/table";
- import { Search, Plus, Eye, UserPlus, AlertTriangle } from "lucide-react";
- import { supabase } from "@/integrations/supabase/client";
- import { useToast } from "@/hooks/use-toast";
- import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
+import { Search, Plus, Eye, UserPlus, AlertTriangle, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { AddNurseDialog } from "@/components/nurses/AddNurseDialog";
+import { deleteNurses } from "@/lib/deleteNurses";
  
  interface Nurse {
    id: string;
@@ -35,8 +47,37 @@
    const [nurses, setNurses] = useState<Nurse[]>([]);
    const [loading, setLoading] = useState(true);
    const [searchQuery, setSearchQuery] = useState("");
-   const [dialogOpen, setDialogOpen] = useState(false);
-   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleteTargets, setDeleteTargets] = useState<Nurse[] | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
+
+  const toggleOne = (id: string, checked: boolean) =>
+    setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
+
+  async function handleDelete() {
+    if (!deleteTargets) return;
+    setDeleting(true);
+    try {
+      await deleteNurses(deleteTargets.map((n) => n.id));
+      toast({
+        title: deleteTargets.length > 1 ? "Nurses deleted" : "Nurse deleted",
+        description: `${deleteTargets.length} record${deleteTargets.length > 1 ? "s" : ""} removed.`,
+      });
+      setSelectedIds([]);
+      setDeleteTargets(null);
+      await fetchNurses();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  }
  
    useEffect(() => {
      fetchNurses();
@@ -154,19 +195,44 @@
                className="pl-10"
              />
            </div>
-           <Button onClick={() => setDialogOpen(true)}>
-             <Plus className="w-4 h-4 mr-2" />
-             Add Nurse
-           </Button>
-         </div>
+          <div className="flex gap-2">
+            {selectedIds.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() =>
+                  setDeleteTargets(nurses.filter((n) => selectedIds.includes(n.id)))
+                }
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedIds.length})
+              </Button>
+            )}
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Nurse
+            </Button>
+          </div>
+        </div>
  
          {/* Nurses Table */}
          <Card>
            <CardContent className="p-0">
              <Table>
                <TableHeader>
-                 <TableRow>
-                   <TableHead>Name</TableHead>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={
+                        filteredNurses.length > 0 &&
+                        filteredNurses.every((n) => selectedIds.includes(n.id))
+                      }
+                      onCheckedChange={(checked) =>
+                        setSelectedIds(checked ? filteredNurses.map((n) => n.id) : [])
+                      }
+                      aria-label="Select all nurses"
+                    />
+                  </TableHead>
+                  <TableHead>Name</TableHead>
                    <TableHead>License #</TableHead>
                    <TableHead>State</TableHead>
                    <TableHead>License Expiry</TableHead>
@@ -176,22 +242,29 @@
                  </TableRow>
                </TableHeader>
                <TableBody>
-                 {loading ? (
-                   <TableRow>
-                     <TableCell colSpan={7} className="text-center py-8">
-                       Loading nurses...
-                     </TableCell>
-                   </TableRow>
-                 ) : filteredNurses.length === 0 ? (
-                   <TableRow>
-                     <TableCell colSpan={7} className="text-center py-8">
-                       No nurses found
-                     </TableCell>
-                   </TableRow>
-                 ) : (
-                   filteredNurses.map((nurse) => (
-                     <TableRow key={nurse.id}>
-                       <TableCell className="font-medium">
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      Loading nurses...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredNurses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      No nurses found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredNurses.map((nurse) => (
+                    <TableRow key={nurse.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.includes(nurse.id)}
+                          onCheckedChange={(checked) => toggleOne(nurse.id, !!checked)}
+                          aria-label={`Select ${nurse.first_name} ${nurse.last_name}`}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
                          {nurse.first_name} {nurse.last_name}
                        </TableCell>
                        <TableCell>{nurse.license_number || "—"}</TableCell>
@@ -226,14 +299,25 @@
                            {nurse.status.replace("_", " ")}
                          </Badge>
                        </TableCell>
-                       <TableCell className="text-right">
-                         <Link to={`/nurses/${nurse.id}`}>
-                           <Button variant="ghost" size="sm">
-                             <Eye className="w-4 h-4 mr-1" />
-                             View
-                           </Button>
-                         </Link>
-                       </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Link to={`/nurses/${nurse.id}`}>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteTargets([nurse])}
+                            aria-label="Delete nurse"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
                      </TableRow>
                    ))
                  )}
@@ -243,7 +327,40 @@
          </Card>
        </div>
  
-       <AddNurseDialog
+      <AlertDialog
+        open={!!deleteTargets}
+        onOpenChange={(open) => !open && !deleting && setDeleteTargets(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteTargets && deleteTargets.length > 1
+                ? `Delete ${deleteTargets.length} nurses?`
+                : "Delete this nurse?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargets && deleteTargets.length === 1
+                ? `${deleteTargets[0].first_name} ${deleteTargets[0].last_name} will be removed along with their credentials, client assignments and alerts. This can't be undone.`
+                : "These nurses will be removed along with their credentials, client assignments and alerts. This can't be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AddNurseDialog
          open={dialogOpen}
          onOpenChange={setDialogOpen}
          onNurseAdded={fetchNurses}

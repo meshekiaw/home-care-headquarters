@@ -258,6 +258,31 @@ import { parseExcelFile } from "@/utils/excelParser";
                  </AlertDescription>
                </Alert>
              )}
+
+            {parseResult.payerWarnings.length > 0 && (
+              <Alert className="border-warning/50 text-foreground">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <AlertDescription>
+                  <p className="text-sm font-medium">
+                    {parseResult.payerColumnMissing
+                      ? "This file has no Payer Type column."
+                      : `${parseResult.payerWarnings.length} row${parseResult.payerWarnings.length === 1 ? "" : "s"} have a blank Payer Type.`}
+                  </p>
+                  <p className="text-sm mt-1">
+                    These {parseResult.payerWarnings.length} client{parseResult.payerWarnings.length === 1 ? "" : "s"} will be imported as{" "}
+                    <strong>Medicaid</strong>. Any VA client imported this way will not get a Nurse Visit requirement.
+                  </p>
+                  <div className="mt-2 max-h-32 overflow-y-auto text-sm">
+                    {parseResult.payerWarnings.map((w) => (
+                      <div key={w.row}>Row {w.row}: {w.name}</div>
+                    ))}
+                  </div>
+                  <p className="text-sm mt-2">
+                    Add a <code className="bg-muted px-1 rounded">payer_type</code> column with Medicaid or VA and re-upload, or import now and change the VA clients on their profiles.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
  
              <ScrollArea className="flex-1 border rounded-lg">
                <Table>

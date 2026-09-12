@@ -352,6 +352,9 @@ export default function AssessmentClaim() {
                       </Button>
                     )}
                   </div>
+                  <Button asChild variant="outline" className="w-full min-h-[44px]">
+                    <Link to={`/assessments/${id}/form-618`}>Open the 618 assessment form</Link>
+                  </Button>
                   <Button asChild variant="ghost" className="w-full min-h-[44px]">
                     <Link to="/nurse">Back to my assessments</Link>
                   </Button>

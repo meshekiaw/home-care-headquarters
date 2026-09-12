@@ -247,19 +247,13 @@ export default function Assessment618Form() {
       });
       if (error) throw error;
 
-      if (type !== "nurse") {
-        const status =
-          type === "client"
-            ? "client_signed"
-            : type === "representative"
-              ? "representative_signed"
-              : "witness_signed";
-        if (type === "client") {
-          await supabase
-            .from("assessment_618_forms")
-            .update({ client_signature_status: status })
-            .eq("id", form.id);
-        }
+      // The client's own signature clears the "pending" state. A representative or
+      // witness signature leaves the documented exception reason in place.
+      if (type === "client") {
+        await supabase
+          .from("assessment_618_forms")
+          .update({ client_signature_status: "client_signed" })
+          .eq("id", form.id);
       }
 
       await load();

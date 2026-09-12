@@ -474,6 +474,12 @@ export default function NurseAssessments() {
                                 Complete
                               </Button>
                             )}
+                            <Button size="sm" variant="ghost" asChild>
+                              <Link to={`/assessments/${a.id}/form-618`}>
+                                <FileText className="w-4 h-4 mr-1" />
+                                618 Form
+                              </Link>
+                            </Button>
                             <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>
                               <Pencil className="w-4 h-4 mr-1" />
                               Edit

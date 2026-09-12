@@ -187,7 +187,7 @@ export default function CaregiverPortal() {
     );
   }
 
-  if (authLoading || loading) {
+  if (authLoading || loading || roleLoading) {
     return (
       <PortalShell>
         <div className="space-y-4">
@@ -197,6 +197,11 @@ export default function CaregiverPortal() {
         </div>
       </PortalShell>
     );
+  }
+
+  // Nurses never see caregiver training, even via the shared portal link.
+  if (role === "nurse") {
+    return <Navigate to="/nurse" replace />;
   }
 
   const handleSignOut = async () => {

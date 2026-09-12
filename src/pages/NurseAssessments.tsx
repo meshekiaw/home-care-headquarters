@@ -446,6 +446,14 @@ export default function NurseAssessments() {
                         </td>
                         <td className="p-3 whitespace-nowrap">
                           {a.scheduled_date ? `${formatDate(a.scheduled_date)} ${formatTime(a.scheduled_time)}` : "—"}
+                          {a.rescheduled_at && (
+                            <div className="text-xs text-muted-foreground">
+                              Rescheduled{a.reschedule_count && a.reschedule_count > 1 ? ` ${a.reschedule_count}x` : ""}
+                              {a.previous_scheduled_date
+                                ? ` from ${formatDate(a.previous_scheduled_date)} ${formatTime(a.previous_scheduled_time)}`
+                                : ""}
+                            </div>
+                          )}
                         </td>
                         <td className="p-3">{statusBadge(a.status)}</td>
                         <td className="p-3 text-right">

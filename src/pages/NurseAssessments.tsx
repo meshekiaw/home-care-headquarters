@@ -378,7 +378,19 @@ export default function NurseAssessments() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Filters</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-3">
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label>Type</Label>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  {TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>

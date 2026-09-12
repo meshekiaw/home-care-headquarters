@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,41 +6,63 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LegalFooter from "@/components/layout/LegalFooter";
-import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 
+/**
+ * Nurse invite landing page.
+ *
+ * SECURITY / RELIABILITY: this page must NOT call supabase.auth.verifyOtp on
+ * mount. Email and SMS link scanners (Gmail, Outlook, Defender for Office,
+ * carrier previews) fetch every URL in a message before the human clicks it.
+ * Verifying on mount lets those scanners burn the single-use token, so the
+ * nurse sees "expired or already used" seconds after the email arrives.
+ * The token is only exchanged after an explicit user click.
+ */
 export default function NurseInvite() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [verifying, setVerifying] = useState(true);
-  const [ready, setReady] = useState(false);
+
+  const tokenHash = params.get("token_hash");
+  const type = (params.get("type") as "invite" | "recovery" | null) ?? "invite";
+
+  const [status, setStatus] = useState<"idle" | "verifying" | "ready" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const tokenHash = params.get("token_hash");
-    const type = (params.get("type") as "invite" | "recovery" | null) ?? "invite";
+  const missingToken = useMemo(() => !tokenHash, [tokenHash]);
 
-    async function verify() {
-      if (!tokenHash) {
-        setError("This link is missing its security token. Ask your coordinator for a new invite.");
-        setVerifying(false);
-        return;
-      }
-      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-      if (error) {
-        setError("This invite link has expired or was already used. Ask your coordinator to send a new one.");
-      } else {
-        setReady(true);
-      }
-      setVerifying(false);
-    }
-    void verify();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // Keep crawlers and previews out of this page.
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex,nofollow";
+    document.head.appendChild(meta);
+    const prevTitle = document.title;
+    document.title = "Set your password — Home Care Headquarters";
+    return () => {
+      document.head.removeChild(meta);
+      document.title = prevTitle;
+    };
   }, []);
+
+  async function handleContinue() {
+    if (!tokenHash) return;
+    setStatus("verifying");
+    setError(null);
+    const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+    if (verifyError) {
+      setError(
+        "This invite link has expired or was already used. Ask your coordinator to send a new one.",
+      );
+      setStatus("error");
+      return;
+    }
+    setStatus("ready");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,15 +98,32 @@ export default function NurseInvite() {
             <span className="font-semibold text-xl">Home Care Headquarters</span>
           </div>
 
-          {verifying ? (
-            <p className="text-muted-foreground">Checking your invite link…</p>
-          ) : error ? (
-            <p className="text-destructive">{error}</p>
-          ) : ready ? (
+          {missingToken ? (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm flex gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-destructive">This link is incomplete.</p>
+                <p className="text-muted-foreground mt-1">
+                  Ask your coordinator to send you a new invite.
+                </p>
+              </div>
+            </div>
+          ) : status === "error" ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm flex gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                <p className="text-destructive">{error}</p>
+              </div>
+              <Button variant="outline" className="w-full h-11" onClick={() => navigate("/login")}>
+                Go to sign in
+              </Button>
+            </div>
+          ) : status === "ready" ? (
             <>
               <h1 className="text-2xl font-bold mb-2">Set your password</h1>
               <p className="text-muted-foreground mb-6">
-                Choose a password you don't use anywhere else. You'll use your email and this password to sign in.
+                Choose a password you don't use anywhere else. You'll use your email and this
+                password to sign in.
               </p>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
@@ -124,7 +163,32 @@ export default function NurseInvite() {
                 </Button>
               </form>
             </>
-          ) : null}
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mb-2">Welcome — let's get you signed in</h1>
+              <p className="text-muted-foreground mb-6">
+                Tap the button below to continue and choose your password. No client information is
+                shown until you're signed in.
+              </p>
+              <Button
+                className="w-full h-11"
+                onClick={handleContinue}
+                disabled={status === "verifying"}
+              >
+                {status === "verifying" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Checking your link…
+                  </>
+                ) : (
+                  "Continue"
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-3">
+                For your security this link is single-use and expires 24 hours after it was sent.
+              </p>
+            </>
+          )}
         </div>
       </main>
       <LegalFooter />

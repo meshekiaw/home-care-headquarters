@@ -49,6 +49,7 @@ import HipaaNotice from "./pages/HipaaNotice";
 import NurseAssessments from "./pages/NurseAssessments";
 import AssessmentClaim from "./pages/AssessmentClaim";
 import Assessment618Form from "./pages/Assessment618Form";
+import NurseVisitForm from "./pages/NurseVisitForm";
 import NursePortal from "./pages/NursePortal";
 import NurseInvite from "./pages/NurseInvite";
 
@@ -95,6 +96,7 @@ const App = () => (
             <Route path="/assessments" element={<ProtectedRoute allowedRoles={["admin"]}><NurseAssessments /></ProtectedRoute>} />
             <Route path="/assessments/:id/claim" element={<ProtectedRoute allowedRoles={["admin", "nurse"]}><AssessmentClaim /></ProtectedRoute>} />
             <Route path="/assessments/:id/form-618" element={<ProtectedRoute allowedRoles={["admin", "nurse"]}><Assessment618Form /></ProtectedRoute>} />
+            <Route path="/assessments/:id/form-nurse-visit" element={<ProtectedRoute allowedRoles={["admin", "nurse"]}><NurseVisitForm /></ProtectedRoute>} />
 
             {/* Nurse routes (restricted role) */}
             <Route path="/nurse" element={<ProtectedRoute allowedRoles={["nurse"]}><NursePortal /></ProtectedRoute>} />

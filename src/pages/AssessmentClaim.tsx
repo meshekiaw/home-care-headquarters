@@ -358,7 +358,11 @@ export default function AssessmentClaim() {
                       </Button>
                     )}
                   </div>
-                  {assessment.assessment_type !== "Nurse Visit" && (
+                  {assessment.assessment_type === "Nurse Visit" ? (
+                    <Button asChild variant="outline" className="w-full min-h-[44px]">
+                      <Link to={`/assessments/${id}/form-nurse-visit`}>Open the Nurse Visit form</Link>
+                    </Button>
+                  ) : (
                     <Button asChild variant="outline" className="w-full min-h-[44px]">
                       <Link to={`/assessments/${id}/form-618`}>Open the 618 assessment form</Link>
                     </Button>

@@ -490,11 +490,18 @@ export default function NurseAssessments() {
                                 Complete
                               </Button>
                             )}
-                            {(a.assessment_type ?? "618") === "618" && (
+                            {(a.assessment_type ?? "618") === "618" ? (
                               <Button size="sm" variant="ghost" asChild>
                                 <Link to={`/assessments/${a.id}/form-618`}>
                                   <FileText className="w-4 h-4 mr-1" />
                                   618 Form
+                                </Link>
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="ghost" asChild>
+                                <Link to={`/assessments/${a.id}/form-nurse-visit`}>
+                                  <FileText className="w-4 h-4 mr-1" />
+                                  Nurse Visit Form
                                 </Link>
                               </Button>
                             )}

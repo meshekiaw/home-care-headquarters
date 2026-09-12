@@ -141,19 +141,21 @@ serve(async (req) => {
       const column = days === 14 ? "reminder_14_sent_at" : "reminder_7_sent_at";
       const { data: due } = await supabase
         .from("nurse_assessments")
-        .select("id, due_date")
+        .select("id, due_date, assessment_type")
         .eq("status", "Pending")
         .eq("due_date", addDays(days))
         .is(column, null);
 
       for (const assessment of due ?? []) {
         const link = `${SITE_URL}/assessments/${assessment.id}/claim`;
+        const label = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 assessment";
+        const heading = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 Assessment";
         for (const email of emails) {
           const res = await sendAppEmail(
             email,
-            `Reminder: a 618 assessment is due in ${days} days`,
-            `<h2>618 Assessment Still Unclaimed</h2>
-             <p>A 618 assessment is due in ${days} days and has not been claimed yet.</p>
+            `Reminder: a ${label} is due in ${days} days`,
+            `<h2>${heading} Still Unclaimed</h2>
+             <p>A ${label} is due in ${days} days and has not been claimed yet.</p>
              <p>No client details are included in this email. Please sign in to view and claim it.</p>
              <p><a href="${link}">Sign in to view and claim this assessment</a></p>`,
             { idempotencyKey: `na-rem${days}-${assessment.id}-${email.toLowerCase()}` },

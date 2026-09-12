@@ -50,6 +50,13 @@
       "when": 1789177577938,
       "tag": "0006_enforce_nurse_role_exclusivity",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789178792094,
+      "tag": "0007_create_618_assessment_forms",
+      "breakpoints": true
     }
   ]
 }

@@ -122,6 +122,163 @@ export type Database = {
           },
         ]
       }
+      assessment_618_forms: {
+        Row: {
+          amendment_reason: string | null
+          amends_form_id: string | null
+          client_id: string
+          client_signature_exception_reason: string | null
+          client_signature_status: string
+          content_hash: string | null
+          created_at: string
+          form_data: Json
+          id: string
+          last_autosaved_at: string | null
+          nurse_assessment_id: string
+          nurse_id: string | null
+          signed_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          amendment_reason?: string | null
+          amends_form_id?: string | null
+          client_id: string
+          client_signature_exception_reason?: string | null
+          client_signature_status?: string
+          content_hash?: string | null
+          created_at?: string
+          form_data?: Json
+          id?: string
+          last_autosaved_at?: string | null
+          nurse_assessment_id: string
+          nurse_id?: string | null
+          signed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          amendment_reason?: string | null
+          amends_form_id?: string | null
+          client_id?: string
+          client_signature_exception_reason?: string | null
+          client_signature_status?: string
+          content_hash?: string | null
+          created_at?: string
+          form_data?: Json
+          id?: string
+          last_autosaved_at?: string | null
+          nurse_assessment_id?: string
+          nurse_id?: string | null
+          signed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_618_forms_amends_form_id_fkey"
+            columns: ["amends_form_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_618_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_618_forms_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_618_forms_nurse_assessment_id_fkey"
+            columns: ["nurse_assessment_id"]
+            isOneToOne: false
+            referencedRelation: "nurse_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_618_forms_nurse_id_fkey"
+            columns: ["nurse_id"]
+            isOneToOne: false
+            referencedRelation: "nurses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_618_signatures: {
+        Row: {
+          attestation_text: string
+          captured_by_user_id: string | null
+          content_hash: string | null
+          content_snapshot: Json
+          created_at: string
+          form_id: string
+          id: string
+          ip_address: string | null
+          signature_data: string
+          signed_at: string
+          signer_name: string
+          signer_relationship: string | null
+          signer_role_description: string | null
+          signer_type: string
+          signer_user_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          attestation_text: string
+          captured_by_user_id?: string | null
+          content_hash?: string | null
+          content_snapshot?: Json
+          created_at?: string
+          form_id: string
+          id?: string
+          ip_address?: string | null
+          signature_data: string
+          signed_at?: string
+          signer_name: string
+          signer_relationship?: string | null
+          signer_role_description?: string | null
+          signer_type: string
+          signer_user_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          attestation_text?: string
+          captured_by_user_id?: string | null
+          content_hash?: string | null
+          content_snapshot?: Json
+          created_at?: string
+          form_id?: string
+          id?: string
+          ip_address?: string | null
+          signature_data?: string
+          signed_at?: string
+          signer_name?: string
+          signer_relationship?: string | null
+          signer_role_description?: string | null
+          signer_type?: string
+          signer_user_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_618_signatures_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_618_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_handoffs: {
         Row: {
           assessment_id: string
@@ -2471,6 +2628,7 @@ export type Database = {
         Args: { p_assessment_id: string; p_notes?: string }
         Returns: boolean
       }
+      compute_618_content_hash: { Args: { p_form_id: string }; Returns: string }
       current_nurse_id: { Args: never; Returns: string }
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       delete_email: {
@@ -2486,6 +2644,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      form_618_signatures_complete: {
+        Args: { p_form_id: string }
+        Returns: boolean
       }
       get_caregiver_ssn_masked: {
         Args: { p_caregiver_id: string }

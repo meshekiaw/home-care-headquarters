@@ -104,6 +104,7 @@ export function formatClientForExport(client: {
   date_of_birth?: string | null;
   emergency_contact_name?: string | null;
   emergency_contact_phone?: string | null;
+  payer_type?: string | null;
   client_hours?: number | null;
   created_at: string;
 }) {

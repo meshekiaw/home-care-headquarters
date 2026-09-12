@@ -23,6 +23,10 @@ interface AssessmentDetail {
   form_618_expiration_date: string | null;
   is_mine: boolean;
   claimed_by_name: string | null;
+  rescheduled_at: string | null;
+  reschedule_count: number | null;
+  previous_scheduled_date: string | null;
+  previous_scheduled_time: string | null;
 }
 
 function formatDate(value: string | null) {

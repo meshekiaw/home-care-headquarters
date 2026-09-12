@@ -61,6 +61,7 @@ interface Option {
 }
 
 const STATUSES = ["Pending", "Claimed", "Completed", "Overdue"];
+const TYPES = ["618", "Nurse Visit"];
 
 function formatDate(value: string | null) {
   if (!value) return "—";
@@ -97,6 +98,7 @@ export default function NurseAssessments() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [createOpen, setCreateOpen] = useState(false);

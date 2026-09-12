@@ -78,6 +78,13 @@
       "when": 1789179098338,
       "tag": "0010_618_hash_builtin_sha256",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789179162582,
+      "tag": "0011_restrict_618_helper_execute",
+      "breakpoints": true
     }
   ]
 }

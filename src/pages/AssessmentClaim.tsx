@@ -281,10 +281,56 @@ export default function AssessmentClaim() {
                 </div>
               ) : assessment.is_mine ? (
                 <div className="space-y-4">
-                  <div className="rounded-lg border bg-muted/50 p-4">
-                    <p className="font-medium">
-                      Scheduled for {formatDate(assessment.scheduled_date)} {formatTime(assessment.scheduled_time)}
-                    </p>
+                  <div className="rounded-lg border bg-muted/50 p-4 space-y-4">
+                    <div>
+                      <p className="font-medium">
+                        {assessment.scheduled_date
+                          ? `Scheduled for ${formatDate(assessment.scheduled_date)} ${formatTime(assessment.scheduled_time)}`
+                          : "No visit date and time set yet"}
+                      </p>
+                      {assessment.rescheduled_at && assessment.previous_scheduled_date && (
+                        <p className="text-sm text-muted-foreground">
+                          Rescheduled from {formatDate(assessment.previous_scheduled_date)}{" "}
+                          {formatTime(assessment.previous_scheduled_time)}
+                          {assessment.reschedule_count && assessment.reschedule_count > 1
+                            ? ` (changed ${assessment.reschedule_count} times)`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+                    {assessment.status !== "Completed" && (
+                      <>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="my_date">Visit date *</Label>
+                            <Input
+                              id="my_date"
+                              type="date"
+                              value={scheduledDate}
+                              onChange={(e) => setScheduledDate(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="my_time">Visit time *</Label>
+                            <Input
+                              id="my_time"
+                              type="time"
+                              value={scheduledTime}
+                              onChange={(e) => setScheduledTime(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          className="w-full min-h-[44px]"
+                          onClick={handleSaveSchedule}
+                          disabled={saving || !scheduledDate || !scheduledTime}
+                        >
+                          {assessment.scheduled_date ? "Update visit date and time" : "Save visit date and time"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="notes">Visit notes</Label>

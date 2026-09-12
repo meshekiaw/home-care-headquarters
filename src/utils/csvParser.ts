@@ -329,7 +329,7 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
   const clients: ParsedClient[] = [];
   const errors: ValidationError[] = [];
   const payerWarnings: PayerTypeWarning[] = [];
-  const payerColumnMissing = rows.length > 0 && rows.every(r => !('payer_type' in (r as Record<string, unknown>)));
+  const payerColumnMissing = rows.length > 0 && rows.every(r => !('payer_type' in (r as unknown as Record<string, unknown>)));
   
   
   rows.forEach((row, index) => {

@@ -539,6 +539,9 @@ export default function NurseAssessments() {
                 onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                For 618 assessments this is set to the client's 618 expiration date.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Assign nurse (optional)</Label>
@@ -555,6 +558,29 @@ export default function NurseAssessments() {
                 </SelectContent>
               </Select>
             </div>
+            {form.assigned_nurse_id && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Scheduled date *</Label>
+                  <Input
+                    type="date"
+                    value={form.scheduled_date}
+                    onChange={(e) => setForm((f) => ({ ...f, scheduled_date: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Scheduled time *</Label>
+                  <Input
+                    type="time"
+                    value={form.scheduled_time}
+                    onChange={(e) => setForm((f) => ({ ...f, scheduled_time: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Notes</Label>
               <Textarea

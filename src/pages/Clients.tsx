@@ -89,6 +89,7 @@ interface Client {
   authorization_begin_date: string | null;
   client_class: string | null;
   client_hours: number | null;
+  payer_type: string | null;
 }
 
 type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
@@ -105,6 +106,7 @@ export default function Clients() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [payerFilter, setPayerFilter] = useState("all");
   const [dueDateMonth, setDueDateMonth] = useState("all");
   const [expirationDateMonth, setExpirationDateMonth] = useState("all");
   const navigate = useNavigate();
@@ -202,6 +204,7 @@ export default function Clients() {
     );
     if (!matchesSearch) return false;
     if (statusFilter !== "all" && client.status !== statusFilter) return false;
+    if (payerFilter !== "all" && (client.payer_type || "Medicaid") !== payerFilter) return false;
     if (dueDateMonth !== "all") {
       if (!client.authorization_due_date) return false;
       if (getDateOnlyYearMonth(client.authorization_due_date) !== dueDateMonth) return false;
@@ -259,7 +262,7 @@ export default function Clients() {
     clients.filter(c => c.authorization_expiration_date).map(c => formatYearMonth(c.authorization_expiration_date!))
   )].sort();
 
-  const activeFilterCount = [statusFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
+  const activeFilterCount = [statusFilter !== "all", payerFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
 
   const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
   const someSelected = sortedClients.some(c => selectedIds.has(c.id));
@@ -387,6 +390,19 @@ export default function Clients() {
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Payer Type</label>
+              <Select value={payerFilter} onValueChange={setPayerFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="Medicaid">Medicaid</SelectItem>
+                  <SelectItem value="VA">VA</SelectItem>
                 </SelectContent>
               </Select>
             </div>

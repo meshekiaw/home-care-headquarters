@@ -225,34 +225,6 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             <p className="text-sm text-muted-foreground">Authorization Begin Date</p>
             <p className="font-medium">{formatDate(client.authorization_begin_date ?? null)}</p>
           </div>
-          {client.authorization_due_date && (() => {
-            const isVA = client.client_class === 'VA';
-            const isOtherClass = ['ARChoices', 'Medicaid', 'Private Pay'].includes(client.client_class || '');
-            if (!isVA && !isOtherClass) return null;
-            const months = isVA ? 6 : 12;
-            const label = isVA ? '618 Due Date (6 months)' : '618 Due Date (1 year)';
-            const dueDate = addMonthsToDate(client.authorization_due_date, months);
-            const dueDateFormatted = dueDate ? (formatDateOnly(dueDate) ?? dueDate) : null;
-            const now = new Date();
-            const nowStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            const isPast = dueDate && dueDate <= nowStr;
-            const isWithin60 = dueDate && !isPast && dueDate <= (() => {
-              const d = new Date(now.getTime() + 30 * 86400000);
-              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            })();
-            return (
-              <div>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  {label}
-                  {isPast && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
-                  {isWithin60 && <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-300">Due Soon</Badge>}
-                </p>
-                <p className={`font-medium ${isPast ? 'text-destructive' : isWithin60 ? 'text-yellow-300' : ''}`}>
-                  {dueDateFormatted || 'Not available'}
-                </p>
-              </div>
-            );
-          })()}
           <div>
             <p className="text-sm text-muted-foreground">Authorization Expiration Date</p>
             <p className="font-medium">{formatDate(client.authorization_expiration_date)}</p>

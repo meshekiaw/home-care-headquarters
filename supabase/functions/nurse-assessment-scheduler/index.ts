@@ -70,13 +70,14 @@ serve(async (req) => {
       result.created += 1;
     }
 
-    // --- 1b. Auto-create Nurse Visit assessments 30 days before the due date (VA clients only) ---
+    // --- 1b. Auto-create Nurse Visit assessments due within 30 days or already past (VA clients only) ---
     const { data: vaClients, error: vaError } = await supabase
       .from("clients")
       .select("id, user_id, nurse_visit_due_date, status, payer_type")
       .eq("status", "active")
       .eq("payer_type", "VA")
-      .eq("nurse_visit_due_date", target);
+      .not("nurse_visit_due_date", "is", null)
+      .lte("nurse_visit_due_date", target);
 
     if (vaError) throw vaError;
 

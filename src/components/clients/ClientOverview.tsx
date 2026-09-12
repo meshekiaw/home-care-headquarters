@@ -34,6 +34,7 @@ interface Client {
   form_618_date?: string | null;
   form_618_expiration_date?: string | null;
   authorization_begin_date?: string | null;
+  payer_type?: string | null;
 }
 
 interface ClientOverviewProps {
@@ -69,6 +70,12 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             <div>
               <p className="text-sm text-muted-foreground">Client Since</p>
               <p className="font-medium">{formatDate(client.created_at)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Payer Type</p>
+              <p className="font-medium">
+                <Badge variant="outline">{client.payer_type || 'Medicaid'}</Badge>
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Client Class</p>

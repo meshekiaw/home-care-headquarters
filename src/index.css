@@ -33,9 +33,9 @@
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
 
-    /* Accessible text-only shades (AA on light backgrounds) */
-    --status-outstanding: 0 72% 36%;
-    --status-complete: 155 72% 24%;
+    /* Bright, readable status text shades */
+    --status-outstanding: 0 74% 51%;
+    --status-complete: 142 71% 40%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;

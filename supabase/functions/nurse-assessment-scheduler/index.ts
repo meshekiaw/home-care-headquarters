@@ -113,18 +113,29 @@ serve(async (req) => {
       .from("nurse_assessments")
       .select("id, due_date, assessment_type")
       .is("created_notification_sent_at", null)
-      .eq("status", "Pending");
+      .in("status", ["Pending", "Overdue"]);
 
     for (const assessment of pendingNew ?? []) {
       const link = `${SITE_URL}/assessments/${assessment.id}/claim`;
       const label = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 assessment";
       const heading = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 Assessment";
+      const daysOut = Math.round(
+        (Date.parse(`${assessment.due_date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000,
+      );
+      const timing = daysOut < 0
+        ? `is past due (due date ${assessment.due_date})`
+        : daysOut === 0
+        ? "is due today"
+        : `is due in ${daysOut} day${daysOut === 1 ? "" : "s"}`;
+      const subject = daysOut < 0
+        ? `Past due: a ${label} needs to be claimed`
+        : `A ${label} ${timing}`;
       for (const email of emails) {
         const res = await sendAppEmail(
           email,
-          `A ${label} is due in 30 days`,
+          subject,
           `<h2>${heading} Available</h2>
-           <p>A ${label} is due in 30 days and is available to claim.</p>
+           <p>A ${label} ${timing} and is available to claim.</p>
            <p>For privacy reasons no client details are included in this email. Please sign in to view the assignment and claim it.</p>
            <p><a href="${link}">Sign in to view and claim this assessment</a></p>`,
           { idempotencyKey: `na-new-${assessment.id}-${email.toLowerCase()}` },

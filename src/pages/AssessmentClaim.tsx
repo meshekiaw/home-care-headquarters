@@ -252,7 +252,11 @@ export default function AssessmentClaim() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between gap-3">
-                <span>{assessment.assessment_type} Assessment</span>
+                <span>
+                  {assessment.assessment_type === "Nurse Visit"
+                    ? "Nurse Visit"
+                    : `${assessment.assessment_type} Assessment`}
+                </span>
                 <Badge variant={assessment.status === "Overdue" ? "destructive" : "secondary"}>
                   {assessment.status}
                 </Badge>
@@ -269,7 +273,9 @@ export default function AssessmentClaim() {
                   <p className="font-medium">{formatDate(assessment.due_date)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">618 expiration</p>
+                  <p className="text-sm text-muted-foreground">
+                    {assessment.assessment_type === "Nurse Visit" ? "Nurse Visit due" : "618 expiration"}
+                  </p>
                   <p className="font-medium">{formatDate(assessment.form_618_expiration_date)}</p>
                 </div>
               </div>

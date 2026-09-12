@@ -10,6 +10,7 @@
 - [x] RLS + signed-record immutability + audit logging on new tables
 - [x] Payer Type on clients (Medicaid default / VA), editable, shown on record, filterable on list
 - [x] Completion sets 618 date + expiration (1 year) in the database, audit-logged, assessment marked Completed; amendments don't re-set dates
-- [ ] Next: VA-specific six-month requirement (awaiting spec)
+- [x] VA six-month Nurse Visit: due date on client, second assessment type, 30-day auto-create, PHI-free emails + 14/7-day reminders, admin Type filter
+- [ ] Next: Nurse Visit form fields (awaiting form)
 - [ ] Next: the actual 618 form fields
 - [ ] Next: PDF export and a 618 history list on the client record

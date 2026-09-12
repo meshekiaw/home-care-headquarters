@@ -56,6 +56,7 @@ interface Client {
   authorization_begin_date: string | null;
   client_class: string | null;
   payer_type: string | null;
+  nurse_visit_due_date: string | null;
   client_hours: number | null;
 }
 

@@ -61,6 +61,7 @@ interface Option {
 }
 
 const STATUSES = ["Pending", "Claimed", "Completed", "Overdue"];
+const TYPES = ["618", "Nurse Visit"];
 
 function formatDate(value: string | null) {
   if (!value) return "—";
@@ -97,6 +98,7 @@ export default function NurseAssessments() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -251,11 +253,12 @@ export default function NurseAssessments() {
     () =>
       assessments.filter((a) => {
         if (statusFilter !== "all" && a.status !== statusFilter) return false;
+        if (typeFilter !== "all" && (a.assessment_type ?? "618") !== typeFilter) return false;
         if (fromDate && a.due_date < fromDate) return false;
         if (toDate && a.due_date > toDate) return false;
         return true;
       }),
-    [assessments, statusFilter, fromDate, toDate],
+    [assessments, statusFilter, typeFilter, fromDate, toDate],
   );
 
   async function handleCreate(e: React.FormEvent) {
@@ -362,7 +365,7 @@ export default function NurseAssessments() {
               Nurse Assessments
             </h1>
             <p className="text-muted-foreground text-sm">
-              618 assessments created 30 days before expiration, claimed by nurses.
+              618 assessments and VA Nurse Visits created 30 days before they are due, claimed by nurses.
             </p>
           </div>
           <Button onClick={() => setCreateOpen(true)}>
@@ -375,7 +378,19 @@ export default function NurseAssessments() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Filters</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-3">
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label>Type</Label>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  {TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -475,12 +490,14 @@ export default function NurseAssessments() {
                                 Complete
                               </Button>
                             )}
-                            <Button size="sm" variant="ghost" asChild>
-                              <Link to={`/assessments/${a.id}/form-618`}>
-                                <FileText className="w-4 h-4 mr-1" />
-                                618 Form
-                              </Link>
-                            </Button>
+                            {(a.assessment_type ?? "618") === "618" && (
+                              <Button size="sm" variant="ghost" asChild>
+                                <Link to={`/assessments/${a.id}/form-618`}>
+                                  <FileText className="w-4 h-4 mr-1" />
+                                  618 Form
+                                </Link>
+                              </Button>
+                            )}
                             <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>
                               <Pencil className="w-4 h-4 mr-1" />
                               Edit
@@ -543,10 +560,17 @@ export default function NurseAssessments() {
             </div>
             <div className="space-y-2">
               <Label>Assessment type</Label>
-              <Input
+              <Select
                 value={form.assessment_type}
-                onChange={(e) => setForm((f) => ({ ...f, assessment_type: e.target.value }))}
-              />
+                onValueChange={(v) => setForm((f) => ({ ...f, assessment_type: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Due date *</Label>
@@ -557,7 +581,8 @@ export default function NurseAssessments() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                For 618 assessments this is set to the client's 618 expiration date.
+                618 assessments use the client's 618 expiration date; Nurse Visits use the client's
+                Nurse Visit due date.
               </p>
             </div>
             <div className="space-y-2">
@@ -640,10 +665,17 @@ export default function NurseAssessments() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Assessment type</Label>
-                <Input
+                <Select
                   value={editForm.assessment_type}
-                  onChange={(e) => setEditForm((f) => ({ ...f, assessment_type: e.target.value }))}
-                />
+                  onValueChange={(v) => setEditForm((f) => ({ ...f, assessment_type: v }))}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Due date *</Label>

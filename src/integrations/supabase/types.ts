@@ -1120,6 +1120,7 @@ export type Database = {
           id: string
           last_name: string
           notes: string | null
+          nurse_visit_due_date: string | null
           payer_type: string
           phone: string | null
           state: string | null
@@ -1147,6 +1148,7 @@ export type Database = {
           id?: string
           last_name: string
           notes?: string | null
+          nurse_visit_due_date?: string | null
           payer_type?: string
           phone?: string | null
           state?: string | null
@@ -1174,6 +1176,7 @@ export type Database = {
           id?: string
           last_name?: string
           notes?: string | null
+          nurse_visit_due_date?: string | null
           payer_type?: string
           phone?: string | null
           state?: string | null

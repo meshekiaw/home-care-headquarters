@@ -69,6 +69,33 @@ serve(async (req) => {
       result.created += 1;
     }
 
+    // --- 1b. Auto-create Nurse Visit assessments 30 days before the due date (VA clients only) ---
+    const { data: vaClients, error: vaError } = await supabase
+      .from("clients")
+      .select("id, user_id, nurse_visit_due_date, status, payer_type")
+      .eq("status", "active")
+      .eq("payer_type", "VA")
+      .eq("nurse_visit_due_date", target);
+
+    if (vaError) throw vaError;
+
+    for (const client of vaClients ?? []) {
+      const { error } = await supabase.from("nurse_assessments").insert({
+        user_id: client.user_id,
+        client_id: client.id,
+        assessment_type: "Nurse Visit",
+        due_date: client.nurse_visit_due_date,
+        status: "Pending",
+      });
+      if (error) {
+        if (!String(error.code).includes("23505")) {
+          result.errors.push(`create nurse visit ${client.id}: ${error.message}`);
+        }
+        continue;
+      }
+      result.created += 1;
+    }
+
     // --- 2. Mark overdue ---
     const { data: overdue, error: overdueError } = await supabase
       .from("nurse_assessments")
@@ -82,18 +109,20 @@ serve(async (req) => {
     // --- 3. Notify nurses of newly created assessments (no PHI) ---
     const { data: pendingNew } = await supabase
       .from("nurse_assessments")
-      .select("id, due_date")
+      .select("id, due_date, assessment_type")
       .is("created_notification_sent_at", null)
       .eq("status", "Pending");
 
     for (const assessment of pendingNew ?? []) {
       const link = `${SITE_URL}/assessments/${assessment.id}/claim`;
+      const label = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 assessment";
+      const heading = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 Assessment";
       for (const email of emails) {
         const res = await sendAppEmail(
           email,
-          "A 618 assessment is due in 30 days",
-          `<h2>618 Assessment Available</h2>
-           <p>A 618 assessment is due in 30 days and is available to claim.</p>
+          `A ${label} is due in 30 days`,
+          `<h2>${heading} Available</h2>
+           <p>A ${label} is due in 30 days and is available to claim.</p>
            <p>For privacy reasons no client details are included in this email. Please sign in to view the assignment and claim it.</p>
            <p><a href="${link}">Sign in to view and claim this assessment</a></p>`,
           { idempotencyKey: `na-new-${assessment.id}-${email.toLowerCase()}` },
@@ -112,19 +141,21 @@ serve(async (req) => {
       const column = days === 14 ? "reminder_14_sent_at" : "reminder_7_sent_at";
       const { data: due } = await supabase
         .from("nurse_assessments")
-        .select("id, due_date")
+        .select("id, due_date, assessment_type")
         .eq("status", "Pending")
         .eq("due_date", addDays(days))
         .is(column, null);
 
       for (const assessment of due ?? []) {
         const link = `${SITE_URL}/assessments/${assessment.id}/claim`;
+        const label = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 assessment";
+        const heading = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 Assessment";
         for (const email of emails) {
           const res = await sendAppEmail(
             email,
-            `Reminder: a 618 assessment is due in ${days} days`,
-            `<h2>618 Assessment Still Unclaimed</h2>
-             <p>A 618 assessment is due in ${days} days and has not been claimed yet.</p>
+            `Reminder: a ${label} is due in ${days} days`,
+            `<h2>${heading} Still Unclaimed</h2>
+             <p>A ${label} is due in ${days} days and has not been claimed yet.</p>
              <p>No client details are included in this email. Please sign in to view and claim it.</p>
              <p><a href="${link}">Sign in to view and claim this assessment</a></p>`,
             { idempotencyKey: `na-rem${days}-${assessment.id}-${email.toLowerCase()}` },

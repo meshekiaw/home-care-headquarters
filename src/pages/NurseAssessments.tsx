@@ -33,7 +33,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, Plus, CheckCircle, Loader2, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ClipboardCheck, Plus, CheckCircle, Loader2, Pencil, Trash2, RotateCcw, FileText } from "lucide-react";
 
 interface Assessment {
   id: string;
@@ -474,6 +475,12 @@ export default function NurseAssessments() {
                                 Complete
                               </Button>
                             )}
+                            <Button size="sm" variant="ghost" asChild>
+                              <Link to={`/assessments/${a.id}/form-618`}>
+                                <FileText className="w-4 h-4 mr-1" />
+                                618 Form
+                              </Link>
+                            </Button>
                             <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>
                               <Pencil className="w-4 h-4 mr-1" />
                               Edit

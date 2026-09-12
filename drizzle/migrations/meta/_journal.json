@@ -50,6 +50,41 @@
       "when": 1789177577938,
       "tag": "0006_enforce_nurse_role_exclusivity",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789178792094,
+      "tag": "0007_create_618_assessment_forms",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789178858852,
+      "tag": "0008_618_form_rpcs",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789178877007,
+      "tag": "0009_allow_618_supersede_transition",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789179098338,
+      "tag": "0010_618_hash_builtin_sha256",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789179162582,
+      "tag": "0011_restrict_618_helper_execute",
+      "breakpoints": true
     }
   ]
 }

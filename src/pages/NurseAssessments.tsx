@@ -445,7 +445,17 @@ export default function NurseAssessments() {
                           </Select>
                         </td>
                         <td className="p-3 whitespace-nowrap">
-                          {a.scheduled_date ? `${formatDate(a.scheduled_date)} ${formatTime(a.scheduled_time)}` : "—"}
+                          <span
+                            className={
+                              a.scheduled_date
+                                ? a.status?.toLowerCase() === "completed"
+                                  ? "font-bold text-status-complete"
+                                  : "font-bold text-status-outstanding"
+                                : undefined
+                            }
+                          >
+                            {a.scheduled_date ? `${formatDate(a.scheduled_date)} ${formatTime(a.scheduled_time)}` : "—"}
+                          </span>
                           {a.rescheduled_at && (
                             <div className="text-xs text-muted-foreground">
                               Rescheduled{a.reschedule_count && a.reschedule_count > 1 ? ` ${a.reschedule_count}x` : ""}

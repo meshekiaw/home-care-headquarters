@@ -35,6 +35,7 @@ interface Client {
   form_618_expiration_date?: string | null;
   authorization_begin_date?: string | null;
   payer_type?: string | null;
+  nurse_visit_due_date?: string | null;
 }
 
 interface ClientOverviewProps {
@@ -214,6 +215,12 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             <p className="text-sm text-muted-foreground">618 Expiration Date</p>
             <p className="font-medium">{formatDate(client.form_618_expiration_date ?? null)}</p>
           </div>
+          {(client.payer_type ?? 'Medicaid') === 'VA' && (
+            <div>
+              <p className="text-sm text-muted-foreground">Nurse Visit Due Date (6 months)</p>
+              <p className="font-medium">{formatDate(client.nurse_visit_due_date ?? null)}</p>
+            </div>
+          )}
           <div>
             <p className="text-sm text-muted-foreground">Authorization Begin Date</p>
             <p className="font-medium">{formatDate(client.authorization_begin_date ?? null)}</p>

@@ -129,6 +129,7 @@ export type Database = {
           client_id: string
           client_signature_exception_reason: string | null
           client_signature_status: string
+          client_signs_by_mark: boolean
           content_hash: string | null
           created_at: string
           form_data: Json
@@ -148,6 +149,7 @@ export type Database = {
           client_id: string
           client_signature_exception_reason?: string | null
           client_signature_status?: string
+          client_signs_by_mark?: boolean
           content_hash?: string | null
           created_at?: string
           form_data?: Json
@@ -167,6 +169,7 @@ export type Database = {
           client_id?: string
           client_signature_exception_reason?: string | null
           client_signature_status?: string
+          client_signs_by_mark?: boolean
           content_hash?: string | null
           created_at?: string
           form_data?: Json
@@ -222,6 +225,7 @@ export type Database = {
           id: string
           ip_address: string | null
           signature_data: string
+          signature_slot: string | null
           signed_at: string
           signer_name: string
           signer_relationship: string | null
@@ -241,6 +245,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           signature_data: string
+          signature_slot?: string | null
           signed_at?: string
           signer_name: string
           signer_relationship?: string | null
@@ -260,6 +265,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           signature_data?: string
+          signature_slot?: string | null
           signed_at?: string
           signer_name?: string
           signer_relationship?: string | null
@@ -2622,18 +2628,32 @@ export type Database = {
       }
     }
     Functions: {
-      add_618_signature: {
-        Args: {
-          p_attestation_text: string
-          p_form_id: string
-          p_relationship?: string
-          p_role_description?: string
-          p_signature_data: string
-          p_signer_name: string
-          p_signer_type: string
-        }
-        Returns: string
-      }
+      add_618_signature:
+        | {
+            Args: {
+              p_attestation_text: string
+              p_form_id: string
+              p_relationship?: string
+              p_role_description?: string
+              p_signature_data: string
+              p_signature_slot: string
+              p_signer_name: string
+              p_signer_type: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_attestation_text: string
+              p_form_id: string
+              p_relationship?: string
+              p_role_description?: string
+              p_signature_data: string
+              p_signer_name: string
+              p_signer_type: string
+            }
+            Returns: string
+          }
       claim_nurse_assessment: {
         Args: {
           p_assessment_id: string

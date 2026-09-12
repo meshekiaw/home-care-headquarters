@@ -665,10 +665,17 @@ export default function NurseAssessments() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Assessment type</Label>
-                <Input
+                <Select
                   value={editForm.assessment_type}
-                  onChange={(e) => setEditForm((f) => ({ ...f, assessment_type: e.target.value }))}
-                />
+                  onValueChange={(v) => setEditForm((f) => ({ ...f, assessment_type: v }))}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Due date *</Label>

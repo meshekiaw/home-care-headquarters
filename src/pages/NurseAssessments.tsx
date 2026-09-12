@@ -365,7 +365,7 @@ export default function NurseAssessments() {
               Nurse Assessments
             </h1>
             <p className="text-muted-foreground text-sm">
-              618 assessments created 30 days before expiration, claimed by nurses.
+              618 assessments and VA Nurse Visits created 30 days before they are due, claimed by nurses.
             </p>
           </div>
           <Button onClick={() => setCreateOpen(true)}>
@@ -490,12 +490,14 @@ export default function NurseAssessments() {
                                 Complete
                               </Button>
                             )}
-                            <Button size="sm" variant="ghost" asChild>
-                              <Link to={`/assessments/${a.id}/form-618`}>
-                                <FileText className="w-4 h-4 mr-1" />
-                                618 Form
-                              </Link>
-                            </Button>
+                            {(a.assessment_type ?? "618") === "618" && (
+                              <Button size="sm" variant="ghost" asChild>
+                                <Link to={`/assessments/${a.id}/form-618`}>
+                                  <FileText className="w-4 h-4 mr-1" />
+                                  618 Form
+                                </Link>
+                              </Button>
+                            )}
                             <Button size="sm" variant="ghost" onClick={() => openEdit(a)}>
                               <Pencil className="w-4 h-4 mr-1" />
                               Edit
@@ -558,10 +560,17 @@ export default function NurseAssessments() {
             </div>
             <div className="space-y-2">
               <Label>Assessment type</Label>
-              <Input
+              <Select
                 value={form.assessment_type}
-                onChange={(e) => setForm((f) => ({ ...f, assessment_type: e.target.value }))}
-              />
+                onValueChange={(v) => setForm((f) => ({ ...f, assessment_type: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Due date *</Label>
@@ -572,7 +581,8 @@ export default function NurseAssessments() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                For 618 assessments this is set to the client's 618 expiration date.
+                618 assessments use the client's 618 expiration date; Nurse Visits use the client's
+                Nurse Visit due date.
               </p>
             </div>
             <div className="space-y-2">

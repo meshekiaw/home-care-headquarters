@@ -1,75 +1,38 @@
-## Goal
+# 618 Assessment Form — Record Structure & Signing
 
-When an administrator assigns an LMS course, the caregiver immediately sees it on their dashboard, receives an email (and optional SMS), can log in (auto-provisioned if needed), complete the training, earn a certificate, and have completion tracked for admin compliance reporting.
+Answers to your questions first, then what I'll build in this step.
 
-## 1. Database changes (one migration)
+## Your questions
 
-**Add columns to `lms_assignments`:**
-- `progress_percentage int default 0`
-- `started_at timestamptz`
-- `certificate_url text` (storage path)
-- `notification_sent_at timestamptz`
+**Where should the completed form live?**
+Both, with one source of truth. The form record is owned by the assessment (one form per assessment), and the client record shows a read-only list of every 618 form for that client with status, signer and date. That way a nurse works inside the assessment, while the client file stays the complete history — no duplicated copies that can drift apart.
 
-**Add columns to `caregivers`:**
-- `temp_password_sent_at timestamptz` (audit only)
+**Legally defensible signature + audit trail**
+Follow the same approach already used for the admission/nursing forms, tightened:
+- Typed full name plus a drawn signature captured on screen.
+- A checkbox attestation ("I certify the information is accurate...") recorded as explicit consent text stored with the signature.
+- Recorded at signing time: signer name, signer account, role, exact timestamp, IP address, browser/device string, and the exact form content that was signed (a snapshot plus a fingerprint of it). If the content is ever changed later, the fingerprint no longer matches the snapshot, which is provable.
+- Every signature row is insert-only: it can never be edited or removed, by anyone, including admins.
 
-**New storage bucket:** `lms-certificates` (private, RLS: admins all, caregivers read own).
+**Locking after signing, while allowing corrections**
+Once signed, the form flips to `signed` and the database itself blocks any change to the answers — not just the screen. A correction is not an edit: it creates a new numbered amendment (version 2, 3, ...) that must state a reason and be signed again. The original stays permanently readable. This mirrors how paper charts handle late entries.
 
-**RLS additions** so caregivers see/update their own assignments:
-- `SELECT lms_assignments` where `caregiver_id IN (SELECT id FROM caregivers WHERE auth_user_id = auth.uid())`
-- `UPDATE lms_assignments` same scope (status, progress, completed_at, score)
-- Similar `SELECT` on `lms_courses` for active courses they are assigned to.
+**Partial saves**
+Yes. A form starts as a draft the moment the nurse opens it, autosaves as they work (roughly every few seconds after a change, plus on leaving the page), and shows "Saved just now". A nurse can close it and pick it up on any device. Drafts are only visible to the assigned nurse and admins.
 
-## 2. Edge functions
+**PDF export**
+Yes. Any signed form can be downloaded as a PDF containing the answers, the signature image, and a footer with signer, timestamp, device, and version number — suitable for submission and for the client file. Draft PDFs are watermarked "DRAFT — NOT FOR SUBMISSION". The export is built once the fields exist; this step puts the data in place for it.
 
-**`send-lms-assignment-notification`** (new) — called after assignment insert:
-- Input: `assignment_ids[]`
-- For each: load caregiver + course; if no `auth_user_id` and caregiver has email, generate temp password (`crypto.randomUUID().slice(0,12)`), call admin createUser, assign `caregiver` role, link to caregiver record, and include credentials in email.
-- Sends Resend email: course title, due date, login link (`${SITE_URL}/login`), and (when newly provisioned) temp password with "change after login" notice.
-- Optional Twilio SMS if `TWILIO_*` secrets exist and `caregivers.phone` set — short message with course + due date + login URL. Silently skipped if Twilio not configured.
-- Marks `notification_sent_at`.
+## What I'll build now (no form fields yet)
 
-Updates `AssignCourseDialog` → after `assignCourse` succeeds, invoke this function with the new assignment IDs.
+1. **`assessment_618_forms`** — one per assessment: link to the assessment and client, assigned nurse, status (`draft`, `signed`, `amended`), version number, link to the version it amends, amendment reason, the answers as a flexible data block (fields get defined later), timestamps for created/updated/last-autosaved/signed.
+2. **`assessment_618_signatures`** — insert-only: signer name, account, role, signature image, attestation text, signed-at, IP address, device/browser, content snapshot and fingerprint.
+3. **Database-level protections**
+   - Row-level security on both, matching the other client tables: the assigned nurse sees and edits only her own forms; admins see all; nobody else sees anything.
+   - A trigger that rejects any change to a form once its status is `signed` — the only allowed path forward is a new amendment row.
+   - Signature rows: insert only; updates and deletes rejected outright.
+   - A trigger that stamps the signature and flips the form to `signed` in one step, so a form can never appear signed without a matching signature record.
+4. **Audit logging** — attach the existing audit function to both new tables so every insert, change and delete is written to the audit log with before/after values, same as your other client data.
+5. **A minimal working screen** on the assessment: "Start 618 Assessment" / "Continue draft", an autosaving shell with a placeholder body, a Sign step with drawn signature and attestation, and a locked read-only view afterwards with an "Add correction" action.
 
-## 3. Caregiver dashboard
-
-Update `src/pages/CaregiverDashboard.tsx` to add an **"My Training"** card and a new section listing assignments grouped by status:
-- Assigned (pending)
-- In Progress
-- Completed (with date + score + certificate download link)
-
-New page `src/pages/CaregiverTraining.tsx` (route `/my-training`) — full list with: course title, description, due date, status badge, progress bar, "Start / Continue / Review" button, and "Download Certificate" when completed.
-
-Course launcher reuses the orientation viewer for `content_type='orientation'` courses; for `document` courses opens content_body in a viewer with a "Mark complete" action that sets `status='completed'`, `completed_at=now()`, `progress_percentage=100`, and triggers certificate generation.
-
-## 4. Certificate generation
-
-Reuse `src/utils/orientationCertificatePdf.ts` pattern → new `src/utils/lmsCertificatePdf.ts` that produces a per-course PDF (caregiver name, course title, completion date, score). On completion, upload to `lms-certificates/${caregiver_id}/${assignment_id}.pdf` and store path in `assignments.certificate_url`. Admin assignments table gets a "Certificate" column with download link.
-
-## 5. Admin compliance view
-
-Extend the existing assignments table in `src/pages/LmsTraining.tsx`:
-- Add "Progress" column (percent bar)
-- Add "Certificate" column (download icon when present)
-- Per-assignment "Resend notification" action (re-invokes the edge function)
-
-No separate compliance page — existing stats cards already cover totals/overdue/in-progress/completion rate.
-
-## 6. Secrets
-
-- `RESEND_API_KEY` — already configured by other email functions; if missing the function returns a clear error.
-- `RESEND_FROM_EMAIL` — already used elsewhere.
-- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` — optional; SMS is skipped when absent. Will request via `add_secret` only if you want SMS enabled now.
-
-## Out of scope
-
-- Email templates branded via Lovable Emails infrastructure (uses existing Resend pattern to match the rest of the project).
-- Quiz delivery for non-orientation courses (existing orientation quiz flow continues to apply for orientation-type courses).
-- Password-change-on-first-login enforcement (caregiver can change password in profile).
-
-## Approval needed
-
-Confirm:
-1. SMS via Twilio — set up now (you provide credentials) or leave as a no-op for later?
-2. Temp password length 12 chars OK?
-3. Should completing a course auto-issue the certificate, or require admin approval first?
+Fields, PDF layout, and the client-file history list come in the next step once this foundation is approved.

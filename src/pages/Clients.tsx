@@ -656,6 +656,9 @@ export default function Clients() {
                             {client.status}
                           </span>
                         </TableCell>
+                        <TableCell>
+                          <span className="text-sm font-medium">{client.payer_type || 'Medicaid'}</span>
+                        </TableCell>
                         {(() => {
                           const mdY = { month: '2-digit', day: '2-digit', year: 'numeric' } as const;
                           const fmt = (d: string | null | undefined) =>

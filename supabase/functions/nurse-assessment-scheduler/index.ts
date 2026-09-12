@@ -109,18 +109,20 @@ serve(async (req) => {
     // --- 3. Notify nurses of newly created assessments (no PHI) ---
     const { data: pendingNew } = await supabase
       .from("nurse_assessments")
-      .select("id, due_date")
+      .select("id, due_date, assessment_type")
       .is("created_notification_sent_at", null)
       .eq("status", "Pending");
 
     for (const assessment of pendingNew ?? []) {
       const link = `${SITE_URL}/assessments/${assessment.id}/claim`;
+      const label = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 assessment";
+      const heading = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 Assessment";
       for (const email of emails) {
         const res = await sendAppEmail(
           email,
-          "A 618 assessment is due in 30 days",
-          `<h2>618 Assessment Available</h2>
-           <p>A 618 assessment is due in 30 days and is available to claim.</p>
+          `A ${label} is due in 30 days`,
+          `<h2>${heading} Available</h2>
+           <p>A ${label} is due in 30 days and is available to claim.</p>
            <p>For privacy reasons no client details are included in this email. Please sign in to view the assignment and claim it.</p>
            <p><a href="${link}">Sign in to view and claim this assessment</a></p>`,
           { idempotencyKey: `na-new-${assessment.id}-${email.toLowerCase()}` },

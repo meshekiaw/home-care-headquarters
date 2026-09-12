@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +71,7 @@ export function PortalShell({ children, onSignOut }: { children: React.ReactNode
 export default function CaregiverPortal() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { toast } = useToast();
+  const { role, loading: roleLoading } = useUserRole();
   const [caregiver, setCaregiver] = useState<{ id: string; first_name: string; last_name: string } | null>(null);
   const [assignments, setAssignments] = useState<PortalAssignment[]>([]);
   const [loading, setLoading] = useState(true);

@@ -87,7 +87,7 @@ serve(async (req) => {
         client_id: client.id,
         assessment_type: "Nurse Visit",
         due_date: client.nurse_visit_due_date,
-        status: "Pending",
+        status: client.nurse_visit_due_date! < today ? "Overdue" : "Pending",
       });
       if (error) {
         if (!String(error.code).includes("23505")) {

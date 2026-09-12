@@ -37,6 +37,7 @@ const clientSchema = z.object({
   form_618_expiration_date: z.string().optional(),
   authorization_begin_date: z.string().optional(),
   client_class: z.string().optional(),
+  payer_type: z.enum(["Medicaid", "VA"], { required_error: "Payer type is required" }),
   client_hours: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]),
 });
@@ -70,6 +71,7 @@ export default function ClientEdit() {
     form_618_expiration_date: "",
     authorization_begin_date: "",
     client_class: "",
+    payer_type: "Medicaid",
     client_hours: "",
     status: "active",
   });
@@ -105,6 +107,7 @@ export default function ClientEdit() {
           form_618_expiration_date: data.form_618_expiration_date || "",
           authorization_begin_date: data.authorization_begin_date || "",
           client_class: data.client_class || "",
+          payer_type: (data as any).payer_type === "VA" ? "VA" : "Medicaid",
           client_hours: data.client_hours != null ? String(data.client_hours) : "",
           status: (data.status as "active" | "inactive" | "pending") || "active",
         });
@@ -161,6 +164,7 @@ export default function ClientEdit() {
           form_618_expiration_date: validated.form_618_expiration_date || null,
           authorization_begin_date: validated.authorization_begin_date || null,
           client_class: validated.client_class || null,
+          payer_type: validated.payer_type,
           client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
           status: validated.status,
         })
@@ -364,6 +368,17 @@ export default function ClientEdit() {
               <div className="space-y-2">
                 <Label htmlFor="authorization_begin_date">Authorization Begin Date</Label>
                 <Input id="authorization_begin_date" type="date" value={formData.authorization_begin_date} onChange={(e) => handleChange("authorization_begin_date", e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payer_type">Payer Type *</Label>
+                <Select value={formData.payer_type} onValueChange={(value) => handleChange("payer_type", value)}>
+                  <SelectTrigger id="payer_type"><SelectValue placeholder="Select payer type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Medicaid">Medicaid</SelectItem>
+                    <SelectItem value="VA">VA</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.payer_type && <p className="text-sm text-destructive">{errors.payer_type}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="client_class">Client Class</Label>

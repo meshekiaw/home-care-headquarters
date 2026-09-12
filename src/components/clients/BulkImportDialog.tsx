@@ -23,6 +23,7 @@
    Upload,
    FileText,
    AlertCircle,
+   AlertTriangle,
    CheckCircle2,
    Download,
    X,

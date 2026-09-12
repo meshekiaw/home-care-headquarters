@@ -71,6 +71,10 @@ export default function AssessmentClaim() {
     const row = ((data as AssessmentDetail[]) ?? [])[0] ?? null;
     setAssessment(row);
     setNotes(row?.notes ?? "");
+    if (row?.is_mine) {
+      setScheduledDate(row.scheduled_date ?? "");
+      setScheduledTime(row.scheduled_time ? row.scheduled_time.slice(0, 5) : "");
+    }
 
     if (row && !row.is_mine && row.claimed_by_name) {
       setClaimedMessage(

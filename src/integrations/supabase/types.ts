@@ -2616,6 +2616,18 @@ export type Database = {
       }
     }
     Functions: {
+      add_618_signature: {
+        Args: {
+          p_attestation_text: string
+          p_form_id: string
+          p_relationship?: string
+          p_role_description?: string
+          p_signature_data: string
+          p_signer_name: string
+          p_signer_type: string
+        }
+        Returns: string
+      }
       claim_nurse_assessment: {
         Args: {
           p_assessment_id: string
@@ -2624,6 +2636,7 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_618_form: { Args: { p_form_id: string }; Returns: Json }
       complete_nurse_assessment: {
         Args: { p_assessment_id: string; p_notes?: string }
         Returns: boolean
@@ -2721,6 +2734,7 @@ export type Database = {
         }
         Returns: Json
       }
+      start_618_form: { Args: { p_assessment_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user" | "caregiver" | "nurse"

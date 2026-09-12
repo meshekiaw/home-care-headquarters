@@ -36,7 +36,6 @@ const clientSchema = z.object({
   form_618_date: z.string().optional(),
   form_618_expiration_date: z.string().optional(),
   authorization_begin_date: z.string().optional(),
-  client_class: z.string().optional(),
   payer_type: z.enum(["Medicaid", "VA"], { required_error: "Payer type is required" }),
   client_hours: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]),
@@ -68,7 +67,6 @@ export default function ClientNew() {
     form_618_date: "",
     form_618_expiration_date: "",
     authorization_begin_date: "",
-    client_class: "",
     payer_type: "Medicaid",
     client_hours: "",
     status: "active",
@@ -114,7 +112,6 @@ export default function ClientNew() {
         form_618_date: validated.form_618_date || null,
         form_618_expiration_date: validated.form_618_expiration_date || null,
         authorization_begin_date: validated.authorization_begin_date || null,
-        client_class: validated.client_class || null,
         payer_type: validated.payer_type,
         client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
         status: validated.status,
@@ -433,23 +430,6 @@ export default function ClientNew() {
                   </SelectContent>
                 </Select>
                 {errors.payer_type && <p className="text-sm text-destructive">{errors.payer_type}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client_class">Client Class</Label>
-                <Select
-                  value={formData.client_class}
-                  onValueChange={(value) => handleChange("client_class", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select class" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="VA">VA</SelectItem>
-                    <SelectItem value="Medicaid">Medicaid</SelectItem>
-                    <SelectItem value="Private Pay">Private Pay</SelectItem>
-                    <SelectItem value="ARChoices">ARChoices</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="client_hours">Client Hours</Label>

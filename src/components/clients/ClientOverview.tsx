@@ -29,7 +29,7 @@ interface Client {
   created_at: string;
   authorization_due_date: string | null;
   authorization_expiration_date: string | null;
-  client_class: string | null;
+  
   client_hours: number | null;
   form_618_date?: string | null;
   form_618_expiration_date?: string | null;
@@ -77,10 +77,6 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
               <p className="font-medium">
                 <Badge variant="outline">{client.payer_type || 'Medicaid'}</Badge>
               </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Client Class</p>
-              <p className="font-medium">{client.client_class || 'Not specified'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Client Hours</p>

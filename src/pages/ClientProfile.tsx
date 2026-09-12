@@ -54,7 +54,7 @@ interface Client {
   form_618_date: string | null;
   form_618_expiration_date: string | null;
   authorization_begin_date: string | null;
-  client_class: string | null;
+  
   payer_type: string | null;
   nurse_visit_due_date: string | null;
   client_hours: number | null;

@@ -114,11 +114,11 @@ Deno.serve(async (req) => {
         const html = `
           <h2>Your nurse sign-in for Home Care Headquarters</h2>
           <p>Hello ${name},</p>
-          <p>You've been given access to the nurse assessment portal. Click the button below to set your password and sign in. No client information is shown until you sign in.</p>
+          <p>You've been given access to the nurse assessment portal. Click the button below, then tap <strong>Continue</strong> on the page that opens to set your password. No client information is shown until you sign in.</p>
           <p style="margin:24px 0;">
             <a href="${link}" style="background:#2563eb;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;">Set your password</a>
           </p>
-          <p><strong>This link expires in 24 hours.</strong> If it expires, ask your coordinator to send a new one.</p>
+          <p><strong>This link is single-use and expires within 24 hours.</strong> If it expires, ask your coordinator to send a new one. Sending a new invite replaces any earlier link.</p>
           <p>If you did not expect this email, you can ignore it.</p>
         `;
 

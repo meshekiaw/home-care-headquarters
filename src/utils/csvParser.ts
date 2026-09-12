@@ -266,7 +266,7 @@ export interface ClientCSVRow {
   authorization_begin_date?: string;
   "618_date"?: string;
   "618_expiration_date"?: string;
-  client_class?: string;
+  payer_type?: string;
   client_hours?: string;
 }
 
@@ -289,14 +289,22 @@ export interface ParsedClient {
   form_618_date: string | null;
   form_618_expiration_date: string | null;
   authorization_begin_date: string | null;
-  client_class: string | null;
+  payer_type: string;
   client_hours: number | null;
+}
+
+export interface PayerTypeWarning {
+  row: number;
+  name: string;
+  reason: 'missing_column' | 'blank';
 }
 
 export interface ClientParseResult {
   clients: ParsedClient[];
   errors: ValidationError[];
   totalRows: number;
+  payerColumnMissing: boolean;
+  payerWarnings: PayerTypeWarning[];
 }
 
 export function parseClientCSV(content: string): ClientCSVRow[] {

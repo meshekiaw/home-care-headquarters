@@ -328,6 +328,9 @@ export function parseClientCSV(content: string): ClientCSVRow[] {
 export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseResult {
   const clients: ParsedClient[] = [];
   const errors: ValidationError[] = [];
+  const payerWarnings: PayerTypeWarning[] = [];
+  const payerColumnMissing = rows.length > 0 && rows.every(r => !('payer_type' in (r as Record<string, unknown>)));
+  
   
   rows.forEach((row, index) => {
     const rowNum = index + 2;

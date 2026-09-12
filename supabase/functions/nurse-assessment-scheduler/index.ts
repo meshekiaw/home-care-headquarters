@@ -69,6 +69,33 @@ serve(async (req) => {
       result.created += 1;
     }
 
+    // --- 1b. Auto-create Nurse Visit assessments 30 days before the due date (VA clients only) ---
+    const { data: vaClients, error: vaError } = await supabase
+      .from("clients")
+      .select("id, user_id, nurse_visit_due_date, status, payer_type")
+      .eq("status", "active")
+      .eq("payer_type", "VA")
+      .eq("nurse_visit_due_date", target);
+
+    if (vaError) throw vaError;
+
+    for (const client of vaClients ?? []) {
+      const { error } = await supabase.from("nurse_assessments").insert({
+        user_id: client.user_id,
+        client_id: client.id,
+        assessment_type: "Nurse Visit",
+        due_date: client.nurse_visit_due_date,
+        status: "Pending",
+      });
+      if (error) {
+        if (!String(error.code).includes("23505")) {
+          result.errors.push(`create nurse visit ${client.id}: ${error.message}`);
+        }
+        continue;
+      }
+      result.created += 1;
+    }
+
     // --- 2. Mark overdue ---
     const { data: overdue, error: overdueError } = await supabase
       .from("nurse_assessments")

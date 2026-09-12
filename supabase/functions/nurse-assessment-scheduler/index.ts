@@ -41,13 +41,14 @@ serve(async (req) => {
       .map((n) => n.email)
       .filter((e): e is string => !!e);
 
-    // --- 1. Auto-create assessments 30 days before the 618 expiration ---
+    // --- 1. Auto-create assessments for any 618 due within the next 30 days or already past ---
     const target = addDays(30);
     const { data: clients, error: clientsError } = await supabase
       .from("clients")
       .select("id, user_id, form_618_expiration_date, status")
       .eq("status", "active")
-      .eq("form_618_expiration_date", target);
+      .not("form_618_expiration_date", "is", null)
+      .lte("form_618_expiration_date", target);
 
     if (clientsError) throw clientsError;
 
@@ -57,7 +58,7 @@ serve(async (req) => {
         client_id: client.id,
         assessment_type: "618",
         due_date: client.form_618_expiration_date,
-        status: "Pending",
+        status: client.form_618_expiration_date! < today ? "Overdue" : "Pending",
       });
       if (error) {
         // 23505 = duplicate; the unique index makes this job idempotent

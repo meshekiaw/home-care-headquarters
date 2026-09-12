@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /nurse-invite
+Disallow: /auth/magic-link
 
 Sitemap: https://homecareheadquarters.org/sitemap.xml

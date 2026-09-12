@@ -23,6 +23,10 @@ interface AssessmentDetail {
   form_618_expiration_date: string | null;
   is_mine: boolean;
   claimed_by_name: string | null;
+  rescheduled_at: string | null;
+  reschedule_count: number | null;
+  previous_scheduled_date: string | null;
+  previous_scheduled_time: string | null;
 }
 
 function formatDate(value: string | null) {
@@ -67,6 +71,10 @@ export default function AssessmentClaim() {
     const row = ((data as AssessmentDetail[]) ?? [])[0] ?? null;
     setAssessment(row);
     setNotes(row?.notes ?? "");
+    if (row?.is_mine) {
+      setScheduledDate(row.scheduled_date ?? "");
+      setScheduledTime(row.scheduled_time ? row.scheduled_time.slice(0, 5) : "");
+    }
 
     if (row && !row.is_mine && row.claimed_by_name) {
       setClaimedMessage(
@@ -120,6 +128,15 @@ export default function AssessmentClaim() {
         return;
       }
 
+      if (res.reason === "schedule_required") {
+        toast({
+          title: "Date and time are required",
+          description: "Enter both the visit date and the visit time to claim this assessment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({ title: "Assessment not found", variant: "destructive" });
     } catch (error: any) {
       toast({ title: "Could not claim assessment", description: error.message, variant: "destructive" });
@@ -127,6 +144,50 @@ export default function AssessmentClaim() {
       setSaving(false);
     }
   }
+
+  async function handleSaveSchedule() {
+    if (!scheduledDate || !scheduledTime) {
+      toast({
+        title: "Date and time are required",
+        description: "Enter both the visit date and the visit time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.rpc("reschedule_nurse_assessment", {
+        p_assessment_id: id!,
+        p_scheduled_date: scheduledDate,
+        p_scheduled_time: scheduledTime,
+      });
+      if (error) throw error;
+      const res = data as { success: boolean; reason?: string; rescheduled?: boolean };
+      if (!res.success) {
+        toast({
+          title: "Could not save the visit time",
+          description:
+            res.reason === "not_yours"
+              ? "This assessment isn't assigned to you."
+              : "Enter both the visit date and the visit time.",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({
+        title: res.rescheduled ? "Visit rescheduled" : "Visit time saved",
+        description: res.rescheduled
+          ? "Your coordinator will see that this visit was rescheduled."
+          : "Your visit date and time have been saved.",
+      });
+      await load();
+    } catch (error: any) {
+      toast({ title: "Could not save the visit time", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
 
   async function handleComplete() {
     setSaving(true);
@@ -220,10 +281,56 @@ export default function AssessmentClaim() {
                 </div>
               ) : assessment.is_mine ? (
                 <div className="space-y-4">
-                  <div className="rounded-lg border bg-muted/50 p-4">
-                    <p className="font-medium">
-                      Scheduled for {formatDate(assessment.scheduled_date)} {formatTime(assessment.scheduled_time)}
-                    </p>
+                  <div className="rounded-lg border bg-muted/50 p-4 space-y-4">
+                    <div>
+                      <p className="font-medium">
+                        {assessment.scheduled_date
+                          ? `Scheduled for ${formatDate(assessment.scheduled_date)} ${formatTime(assessment.scheduled_time)}`
+                          : "No visit date and time set yet"}
+                      </p>
+                      {assessment.rescheduled_at && assessment.previous_scheduled_date && (
+                        <p className="text-sm text-muted-foreground">
+                          Rescheduled from {formatDate(assessment.previous_scheduled_date)}{" "}
+                          {formatTime(assessment.previous_scheduled_time)}
+                          {assessment.reschedule_count && assessment.reschedule_count > 1
+                            ? ` (changed ${assessment.reschedule_count} times)`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+                    {assessment.status !== "Completed" && (
+                      <>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="my_date">Visit date *</Label>
+                            <Input
+                              id="my_date"
+                              type="date"
+                              value={scheduledDate}
+                              onChange={(e) => setScheduledDate(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="my_time">Visit time *</Label>
+                            <Input
+                              id="my_time"
+                              type="time"
+                              value={scheduledTime}
+                              onChange={(e) => setScheduledTime(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          className="w-full min-h-[44px]"
+                          onClick={handleSaveSchedule}
+                          disabled={saving || !scheduledDate || !scheduledTime}
+                        >
+                          {assessment.scheduled_date ? "Update visit date and time" : "Save visit date and time"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="notes">Visit notes</Label>

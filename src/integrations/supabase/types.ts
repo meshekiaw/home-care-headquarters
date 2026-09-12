@@ -2004,8 +2004,12 @@ export type Database = {
           due_date: string
           id: string
           notes: string | null
+          previous_scheduled_date: string | null
+          previous_scheduled_time: string | null
           reminder_14_sent_at: string | null
           reminder_7_sent_at: string | null
+          reschedule_count: number
+          rescheduled_at: string | null
           scheduled_date: string | null
           scheduled_time: string | null
           status: string
@@ -2023,8 +2027,12 @@ export type Database = {
           due_date: string
           id?: string
           notes?: string | null
+          previous_scheduled_date?: string | null
+          previous_scheduled_time?: string | null
           reminder_14_sent_at?: string | null
           reminder_7_sent_at?: string | null
+          reschedule_count?: number
+          rescheduled_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
           status?: string
@@ -2042,8 +2050,12 @@ export type Database = {
           due_date?: string
           id?: string
           notes?: string | null
+          previous_scheduled_date?: string | null
+          previous_scheduled_time?: string | null
           reminder_14_sent_at?: string | null
           reminder_7_sent_at?: string | null
+          reschedule_count?: number
+          rescheduled_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
           status?: string
@@ -2507,6 +2519,10 @@ export type Database = {
           id: string
           is_mine: boolean
           notes: string
+          previous_scheduled_date: string
+          previous_scheduled_time: string
+          reschedule_count: number
+          rescheduled_at: string
           scheduled_date: string
           scheduled_time: string
           status: string
@@ -2534,6 +2550,14 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      reschedule_nurse_assessment: {
+        Args: {
+          p_assessment_id: string
+          p_scheduled_date: string
+          p_scheduled_time: string
+        }
+        Returns: Json
       }
     }
     Enums: {

@@ -45,6 +45,10 @@ interface Assessment {
   scheduled_time: string | null;
   status: string;
   notes: string | null;
+  rescheduled_at: string | null;
+  reschedule_count: number | null;
+  previous_scheduled_date: string | null;
+  previous_scheduled_time: string | null;
   clients: { first_name: string; last_name: string } | null;
   nurses: { first_name: string; last_name: string } | null;
 }
@@ -100,6 +104,8 @@ export default function NurseAssessments() {
     due_date: "",
     assessment_type: "618",
     assigned_nurse_id: "",
+    scheduled_date: "",
+    scheduled_time: "",
     notes: "",
   });
   const [editTarget, setEditTarget] = useState<Assessment | null>(null);
@@ -133,6 +139,18 @@ export default function NurseAssessments() {
   async function handleEditSave(e: React.FormEvent) {
     e.preventDefault();
     if (!editTarget) return;
+    if (
+      editForm.assigned_nurse_id &&
+      (editForm.status === "Claimed" || editForm.status === "Completed") &&
+      (!editForm.scheduled_date || !editForm.scheduled_time)
+    ) {
+      toast({
+        title: "Visit date and time are required",
+        description: "A claimed assessment needs both a scheduled date and a scheduled time.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase
@@ -212,7 +230,7 @@ export default function NurseAssessments() {
         supabase
           .from("nurse_assessments")
           .select(
-            "id, client_id, assessment_type, due_date, assigned_nurse_id, scheduled_date, scheduled_time, status, notes, clients(first_name,last_name), nurses(first_name,last_name)",
+            "id, client_id, assessment_type, due_date, assigned_nurse_id, scheduled_date, scheduled_time, status, notes, rescheduled_at, reschedule_count, previous_scheduled_date, previous_scheduled_time, clients(first_name,last_name), nurses(first_name,last_name)",
           )
           .order("due_date", { ascending: true }),
         supabase.from("clients").select("id, first_name, last_name").order("last_name"),
@@ -241,6 +259,14 @@ export default function NurseAssessments() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (form.assigned_nurse_id && (!form.scheduled_date || !form.scheduled_time)) {
+      toast({
+        title: "Visit date and time are required",
+        description: "Assigning a nurse marks this claimed, so enter the scheduled date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -252,6 +278,8 @@ export default function NurseAssessments() {
         assessment_type: form.assessment_type || "618",
         due_date: form.due_date,
         assigned_nurse_id: form.assigned_nurse_id || null,
+        scheduled_date: form.assigned_nurse_id ? form.scheduled_date : null,
+        scheduled_time: form.assigned_nurse_id ? form.scheduled_time : null,
         status: form.assigned_nurse_id ? "Claimed" : "Pending",
         claimed_at: form.assigned_nurse_id ? new Date().toISOString() : null,
         notes: form.notes || null,
@@ -260,7 +288,15 @@ export default function NurseAssessments() {
 
       toast({ title: "Assessment created" });
       setCreateOpen(false);
-      setForm({ client_id: "", due_date: "", assessment_type: "618", assigned_nurse_id: "", notes: "" });
+      setForm({
+        client_id: "",
+        due_date: "",
+        assessment_type: "618",
+        assigned_nurse_id: "",
+        scheduled_date: "",
+        scheduled_time: "",
+        notes: "",
+      });
       await loadAll();
     } catch (error: any) {
       toast({ title: "Could not create assessment", description: error.message, variant: "destructive" });
@@ -270,6 +306,14 @@ export default function NurseAssessments() {
   }
 
   async function reassign(assessment: Assessment, nurseId: string) {
+    if (nurseId !== "unassigned" && (!assessment.scheduled_date || !assessment.scheduled_time)) {
+      openEdit({ ...assessment, assigned_nurse_id: nurseId, status: "Claimed" });
+      toast({
+        title: "Add the visit date and time",
+        description: "Enter when this nurse will make the visit, then save to assign her.",
+      });
+      return;
+    }
     const { error } = await supabase
       .from("nurse_assessments")
       .update({
@@ -281,6 +325,8 @@ export default function NurseAssessments() {
               ? "Completed"
               : "Claimed",
         claimed_at: nurseId === "unassigned" ? null : new Date().toISOString(),
+        scheduled_date: nurseId === "unassigned" ? null : assessment.scheduled_date,
+        scheduled_time: nurseId === "unassigned" ? null : assessment.scheduled_time,
       })
       .eq("id", assessment.id);
 
@@ -400,6 +446,14 @@ export default function NurseAssessments() {
                         </td>
                         <td className="p-3 whitespace-nowrap">
                           {a.scheduled_date ? `${formatDate(a.scheduled_date)} ${formatTime(a.scheduled_time)}` : "—"}
+                          {a.rescheduled_at && (
+                            <div className="text-xs text-muted-foreground">
+                              Rescheduled{a.reschedule_count && a.reschedule_count > 1 ? ` ${a.reschedule_count}x` : ""}
+                              {a.previous_scheduled_date
+                                ? ` from ${formatDate(a.previous_scheduled_date)} ${formatTime(a.previous_scheduled_time)}`
+                                : ""}
+                            </div>
+                          )}
                         </td>
                         <td className="p-3">{statusBadge(a.status)}</td>
                         <td className="p-3 text-right">
@@ -485,6 +539,9 @@ export default function NurseAssessments() {
                 onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                For 618 assessments this is set to the client's 618 expiration date.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Assign nurse (optional)</Label>
@@ -501,6 +558,29 @@ export default function NurseAssessments() {
                 </SelectContent>
               </Select>
             </div>
+            {form.assigned_nurse_id && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Scheduled date *</Label>
+                  <Input
+                    type="date"
+                    value={form.scheduled_date}
+                    onChange={(e) => setForm((f) => ({ ...f, scheduled_date: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Scheduled time *</Label>
+                  <Input
+                    type="time"
+                    value={form.scheduled_time}
+                    onChange={(e) => setForm((f) => ({ ...f, scheduled_time: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Notes</Label>
               <Textarea

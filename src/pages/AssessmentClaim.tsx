@@ -128,6 +128,15 @@ export default function AssessmentClaim() {
         return;
       }
 
+      if (res.reason === "schedule_required") {
+        toast({
+          title: "Date and time are required",
+          description: "Enter both the visit date and the visit time to claim this assessment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({ title: "Assessment not found", variant: "destructive" });
     } catch (error: any) {
       toast({ title: "Could not claim assessment", description: error.message, variant: "destructive" });
@@ -135,6 +144,50 @@ export default function AssessmentClaim() {
       setSaving(false);
     }
   }
+
+  async function handleSaveSchedule() {
+    if (!scheduledDate || !scheduledTime) {
+      toast({
+        title: "Date and time are required",
+        description: "Enter both the visit date and the visit time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.rpc("reschedule_nurse_assessment", {
+        p_assessment_id: id!,
+        p_scheduled_date: scheduledDate,
+        p_scheduled_time: scheduledTime,
+      });
+      if (error) throw error;
+      const res = data as { success: boolean; reason?: string; rescheduled?: boolean };
+      if (!res.success) {
+        toast({
+          title: "Could not save the visit time",
+          description:
+            res.reason === "not_yours"
+              ? "This assessment isn't assigned to you."
+              : "Enter both the visit date and the visit time.",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({
+        title: res.rescheduled ? "Visit rescheduled" : "Visit time saved",
+        description: res.rescheduled
+          ? "Your coordinator will see that this visit was rescheduled."
+          : "Your visit date and time have been saved.",
+      });
+      await load();
+    } catch (error: any) {
+      toast({ title: "Could not save the visit time", description: error.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
 
   async function handleComplete() {
     setSaving(true);

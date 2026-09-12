@@ -253,11 +253,12 @@ export default function NurseAssessments() {
     () =>
       assessments.filter((a) => {
         if (statusFilter !== "all" && a.status !== statusFilter) return false;
+        if (typeFilter !== "all" && (a.assessment_type ?? "618") !== typeFilter) return false;
         if (fromDate && a.due_date < fromDate) return false;
         if (toDate && a.due_date > toDate) return false;
         return true;
       }),
-    [assessments, statusFilter, fromDate, toDate],
+    [assessments, statusFilter, typeFilter, fromDate, toDate],
   );
 
   async function handleCreate(e: React.FormEvent) {

@@ -294,6 +294,7 @@ import { parseExcelFile } from "@/utils/excelParser";
                      <TableHead>Email</TableHead>
                      <TableHead>Phone</TableHead>
                      <TableHead>Status</TableHead>
+                     <TableHead>Payer Type</TableHead>
                      <TableHead>City</TableHead>
                      <TableHead>Emergency Contact</TableHead>
                    </TableRow>
@@ -316,6 +317,18 @@ import { parseExcelFile } from "@/utils/excelParser";
                        <TableCell>
                          <Badge variant="outline" className="text-xs">
                            {client.status}
+                         </Badge>
+                       </TableCell>
+                       <TableCell>
+                         <Badge
+                           variant="outline"
+                           className={`text-xs ${
+                             parseResult.payerWarnings.some((w) => w.name === `${client.first_name} ${client.last_name}`.trim())
+                               ? "border-warning text-warning"
+                               : ""
+                           }`}
+                         >
+                           {client.payer_type}
                          </Badge>
                        </TableCell>
                        <TableCell className="text-sm">

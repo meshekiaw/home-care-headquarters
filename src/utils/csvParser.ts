@@ -390,9 +390,30 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
     const form618ExpDate = pickDate(row.form_618_expiration_date, row["618_expiration_date"]);
     const authBeginDate = pickDate(row.authorization_begin_date);
 
+    // Payer type: Medicaid or VA. Never default silently — always warn.
+    const rawPayer = row.payer_type?.trim() || '';
+    const normalizedPayer = rawPayer.toLowerCase();
+    let payerType = 'Medicaid';
+    if (normalizedPayer === 'va' || normalizedPayer === 'veterans affairs' || normalizedPayer === 'veteran') {
+      payerType = 'VA';
+    } else if (normalizedPayer === 'medicaid') {
+      payerType = 'Medicaid';
+    } else if (rawPayer) {
+      errors.push({ row: rowNum, field: 'payer_type', message: `Payer type must be Medicaid or VA (found "${rawPayer}")` });
+    }
+
+    const rowName = `${row.first_name?.trim() || ''} ${row.last_name?.trim() || ''}`.trim() || `Row ${rowNum}`;
+    if (!rawPayer) {
+      payerWarnings.push({
+        row: rowNum,
+        name: rowName,
+        reason: payerColumnMissing ? 'missing_column' : 'blank',
+      });
+    }
+
     // Only add if no critical errors for this row
     const rowErrors = errors.filter(e => e.row === rowNum);
-    const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name');
+    const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name' || e.field === 'payer_type');
     
     if (!hasCriticalError) {
       clients.push({
@@ -414,7 +435,7 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         form_618_date: form618Date,
         form_618_expiration_date: form618ExpDate,
         authorization_begin_date: authBeginDate,
-        client_class: row.client_class?.trim() || null,
+        payer_type: payerType,
         client_hours: row.client_hours?.trim() ? parseFloat(row.client_hours.trim()) : null,
       });
     }
@@ -424,11 +445,13 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
     clients,
     errors,
     totalRows: rows.length,
+    payerColumnMissing,
+    payerWarnings,
   };
 }
 
 export function generateClientSampleCSV(): string {
-  return `first_name,last_name,email,phone,status,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes,618_date,618_expiration_date,authorization_begin_date,authorization_expiration_date
-John,Smith,john.smith@email.com,(555) 123-4567,active,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance,2026-01-15,2027-01-14,2026-01-15,2027-01-14
-Mary,Johnson,mary.j@email.com,(555) 987-6543,active,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits,2026-02-01,2026-08-01,2026-02-01,2026-08-01`;
+  return `first_name,last_name,email,phone,status,payer_type,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes,618_date,618_expiration_date,authorization_begin_date,authorization_expiration_date
+John,Smith,john.smith@email.com,(555) 123-4567,active,Medicaid,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance,2026-01-15,2027-01-14,2026-01-15,2027-01-14
+Mary,Johnson,mary.j@email.com,(555) 987-6543,active,VA,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits,2026-02-01,2026-08-01,2026-02-01,2026-08-01`;
 }

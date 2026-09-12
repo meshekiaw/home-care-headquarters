@@ -41,13 +41,14 @@ serve(async (req) => {
       .map((n) => n.email)
       .filter((e): e is string => !!e);
 
-    // --- 1. Auto-create assessments 30 days before the 618 expiration ---
+    // --- 1. Auto-create assessments for any 618 due within the next 30 days or already past ---
     const target = addDays(30);
     const { data: clients, error: clientsError } = await supabase
       .from("clients")
       .select("id, user_id, form_618_expiration_date, status")
       .eq("status", "active")
-      .eq("form_618_expiration_date", target);
+      .not("form_618_expiration_date", "is", null)
+      .lte("form_618_expiration_date", target);
 
     if (clientsError) throw clientsError;
 
@@ -57,7 +58,7 @@ serve(async (req) => {
         client_id: client.id,
         assessment_type: "618",
         due_date: client.form_618_expiration_date,
-        status: "Pending",
+        status: client.form_618_expiration_date! < today ? "Overdue" : "Pending",
       });
       if (error) {
         // 23505 = duplicate; the unique index makes this job idempotent
@@ -69,13 +70,14 @@ serve(async (req) => {
       result.created += 1;
     }
 
-    // --- 1b. Auto-create Nurse Visit assessments 30 days before the due date (VA clients only) ---
+    // --- 1b. Auto-create Nurse Visit assessments due within 30 days or already past (VA clients only) ---
     const { data: vaClients, error: vaError } = await supabase
       .from("clients")
       .select("id, user_id, nurse_visit_due_date, status, payer_type")
       .eq("status", "active")
       .eq("payer_type", "VA")
-      .eq("nurse_visit_due_date", target);
+      .not("nurse_visit_due_date", "is", null)
+      .lte("nurse_visit_due_date", target);
 
     if (vaError) throw vaError;
 
@@ -85,7 +87,7 @@ serve(async (req) => {
         client_id: client.id,
         assessment_type: "Nurse Visit",
         due_date: client.nurse_visit_due_date,
-        status: "Pending",
+        status: client.nurse_visit_due_date! < today ? "Overdue" : "Pending",
       });
       if (error) {
         if (!String(error.code).includes("23505")) {
@@ -111,18 +113,29 @@ serve(async (req) => {
       .from("nurse_assessments")
       .select("id, due_date, assessment_type")
       .is("created_notification_sent_at", null)
-      .eq("status", "Pending");
+      .in("status", ["Pending", "Overdue"]);
 
     for (const assessment of pendingNew ?? []) {
       const link = `${SITE_URL}/assessments/${assessment.id}/claim`;
       const label = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 assessment";
       const heading = assessment.assessment_type === "Nurse Visit" ? "Nurse Visit" : "618 Assessment";
+      const daysOut = Math.round(
+        (Date.parse(`${assessment.due_date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000,
+      );
+      const timing = daysOut < 0
+        ? `is past due (due date ${assessment.due_date})`
+        : daysOut === 0
+        ? "is due today"
+        : `is due in ${daysOut} day${daysOut === 1 ? "" : "s"}`;
+      const subject = daysOut < 0
+        ? `Past due: a ${label} needs to be claimed`
+        : `A ${label} ${timing}`;
       for (const email of emails) {
         const res = await sendAppEmail(
           email,
-          `A ${label} is due in 30 days`,
+          subject,
           `<h2>${heading} Available</h2>
-           <p>A ${label} is due in 30 days and is available to claim.</p>
+           <p>A ${label} ${timing} and is available to claim.</p>
            <p>For privacy reasons no client details are included in this email. Please sign in to view the assignment and claim it.</p>
            <p><a href="${link}">Sign in to view and claim this assessment</a></p>`,
           { idempotencyKey: `na-new-${assessment.id}-${email.toLowerCase()}` },

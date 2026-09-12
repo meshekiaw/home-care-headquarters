@@ -120,6 +120,13 @@
       "when": 1789194686358,
       "tag": "0016_create_nurse_visit_forms",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789194905550,
+      "tag": "0017_fix_nurse_visit_form_problems_casts",
+      "breakpoints": true
     }
   ]
 }

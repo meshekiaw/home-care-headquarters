@@ -448,7 +448,7 @@ export default function NurseAssessments() {
                           <span
                             className={
                               a.scheduled_date
-                                ? a.status === "completed"
+                                ? a.status?.toLowerCase() === "completed"
                                   ? "font-bold text-status-complete"
                                   : "font-bold text-status-outstanding"
                                 : undefined

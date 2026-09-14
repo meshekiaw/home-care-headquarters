@@ -96,16 +96,41 @@ export function ClientSigningMode({
                   if (ok) setStage("handback");
                 }}
               />
+
+              <div className="pt-2 border-t">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full min-h-[44px]"
+                  onClick={() => {
+                    setConfirmEmail("");
+                    setStage("cancel");
+                  }}
+                >
+                  Nurse: exit without signing
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-6 text-center pt-8">
-              <CheckCircle2 className="w-14 h-14 text-primary mx-auto" />
-              <div className="space-y-2">
-                <h1 className="text-xl font-bold">Thank you — your signature was saved</h1>
-                <p className="text-base text-muted-foreground">
-                  Please hand the device back to your nurse.
-                </p>
-              </div>
+              {stage === "handback" ? (
+                <>
+                  <CheckCircle2 className="w-14 h-14 text-primary mx-auto" />
+                  <div className="space-y-2">
+                    <h1 className="text-xl font-bold">Thank you — your signature was saved</h1>
+                    <p className="text-base text-muted-foreground">
+                      Please hand the device back to your nurse.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <h1 className="text-xl font-bold">Exit without a signature</h1>
+                  <p className="text-base text-muted-foreground">
+                    Nothing has been signed. Only the nurse can leave this screen.
+                  </p>
+                </div>
+              )}
               <div className="rounded-lg border p-4 space-y-3 text-left">
                 <Label htmlFor="nurse_confirm">Nurse: enter your sign-in email to continue</Label>
                 <Input

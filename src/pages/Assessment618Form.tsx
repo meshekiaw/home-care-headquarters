@@ -272,10 +272,10 @@ export default function Assessment618Form() {
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
     null,
   );
-  const [kioskSlot, setKioskSlot] = useState<{
-    slot: SignatureSlot;
-    signerType: SignerType;
-  } | null>(null);
+  /** One hand-off can capture several signatures in a row. */
+  const [kioskSteps, setKioskSteps] = useState<
+    { slot: SignatureSlot; signerType: SignerType }[] | null
+  >(null);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
   const [pdfBusy, setPdfBusy] = useState<"print" | "download" | null>(null);
@@ -933,15 +933,32 @@ export default function Assessment618Form() {
                                 </Label>
                               </div>
 
+                              {!signed.sec4_client && !signed.sec13_client && (
+                                <Button
+                                  className="w-full min-h-[44px]"
+                                  onClick={() =>
+                                    setKioskSteps([
+                                      { slot: "sec4_client", signerType: "client" },
+                                      { slot: "sec13_client", signerType: "client" },
+                                    ])
+                                  }
+                                >
+                                  <Smartphone className="w-4 h-4 mr-2" />
+                                  Hand device to the client — both signatures
+                                </Button>
+                              )}
                               {(["sec4_client", "sec13_client"] as SignatureSlot[]).map((slot) =>
                                 signed[slot] ? null : (
                                   <Button
                                     key={slot}
+                                    variant={
+                                      !signed.sec4_client && !signed.sec13_client ? "outline" : "default"
+                                    }
                                     className="w-full min-h-[44px]"
-                                    onClick={() => setKioskSlot({ slot, signerType: "client" })}
+                                    onClick={() => setKioskSteps([{ slot, signerType: "client" }])}
                                   >
                                     <Smartphone className="w-4 h-4 mr-2" />
-                                    Hand device to the client — {SLOT_BY_ID[slot].section}
+                                    Hand device to the client — {SLOT_BY_ID[slot].section} only
                                   </Button>
                                 ),
                               )}
@@ -959,16 +976,30 @@ export default function Assessment618Form() {
                                 : "Optional — capture a witness whenever one is needed."}
                             </p>
                           </div>
+                          {!signed.sec4_witness_1 && !signed.sec4_witness_2 && (
+                            <Button
+                              className="w-full min-h-[44px]"
+                              onClick={() =>
+                                setKioskSteps([
+                                  { slot: "sec4_witness_1", signerType: "witness" },
+                                  { slot: "sec4_witness_2", signerType: "witness" },
+                                ])
+                              }
+                            >
+                              <Smartphone className="w-4 h-4 mr-2" />
+                              Hand device to both witnesses
+                            </Button>
+                          )}
                           {(["sec4_witness_1", "sec4_witness_2"] as SignatureSlot[]).map((slot) =>
                             signed[slot] ? null : (
                               <Button
                                 key={slot}
                                 variant="outline"
                                 className="w-full min-h-[44px]"
-                                onClick={() => setKioskSlot({ slot, signerType: "witness" })}
+                                onClick={() => setKioskSteps([{ slot, signerType: "witness" }])}
                               >
                                 <Smartphone className="w-4 h-4 mr-2" />
-                                Hand device to {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"}
+                                Hand device to {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"} only
                               </Button>
                             ),
                           )}
@@ -1159,23 +1190,35 @@ export default function Assessment618Form() {
         </DialogContent>
       </Dialog>
 
-      {kioskSlot && form && (
+      {kioskSteps && kioskSteps.length > 0 && form && (
         <ClientSigningMode
           clientName={clientName || "this client"}
-          attestation={attestationFor(kioskSlot.slot, kioskSlot.signerType)}
-          askRelationship={kioskSlot.signerType === "witness"}
-          heading={
-            kioskSlot.signerType === "witness"
-              ? "Please sign as a witness"
-              : kioskSlot.slot === "sec4_client"
-                ? "Please sign: your choice of provider"
-                : "Please sign: your plan of care"
-          }
+          steps={kioskSteps.map(({ slot, signerType }) => ({
+            key: slot,
+            attestation: attestationFor(slot, signerType),
+            askRelationship: signerType === "witness",
+            heading:
+              signerType === "witness"
+                ? slot === "sec4_witness_2"
+                  ? "Witness 2: please sign"
+                  : "Witness 1: please sign"
+                : slot === "sec4_client"
+                  ? "Please sign: your choice of provider"
+                  : "Please sign: your plan of care",
+            outstandingLabel:
+              signerType === "witness"
+                ? `${SLOT_BY_ID[slot].section} — ${slot === "sec4_witness_2" ? "Witness 2" : "Witness 1"} signature`
+                : `${SLOT_BY_ID[slot].section} — client signature`,
+          }))}
           instructions="The nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
           nurseEmail={user?.email ?? ""}
           saving={busy}
-          onSubmit={(result) => addSignature(kioskSlot.slot, kioskSlot.signerType, result)}
-          onExit={() => setKioskSlot(null)}
+          onSubmit={async (step, result) => {
+            const entry = kioskSteps.find((s) => s.slot === step.key);
+            if (!entry) return false;
+            return addSignature(entry.slot, entry.signerType, result);
+          }}
+          onExit={() => setKioskSteps(null)}
         />
       )}
     </div>

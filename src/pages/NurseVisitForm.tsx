@@ -1410,12 +1410,18 @@ export default function NurseVisitForm() {
       {kiosk && form && (
         <ClientSigningMode
           clientName={clientName || "this client"}
-          attestation={ATTESTATIONS.client.client ?? ""}
-          heading="Please sign: your nurse visit"
+          steps={[
+            {
+              key: "client",
+              heading: "Please sign: your nurse visit",
+              attestation: ATTESTATIONS.client.client ?? "",
+              outstandingLabel: "Client signature",
+            },
+          ]}
           instructions="Your nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
           nurseEmail={user?.email ?? ""}
           saving={busy}
-          onSubmit={(result) => addSignature("client", "client", result)}
+          onSubmit={(_step, result) => addSignature("client", "client", result)}
           onExit={() => setKiosk(false)}
         />
       )}

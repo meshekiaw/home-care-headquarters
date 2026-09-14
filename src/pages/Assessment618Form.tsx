@@ -4,6 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAgencyFormDefaults } from "@/hooks/useAgencyFormDefaults";
 import { downloadForm618Pdf, printForm618Pdf, type Form618PdfInput } from "@/utils/form618Pdf";
+import { Form618Sections } from "@/components/assessments/Form618Sections";
+import {
+  emptyForm618Details,
+  form618DetailsToPdfInput,
+  form618MissingRequired,
+  normalizeForm618Details,
+  type Form618Details,
+} from "@/utils/form618Details";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -258,6 +266,7 @@ export default function Assessment618Form() {
   const [signatures, setSignatures] = useState<SignatureRow[]>([]);
   const [notes, setNotes] = useState("");
   const [sec12, setSec12] = useState<SectionXII>(() => emptySectionXII());
+  const [details, setDetails] = useState<Form618Details>(() => emptyForm618Details());
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle");
   const [busy, setBusy] = useState(false);
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
@@ -297,6 +306,7 @@ export default function Assessment618Form() {
     setForm(current);
     setNotes(current?.form_data?.working_notes ?? "");
     setSec12(normalizeSectionXII(current?.form_data?.section_xii));
+    setDetails(normalizeForm618Details(current?.form_data?.details));
     hydrated.current = true;
 
     if (current) {
@@ -334,7 +344,12 @@ export default function Assessment618Form() {
   // Autosave the draft body
   useEffect(() => {
     if (!hydrated.current || !form || form.status !== "draft") return;
-    const nextData = { ...(form.form_data ?? {}), working_notes: notes, section_xii: sec12 };
+    const nextData = {
+      ...(form.form_data ?? {}),
+      working_notes: notes,
+      section_xii: sec12,
+      details,
+    };
     if (JSON.stringify(form.form_data ?? {}) === JSON.stringify(nextData)) return;
     setSavingState("saving");
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -358,7 +373,7 @@ export default function Assessment618Form() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notes, sec12, form?.id, form?.status]);
+  }, [notes, sec12, details, form?.id, form?.status]);
 
   const signed = useMemo(() => {
     const map: Partial<Record<SignatureSlot, SignatureRow>> = {};
@@ -388,6 +403,12 @@ export default function Assessment618Form() {
     if (byMark && !(signed.sec4_witness_1 && signed.sec4_witness_2)) return false;
     return true;
   }, [form, signed, exception, byMark]);
+
+  const missingRequired = useMemo(
+    () => form618MissingRequired(details, clientName),
+    [details, clientName],
+  );
+  const canComplete = readyToLock && missingRequired.length === 0;
 
   function attestationFor(slot: SignatureSlot, signerType: SignerType) {
     return SLOT_BY_ID[slot].attestation[signerType] ?? "";
@@ -439,6 +460,14 @@ export default function Assessment618Form() {
 
   async function lockForm() {
     if (!form) return;
+    if (missingRequired.length > 0) {
+      toast({
+        title: "Some required answers are missing",
+        description: `Please fill in: ${missingRequired.join(", ")}.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     try {
       const { data, error } = await supabase.rpc("complete_618_form", { p_form_id: form.id });
@@ -538,10 +567,13 @@ export default function Assessment618Form() {
       clientName,
       status: form?.status ?? "draft",
       version: form?.version ?? 1,
-      assessmentDate: form?.signed_at
-        ? new Date(form.signed_at).toLocaleDateString()
-        : new Date().toLocaleDateString(),
-      rnName: user?.email ?? "",
+      ...form618DetailsToPdfInput(details),
+      assessmentDate:
+        details.currentAssessmentDate ||
+        (form?.signed_at
+          ? new Date(form.signed_at).toLocaleDateString()
+          : new Date().toLocaleDateString()),
+      rnName: details.assessingRn || user?.email || "",
       notes,
       sectionXII: sec12,
       totalMinutes: sectionXIITotalMinutes(sec12),
@@ -667,14 +699,27 @@ export default function Assessment618Form() {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         disabled={!isDraft}
-                        placeholder="The full 618 question set will appear here. Notes typed now are saved with the record."
+                        placeholder="Section IX — Assessment Narrative. This prints on page 4 and continues on an attached page if it runs long."
                         className="text-base"
                       />
                       <p className="text-xs text-muted-foreground">
-                        The complete 618 field set comes next; this record structure, autosave and
-                        signing are already in place.
+                        Section IX — Assessment Narrative.
                       </p>
                     </div>
+
+                    {missingRequired.length > 0 && isDraft && (
+                      <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                        <span className="font-medium">Still needed: </span>
+                        {missingRequired.join(", ")}
+                      </div>
+                    )}
+
+                    <Form618Sections
+                      details={details}
+                      disabled={!isDraft}
+                      onChange={(updater) => setDetails((prev) => updater(prev))}
+                    />
+
 
                     <div className="space-y-3 rounded-lg border p-3">
                       <div>
@@ -918,15 +963,17 @@ export default function Assessment618Form() {
 
                         <Button
                           className="w-full min-h-[44px]"
-                          disabled={!readyToLock || busy}
+                          disabled={!canComplete || busy}
                           onClick={lockForm}
                         >
                           {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           Complete and lock this assessment
                         </Button>
-                        {!readyToLock && (
+                        {!canComplete && (
                           <p className="text-sm text-muted-foreground text-center">
-                            Every required signature must be captured before this can be completed.
+                            {missingRequired.length > 0
+                              ? `These are still needed: ${missingRequired.join(", ")}.`
+                              : "Every required signature must be captured before this can be completed."}
                           </p>
                         )}
                       </div>

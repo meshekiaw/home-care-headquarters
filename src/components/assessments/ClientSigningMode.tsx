@@ -36,7 +36,7 @@ export function ClientSigningMode({
   onSubmit,
   onExit,
 }: ClientSigningModeProps) {
-  const [stage, setStage] = useState<"signing" | "handback">("signing");
+  const [stage, setStage] = useState<"signing" | "handback" | "cancel">("signing");
   const [confirmEmail, setConfirmEmail] = useState("");
 
   // Block navigation away while the device is out of the nurse's hands.

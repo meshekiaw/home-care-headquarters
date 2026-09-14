@@ -527,6 +527,32 @@ export default function NurseVisitForm() {
     }
   }
 
+  async function resetDraft() {
+    if (!form || form.status !== "draft") return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.rpc("reset_nurse_visit_form", { p_form_id: form.id });
+      if (error) throw error;
+      setResetOpen(false);
+      setKiosk(false);
+      setDialogSlot(null);
+      setData(EMPTY);
+      await load();
+      toast({
+        title: "Draft cleared",
+        description: "All answers and signatures were removed. You can start over.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Could not clear the draft",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function startCorrection() {
     if (!form || !correctionReason.trim()) return;
     setBusy(true);

@@ -150,7 +150,7 @@ function fld(
   let s = size;
   while (s > 6 && textWidth(font, text, s) > avail) s -= 0.25;
   const h = y1 - y0;
-  const base = y0 + (h <= 15 ? 3.2 : (h - s) / 2 + 1);
+  const base = y0 + (bottomAlign || h <= 15 ? 3.2 : (h - s) / 2 + 1);
   page.drawText(text, { x: x0 + 2.5, y: base, size: s, font, color: rgb(0, 0, 0) });
 }
 
@@ -386,8 +386,10 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
   for (const [num, names] of Object.entries(HEADER_FIELDS)) {
     const p = pages[Number(num) - 1];
     if (!p) continue;
-    fld(p, font, Number(num), names[0], input.clientName, 9.5);
-    fld(p, font, Number(num), names[1], mid, 9.5);
+    // header rectangles are taller than the printed rule on some pages, so the
+    // value is pinned to the bottom of the box to sit on the line
+    fld(p, font, Number(num), names[0], input.clientName, 9.5, true);
+    fld(p, font, Number(num), names[1], mid, 9.5, true);
   }
 
   /* ---------------------------------------------------------------- page 1 */

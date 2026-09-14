@@ -389,6 +389,18 @@ export default function ClientEdit() {
                 {errors.payer_type && <p className="text-sm text-destructive">{errors.payer_type}</p>}
               </div>
               <div className="space-y-2">
+                <Label htmlFor="medicaid_id">
+                  Medicaid ID {formData.payer_type === "Medicaid" ? "*" : "(optional)"}
+                </Label>
+                <Input
+                  id="medicaid_id"
+                  value={formData.medicaid_id}
+                  onChange={(e) => handleChange("medicaid_id", e.target.value)}
+                  placeholder="e.g. 123456789"
+                />
+                {errors.medicaid_id && <p className="text-sm text-destructive">{errors.medicaid_id}</p>}
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="client_hours">Client Hours</Label>
                 <Input id="client_hours" type="number" step="0.5" min="0" value={formData.client_hours} onChange={(e) => handleChange("client_hours", e.target.value)} placeholder="e.g. 40" />
               </div>

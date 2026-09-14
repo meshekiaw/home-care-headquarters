@@ -35,6 +35,7 @@ interface Client {
   form_618_expiration_date?: string | null;
   authorization_begin_date?: string | null;
   payer_type?: string | null;
+  medicaid_id?: string | null;
   nurse_visit_due_date?: string | null;
 }
 
@@ -76,6 +77,16 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
               <p className="text-sm text-muted-foreground">Payer Type</p>
               <p className="font-medium">
                 <Badge variant="outline">{client.payer_type || 'Medicaid'}</Badge>
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Medicaid ID</p>
+              <p className="font-medium">
+                {client.medicaid_id || (
+                  <span className={(client.payer_type ?? 'Medicaid') === 'Medicaid' ? 'text-destructive' : 'text-muted-foreground'}>
+                    {(client.payer_type ?? 'Medicaid') === 'Medicaid' ? 'Required — not on file' : 'Not specified'}
+                  </span>
+                )}
               </p>
             </div>
             <div>

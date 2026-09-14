@@ -16,7 +16,8 @@ import {
  import { StateRegulationsSection } from "@/components/settings/StateRegulationsSection";
  import { NotificationPreferencesSection } from "@/components/settings/NotificationPreferencesSection";
  import { AgencyCredentialsSection } from "@/components/settings/AgencyCredentialsSection";
- import { UserManagementSection } from "@/components/settings/UserManagementSection";
+  import { UserManagementSection } from "@/components/settings/UserManagementSection";
+  import { AgencyFormDefaultsSection } from "@/components/settings/AgencyFormDefaultsSection";
 
 export default function Settings() {
   return (
@@ -74,6 +75,9 @@ export default function Settings() {
  
          {/* Agency Credentials */}
          <AgencyCredentialsSection />
+ 
+         {/* Assessment Form Defaults */}
+         <AgencyFormDefaultsSection />
  
          <Card>
           <CardHeader>

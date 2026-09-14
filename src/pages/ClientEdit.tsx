@@ -79,6 +79,7 @@ export default function ClientEdit() {
     form_618_expiration_date: "",
     authorization_begin_date: "",
     payer_type: "Medicaid",
+    medicaid_id: "",
     client_hours: "",
     status: "active",
   });
@@ -114,6 +115,7 @@ export default function ClientEdit() {
           form_618_expiration_date: data.form_618_expiration_date || "",
           authorization_begin_date: data.authorization_begin_date || "",
           payer_type: (data as any).payer_type === "VA" ? "VA" : "Medicaid",
+          medicaid_id: (data as any).medicaid_id || "",
           client_hours: data.client_hours != null ? String(data.client_hours) : "",
           status: (data.status as "active" | "inactive" | "pending") || "active",
         });
@@ -169,7 +171,8 @@ export default function ClientEdit() {
           form_618_date: validated.form_618_date || null,
           form_618_expiration_date: validated.form_618_expiration_date || null,
           authorization_begin_date: validated.authorization_begin_date || null,
-            payer_type: validated.payer_type,
+          payer_type: validated.payer_type,
+          medicaid_id: validated.medicaid_id?.trim() || null,
           client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
           status: validated.status,
         })

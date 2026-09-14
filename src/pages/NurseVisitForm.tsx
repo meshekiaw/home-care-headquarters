@@ -1148,6 +1148,15 @@ export default function NurseVisitForm() {
                             completed.
                           </p>
                         )}
+                        <Button
+                          variant="outline"
+                          className="w-full min-h-[44px] text-destructive"
+                          disabled={busy}
+                          onClick={() => setResetOpen(true)}
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Clear this draft and start over
+                        </Button>
                       </div>
                     )}
 

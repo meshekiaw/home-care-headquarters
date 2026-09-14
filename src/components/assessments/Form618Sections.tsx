@@ -26,6 +26,7 @@ import {
   PLAN_STATUS_OPTIONS,
   RESIDES_OPTIONS,
   SERVICE_LOCATION_OPTIONS,
+  weeklyServiceTimeTotals,
   type Form618Details,
 } from "@/utils/form618Details";
 

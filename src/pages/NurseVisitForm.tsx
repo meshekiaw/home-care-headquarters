@@ -38,6 +38,7 @@ import {
   FilePlus2,
   Plus,
   Trash2,
+  RotateCcw,
 } from "lucide-react";
 
 type Slot = "client" | "nurse";

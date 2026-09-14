@@ -268,6 +268,11 @@ export function normalizeForm618Details(value: any): Form618Details {
     (base as any)[key] = str(value[key]);
   }
 
+  // Values saved before date auto-formatting existed (e.g. "02011979") are repaired here.
+  for (const key of DATE_KEYS) {
+    base[key] = maskDateInput(base[key]);
+  }
+
   base.diagnoses = base.diagnoses.map((row, i) => ({
     icd_code: str(value?.diagnoses?.[i]?.icd_code),
     description: str(value?.diagnoses?.[i]?.description),

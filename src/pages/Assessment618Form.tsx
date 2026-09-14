@@ -272,10 +272,10 @@ export default function Assessment618Form() {
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
     null,
   );
-  const [kioskSlot, setKioskSlot] = useState<{
-    slot: SignatureSlot;
-    signerType: SignerType;
-  } | null>(null);
+  /** One hand-off can capture several signatures in a row. */
+  const [kioskSteps, setKioskSteps] = useState<
+    { slot: SignatureSlot; signerType: SignerType }[] | null
+  >(null);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
   const [pdfBusy, setPdfBusy] = useState<"print" | "download" | null>(null);

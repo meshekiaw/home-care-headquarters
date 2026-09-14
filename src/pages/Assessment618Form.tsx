@@ -183,6 +183,53 @@ const EXCEPTION_LABELS: Record<string, string> = {
   pending: "Awaiting the client's signature",
 };
 
+// Section XII — Personal Care Service Plan task table, exactly as printed on DMS-618 (8/23).
+// "Tolieting" is spelled as it appears on the state form.
+const SECTION_XII_TASKS = [
+  "Eating",
+  "Bathing",
+  "Grooming",
+  "Tolieting",
+  "Dressing",
+  "Transfer/Mobility",
+  "Housekeeping",
+  "Laundry",
+] as const;
+
+type SectionXIITask = (typeof SECTION_XII_TASKS)[number];
+type SectionXIIRow = { minutes: string; days_per_week: string };
+type SectionXII = {
+  tasks: Record<string, SectionXIIRow>;
+  notes: string;
+};
+
+function emptySectionXII(): SectionXII {
+  const tasks: Record<string, SectionXIIRow> = {};
+  for (const t of SECTION_XII_TASKS) tasks[t] = { minutes: "", days_per_week: "" };
+  return { tasks, notes: "" };
+}
+
+function normalizeSectionXII(value: any): SectionXII {
+  const base = emptySectionXII();
+  if (!value) return base;
+  for (const t of SECTION_XII_TASKS) {
+    const row = value?.tasks?.[t];
+    base.tasks[t] = {
+      minutes: typeof row?.minutes === "string" ? row.minutes : "",
+      days_per_week: typeof row?.days_per_week === "string" ? row.days_per_week : "",
+    };
+  }
+  base.notes = typeof value?.notes === "string" ? value.notes : "";
+  return base;
+}
+
+function sectionXIITotalMinutes(value: SectionXII) {
+  return SECTION_XII_TASKS.reduce((sum, t) => {
+    const n = Number(value.tasks[t]?.minutes);
+    return Number.isFinite(n) ? sum + n : sum;
+  }, 0);
+}
+
 function formatStamp(value: string | null) {
   if (!value) return "—";
   return new Date(value).toLocaleString(undefined, {
@@ -205,6 +252,7 @@ export default function Assessment618Form() {
   const [history, setHistory] = useState<FormRow[]>([]);
   const [signatures, setSignatures] = useState<SignatureRow[]>([]);
   const [notes, setNotes] = useState("");
+  const [sec12, setSec12] = useState<SectionXII>(() => emptySectionXII());
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle");
   const [busy, setBusy] = useState(false);
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
@@ -241,6 +289,7 @@ export default function Assessment618Form() {
     setHistory(rows);
     setForm(current);
     setNotes(current?.form_data?.working_notes ?? "");
+    setSec12(normalizeSectionXII(current?.form_data?.section_xii));
     hydrated.current = true;
 
     if (current) {

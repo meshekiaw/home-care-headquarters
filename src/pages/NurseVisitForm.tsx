@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { downloadNurseVisitPdf, printNurseVisitPdf, type NurseVisitPdfInput } from "@/utils/nurseVisitPdf";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,8 @@ import {
   Plus,
   Trash2,
   RotateCcw,
+  Printer,
+  Download,
 } from "lucide-react";
 
 type Slot = "client" | "nurse";
@@ -282,6 +285,7 @@ export default function NurseVisitForm() {
   const [data, setData] = useState<FormData>(EMPTY);
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle");
   const [busy, setBusy] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState<"print" | "download" | null>(null);
   const [dialogSlot, setDialogSlot] = useState<null | { slot: Slot; signerType: SignerType }>(null);
   const [kiosk, setKiosk] = useState(false);
   const [correctionOpen, setCorrectionOpen] = useState(false);
@@ -650,6 +654,51 @@ export default function NurseVisitForm() {
         {sig && <img src={sig.signature_data} alt="" className="h-10 hidden sm:block" />}
       </div>
     );
+  }
+
+  function pdfInput(): NurseVisitPdfInput {
+    return {
+      data,
+      signatures: signatures.map((s) => ({
+        signature_slot: s.signature_slot,
+        signer_type: s.signer_type,
+        signer_name: s.signer_name,
+        signature_data: s.signature_data,
+        signed_at: s.signed_at,
+      })),
+      status: form?.status ?? "draft",
+      version: form?.version ?? 1,
+      clientName: data.client_name || clientName,
+      rnName: user?.email ?? "",
+      exceptionLabel:
+        form && form.client_signature_status !== "pending" && form.client_signature_status !== "client_signed"
+          ? [EXCEPTION_LABELS[form.client_signature_status], form.client_signature_exception_reason]
+              .filter(Boolean)
+              .join(" - ")
+          : null,
+    };
+  }
+
+  async function handlePdf(action: "print" | "download") {
+    setPdfBusy(action);
+    try {
+      if (action === "print") await printNurseVisitPdf(pdfInput());
+      else
+        await downloadNurseVisitPdf(
+          pdfInput(),
+          `Nurse_Visit_${(data.client_name || clientName || "client").replace(/[^A-Za-z0-9]+/g, "_")}_v${
+            form?.version ?? 1
+          }${form?.status === "draft" ? "_DRAFT" : ""}.pdf`,
+        );
+    } catch (e: any) {
+      toast({
+        title: "Could not build the PDF",
+        description: e?.message ?? "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPdfBusy(null);
+    }
   }
 
   return (
@@ -1187,6 +1236,47 @@ export default function NurseVisitForm() {
                         Document fingerprint: {form.content_hash.slice(0, 32)}…
                       </p>
                     )}
+                  </CardContent>
+                </Card>
+
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Print or download</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      This prints on the agency Nurse Visit form (Revised 03/21). Drafts carry a
+                      &quot;DRAFT - NOT FOR SUBMISSION&quot; watermark on every page.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1 min-h-[44px]"
+                        disabled={pdfBusy !== null}
+                        onClick={() => handlePdf("print")}
+                      >
+                        {pdfBusy === "print" ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Printer className="w-4 h-4 mr-2" />
+                        )}
+                        Print
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 min-h-[44px]"
+                        disabled={pdfBusy !== null}
+                        onClick={() => handlePdf("download")}
+                      >
+                        {pdfBusy === "download" ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4 mr-2" />
+                        )}
+                        Download PDF
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAgencyFormDefaults } from "@/hooks/useAgencyFormDefaults";
+import { downloadForm618Pdf, printForm618Pdf, type Form618PdfInput } from "@/utils/form618Pdf";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +37,8 @@ import {
   CircleDashed,
   Smartphone,
   FilePlus2,
+  Printer,
+  Download,
 } from "lucide-react";
 
 type SignerType = "nurse" | "client" | "representative" | "witness" | "physician";
@@ -262,6 +266,8 @@ export default function Assessment618Form() {
   const [kioskSlot, setKioskSlot] = useState<SignatureSlot | null>(null);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
+  const [pdfBusy, setPdfBusy] = useState<"print" | "download" | null>(null);
+  const { defaults: agencyDefaults } = useAgencyFormDefaults();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrated = useRef(false);
 
@@ -525,6 +531,51 @@ export default function Assessment618Form() {
         {sig && <img src={sig.signature_data} alt="" className="h-10 hidden sm:block" />}
       </div>
     );
+  }
+
+  function pdfInput(): Form618PdfInput {
+    return {
+      clientName,
+      status: form?.status ?? "draft",
+      version: form?.version ?? 1,
+      assessmentDate: form?.signed_at
+        ? new Date(form.signed_at).toLocaleDateString()
+        : new Date().toLocaleDateString(),
+      rnName: user?.email ?? "",
+      notes,
+      sectionXII: sec12,
+      totalMinutes: sectionXIITotalMinutes(sec12),
+      defaults: agencyDefaults,
+      signatures: signatures.map((s) => ({
+        signature_slot: s.signature_slot,
+        signer_type: s.signer_type,
+        signer_name: s.signer_name,
+        signature_data: s.signature_data,
+        signed_at: s.signed_at,
+      })),
+    };
+  }
+
+  async function handlePdf(action: "print" | "download") {
+    setPdfBusy(action);
+    try {
+      if (action === "print") await printForm618Pdf(pdfInput());
+      else
+        await downloadForm618Pdf(
+          pdfInput(),
+          `DMS-618_${(clientName || "client").replace(/[^A-Za-z0-9]+/g, "_")}_v${form?.version ?? 1}${
+            form?.status === "draft" ? "_DRAFT" : ""
+          }.pdf`,
+        );
+    } catch (e: any) {
+      toast({
+        title: "Could not build the PDF",
+        description: e?.message ?? "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPdfBusy(null);
+    }
   }
 
   const visibleSlots = SLOTS.filter((s) => {
@@ -900,6 +951,47 @@ export default function Assessment618Form() {
                         </Button>
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Print or download</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      This prints on the official DMS-618 (8/23) form. Drafts carry a
+                      &quot;DRAFT - NOT FOR SUBMISSION&quot; watermark on every page.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1 min-h-[44px]"
+                        disabled={pdfBusy !== null}
+                        onClick={() => handlePdf("print")}
+                      >
+                        {pdfBusy === "print" ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Printer className="w-4 h-4 mr-2" />
+                        )}
+                        Print
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 min-h-[44px]"
+                        disabled={pdfBusy !== null}
+                        onClick={() => handlePdf("download")}
+                      >
+                        {pdfBusy === "download" ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4 mr-2" />
+                        )}
+                        Download PDF
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 

@@ -624,6 +624,92 @@ export default function Assessment618Form() {
                       </p>
                     </div>
 
+                    <div className="space-y-3 rounded-lg border p-3">
+                      <div>
+                        <h3 className="font-medium">Section XII — Personal Care Service Plan</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Optional. Minutes and days per week for each task; the total adds up
+                          automatically.
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-muted-foreground">
+                              <th className="py-1 pr-2 font-medium">Tasks</th>
+                              <th className="py-1 pr-2 font-medium">Minutes</th>
+                              <th className="py-1 font-medium">Days/wk</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {SECTION_XII_TASKS.map((task) => (
+                              <tr key={task}>
+                                <td className="py-1 pr-2">{task}</td>
+                                <td className="py-1 pr-2">
+                                  <Input
+                                    inputMode="numeric"
+                                    className="h-9 w-24"
+                                    aria-label={`${task} minutes`}
+                                    value={sec12.tasks[task]?.minutes ?? ""}
+                                    disabled={!isDraft}
+                                    onChange={(e) =>
+                                      setSec12((prev) => ({
+                                        ...prev,
+                                        tasks: {
+                                          ...prev.tasks,
+                                          [task]: { ...prev.tasks[task], minutes: e.target.value },
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </td>
+                                <td className="py-1">
+                                  <Input
+                                    inputMode="numeric"
+                                    className="h-9 w-24"
+                                    aria-label={`${task} days per week`}
+                                    value={sec12.tasks[task]?.days_per_week ?? ""}
+                                    disabled={!isDraft}
+                                    onChange={(e) =>
+                                      setSec12((prev) => ({
+                                        ...prev,
+                                        tasks: {
+                                          ...prev.tasks,
+                                          [task]: { ...prev.tasks[task], days_per_week: e.target.value },
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Label htmlFor="sec12_total">Total Minutes</Label>
+                        <Input
+                          id="sec12_total"
+                          readOnly
+                          className="h-9 w-28"
+                          value={sectionXIITotalMinutes(sec12) || ""}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="sec12_notes">Detailed information</Label>
+                        <Textarea
+                          id="sec12_notes"
+                          rows={4}
+                          value={sec12.notes}
+                          disabled={!isDraft}
+                          onChange={(e) => setSec12((prev) => ({ ...prev, notes: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
                     {form.content_hash && (
                       <p className="text-xs text-muted-foreground break-all">
                         Document fingerprint: {form.content_hash.slice(0, 32)}…

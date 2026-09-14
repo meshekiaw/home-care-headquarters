@@ -121,7 +121,7 @@ const SLOTS: {
   {
     slot: "sec4_witness_1",
     section: "Section IV",
-    label: "Witness 1 — required only if the client signs by mark",
+    label: "Witness 1 — may be captured any time; required if the client signs by mark",
     required: "if_mark",
     attestation: {
       witness:
@@ -131,7 +131,7 @@ const SLOTS: {
   {
     slot: "sec4_witness_2",
     section: "Section IV",
-    label: "Witness 2 — required only if the client signs by mark",
+    label: "Witness 2 — may be captured any time; required if the client signs by mark",
     required: "if_mark",
     attestation: {
       witness:
@@ -272,7 +272,10 @@ export default function Assessment618Form() {
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
     null,
   );
-  const [kioskSlot, setKioskSlot] = useState<SignatureSlot | null>(null);
+  const [kioskSlot, setKioskSlot] = useState<{
+    slot: SignatureSlot;
+    signerType: SignerType;
+  } | null>(null);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
   const [pdfBusy, setPdfBusy] = useState<"print" | "download" | null>(null);
@@ -552,7 +555,7 @@ export default function Assessment618Form() {
               {meta.required === "optional"
                 ? "Not signed — optional"
                 : meta.required === "if_mark" && !byMark
-                  ? "Not needed unless the client signs by mark"
+                  ? "Optional — only required if the client signs by mark"
                   : "Not signed yet"}
             </p>
           )}

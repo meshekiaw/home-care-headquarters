@@ -129,7 +129,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 224,
       height: 16,
     });
-    drawFitted(p2, font, caption(sec4Client), 132, 630, 224, 6.5);
+    drawFitted(p2, font, caption(sec4Client), 132, 601, 80, 5.5);
     drawFitted(p2, font, new Date(sec4Client.signed_at).toLocaleDateString(), 399, 613, 128, 9);
   }
   const w1 = sig("sec4_witness_1");
@@ -140,7 +140,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 155,
       height: 16,
     });
-    drawFitted(p2, font, caption(w1), 75, 597, 155, 6);
+    drawFitted(p2, font, caption(w1), 75, 571, 84, 5.5);
   }
   const w2 = sig("sec4_witness_2");
   if (w2) {
@@ -150,7 +150,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 152,
       height: 16,
     });
-    drawFitted(p2, font, caption(w2), 377, 597, 152, 6);
+    drawFitted(p2, font, caption(w2), 377, 571, 190, 5.5);
   }
 
   // Page 4 - assessment narrative (Section IX) from the nurse's notes.
@@ -193,7 +193,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 226,
       height: 16,
     });
-    drawFitted(p5, font, caption(nurse), 296, 339, 226, 6.5);
+    drawFitted(p5, font, caption(nurse), 296, 312, 148, 5.5);
   }
 
   // Page 6 - Section XIII signatures.
@@ -206,7 +206,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 258,
       height: 16,
     });
-    drawFitted(p6, font, caption(physician), 93, 329, 258, 6.5);
+    drawFitted(p6, font, caption(physician), 420, 302, 110, 5.5);
     drawFitted(p6, font, new Date(physician.signed_at).toLocaleDateString(), 395, 312, 118, 9);
   }
   const sec13Client = sig("sec13_client");
@@ -217,7 +217,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 262,
       height: 16,
     });
-    drawFitted(p6, font, caption(sec13Client), 93, 222, 262, 6.5);
+    drawFitted(p6, font, caption(sec13Client), 420, 195, 110, 5.5);
     drawFitted(p6, font, new Date(sec13Client.signed_at).toLocaleDateString(), 401, 205, 112, 9);
   }
 

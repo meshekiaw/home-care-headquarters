@@ -104,7 +104,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
   drawFitted(p1, font, input.clientName, 76, 632, 302, 10);
   drawFitted(p1, font, input.dateOfBirth, 386, 632, 150, 10);
   if (d) {
-    drawFitted(p1, font, d.provider_name, 216, 402, 318, 9);
+    drawFitted(p1, font, d.provider_name, 248, 402, 286, 9);
     drawFitted(p1, font, d.provider_id_number, 185, 377, 46, 8.5);
     drawFitted(p1, font, d.mailing_address, 372, 377, 164, 8);
     drawFitted(p1, font, d.projected_end_date_of_service, 299, 176.5, 232, 9);

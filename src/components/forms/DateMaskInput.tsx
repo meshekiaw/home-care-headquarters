@@ -15,7 +15,10 @@ export function maskDateInput(raw: string): string {
   if (typedParts.length > 1) {
     const [m = "", d = "", y = ""] = typedParts;
     const pad = (v: string) => (v.length === 1 ? `0${v}` : v.slice(0, 2));
-    digits = `${pad(m)}${typedParts.length > 2 || d.length ? pad(d) : ""}${y.slice(0, 4)}`;
+    digits =
+      typedParts.length > 2
+        ? `${pad(m)}${pad(d)}${y.slice(0, 4)}`
+        : `${pad(m)}${d.replace(/\D/g, "")}`;
   } else {
     digits = typedParts[0];
     // A first digit of 2..9 can only be a single-digit month.

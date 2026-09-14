@@ -297,9 +297,11 @@ export function normalizeForm618Details(value: any): Form618Details {
   base.serviceTime = {
     max: Array.from({ length: 7 }, (_, i) => str(value?.serviceTime?.max?.[i])),
     min: Array.from({ length: 7 }, (_, i) => str(value?.serviceTime?.min?.[i])),
-    weeklyMax: str(value?.serviceTime?.weeklyMax),
-    weeklyMin: str(value?.serviceTime?.weeklyMin),
+    weeklyMax: "",
+    weeklyMin: "",
   };
+  // Weekly totals are always derived, never trusted from the saved record.
+  base.serviceTime = { ...base.serviceTime, ...weeklyServiceTimeTotals(base) };
 
   base.extensionRequested = value.extensionRequested === true;
   base.extension = {

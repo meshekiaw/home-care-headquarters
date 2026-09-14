@@ -373,7 +373,7 @@ export default function Assessment618Form() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notes, sec12, form?.id, form?.status]);
+  }, [notes, sec12, details, form?.id, form?.status]);
 
   const signed = useMemo(() => {
     const map: Partial<Record<SignatureSlot, SignatureRow>> = {};
@@ -403,6 +403,12 @@ export default function Assessment618Form() {
     if (byMark && !(signed.sec4_witness_1 && signed.sec4_witness_2)) return false;
     return true;
   }, [form, signed, exception, byMark]);
+
+  const missingRequired = useMemo(
+    () => form618MissingRequired(details, clientName),
+    [details, clientName],
+  );
+  const canComplete = readyToLock && missingRequired.length === 0;
 
   function attestationFor(slot: SignatureSlot, signerType: SignerType) {
     return SLOT_BY_ID[slot].attestation[signerType] ?? "";

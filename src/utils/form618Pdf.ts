@@ -50,6 +50,12 @@ export interface Form618PdfInput {
   };
   totalMinutes?: number | string;
   defaults?: Form618AgencyDefaults | null;
+  /** Section XIV extension of benefits request (page 7). Left blank when not requested. */
+  extension?: {
+    additional_service_time_increments?: string;
+    begin_date_of_service?: string;
+    end_date_of_service?: string;
+  } | null;
   signatures: Form618Signature[];
 }
 

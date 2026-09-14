@@ -1162,16 +1162,19 @@ export default function Assessment618Form() {
       {kioskSlot && form && (
         <ClientSigningMode
           clientName={clientName || "this client"}
-          attestation={attestationFor(kioskSlot, "client")}
+          attestation={attestationFor(kioskSlot.slot, kioskSlot.signerType)}
+          askRelationship={kioskSlot.signerType === "witness"}
           heading={
-            kioskSlot === "sec4_client"
-              ? "Please sign: your choice of provider"
-              : "Please sign: your plan of care"
+            kioskSlot.signerType === "witness"
+              ? "Please sign as a witness"
+              : kioskSlot.slot === "sec4_client"
+                ? "Please sign: your choice of provider"
+                : "Please sign: your plan of care"
           }
-          instructions="Your nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
+          instructions="The nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
           nurseEmail={user?.email ?? ""}
           saving={busy}
-          onSubmit={(result) => addSignature(kioskSlot, "client", result)}
+          onSubmit={(result) => addSignature(kioskSlot.slot, kioskSlot.signerType, result)}
           onExit={() => setKioskSlot(null)}
         />
       )}

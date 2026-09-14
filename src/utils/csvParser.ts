@@ -267,6 +267,7 @@ export interface ClientCSVRow {
   "618_date"?: string;
   "618_expiration_date"?: string;
   payer_type?: string;
+  medicaid_id?: string;
   client_hours?: string;
 }
 

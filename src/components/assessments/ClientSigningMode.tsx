@@ -148,6 +148,16 @@ export function ClientSigningMode({
                 {confirmEmail.length > 0 && !emailMatches && (
                   <p className="text-sm text-destructive">That doesn't match the signed-in nurse.</p>
                 )}
+                {stage === "cancel" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full min-h-[44px]"
+                    onClick={() => setStage("signing")}
+                  >
+                    Go back to the signature screen
+                  </Button>
+                )}
               </div>
             </div>
           )}

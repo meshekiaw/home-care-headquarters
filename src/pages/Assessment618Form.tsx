@@ -4,6 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAgencyFormDefaults } from "@/hooks/useAgencyFormDefaults";
 import { downloadForm618Pdf, printForm618Pdf, type Form618PdfInput } from "@/utils/form618Pdf";
+import { Form618Sections } from "@/components/assessments/Form618Sections";
+import {
+  emptyForm618Details,
+  form618DetailsToPdfInput,
+  form618MissingRequired,
+  normalizeForm618Details,
+  type Form618Details,
+} from "@/utils/form618Details";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -43,6 +43,8 @@ interface Props {
 const NONE = "__none__";
 
 export function Form618Sections({ details, disabled, onChange, sectionIX, sectionXII }: Props) {
+  const weeklyTotals = weeklyServiceTimeTotals(details);
+
   const set = <K extends keyof Form618Details>(key: K, value: Form618Details[K]) =>
     onChange((prev) => ({ ...prev, [key]: value }));
 

@@ -1190,23 +1190,35 @@ export default function Assessment618Form() {
         </DialogContent>
       </Dialog>
 
-      {kioskSlot && form && (
+      {kioskSteps && kioskSteps.length > 0 && form && (
         <ClientSigningMode
           clientName={clientName || "this client"}
-          attestation={attestationFor(kioskSlot.slot, kioskSlot.signerType)}
-          askRelationship={kioskSlot.signerType === "witness"}
-          heading={
-            kioskSlot.signerType === "witness"
-              ? "Please sign as a witness"
-              : kioskSlot.slot === "sec4_client"
-                ? "Please sign: your choice of provider"
-                : "Please sign: your plan of care"
-          }
+          steps={kioskSteps.map(({ slot, signerType }) => ({
+            key: slot,
+            attestation: attestationFor(slot, signerType),
+            askRelationship: signerType === "witness",
+            heading:
+              signerType === "witness"
+                ? slot === "sec4_witness_2"
+                  ? "Witness 2: please sign"
+                  : "Witness 1: please sign"
+                : slot === "sec4_client"
+                  ? "Please sign: your choice of provider"
+                  : "Please sign: your plan of care",
+            outstandingLabel:
+              signerType === "witness"
+                ? `${SLOT_BY_ID[slot].section} — ${slot === "sec4_witness_2" ? "Witness 2" : "Witness 1"} signature`
+                : `${SLOT_BY_ID[slot].section} — client signature`,
+          }))}
           instructions="The nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
           nurseEmail={user?.email ?? ""}
           saving={busy}
-          onSubmit={(result) => addSignature(kioskSlot.slot, kioskSlot.signerType, result)}
-          onExit={() => setKioskSlot(null)}
+          onSubmit={async (step, result) => {
+            const entry = kioskSteps.find((s) => s.slot === step.key);
+            if (!entry) return false;
+            return addSignature(entry.slot, entry.signerType, result);
+          }}
+          onExit={() => setKioskSteps(null)}
         />
       )}
     </div>

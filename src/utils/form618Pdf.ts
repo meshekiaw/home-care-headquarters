@@ -72,12 +72,12 @@ const SECTION_XII_ROWS: { task: string; y: number }[] = [
 
 function headerPositions() {
   return [
-    { page: 2, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
-    { page: 3, nameX: 144, nameY: 714, nameW: 147, idX: 381, idY: 714, idW: 152 },
-    { page: 4, nameX: 144, nameY: 714, nameW: 167, idX: 395, idY: 714, idW: 135 },
-    { page: 5, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
-    { page: 6, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
-    { page: 7, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
+    { page: 2, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
+    { page: 3, nameX: 152, nameY: 714, nameW: 139, idX: 391, idY: 714, idW: 142 },
+    { page: 4, nameX: 152, nameY: 714, nameW: 159, idX: 405, idY: 714, idW: 125 },
+    { page: 5, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
+    { page: 6, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
+    { page: 7, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
   ];
 }
 
@@ -129,7 +129,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 224,
       height: 16,
     });
-    drawFitted(p2, font, caption(sec4Client), 132, 603, 224, 6.5);
+    drawFitted(p2, font, caption(sec4Client), 132, 630, 224, 6.5);
     drawFitted(p2, font, new Date(sec4Client.signed_at).toLocaleDateString(), 399, 613, 128, 9);
   }
   const w1 = sig("sec4_witness_1");
@@ -140,7 +140,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 155,
       height: 16,
     });
-    drawFitted(p2, font, caption(w1), 75, 571, 155, 6.5);
+    drawFitted(p2, font, caption(w1), 75, 597, 155, 6);
   }
   const w2 = sig("sec4_witness_2");
   if (w2) {
@@ -150,7 +150,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 152,
       height: 16,
     });
-    drawFitted(p2, font, caption(w2), 377, 571, 152, 6.5);
+    drawFitted(p2, font, caption(w2), 377, 597, 152, 6);
   }
 
   // Page 4 - assessment narrative (Section IX) from the nurse's notes.
@@ -193,7 +193,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 226,
       height: 16,
     });
-    drawFitted(p5, font, caption(nurse), 296, 312, 226, 6.5);
+    drawFitted(p5, font, caption(nurse), 296, 339, 226, 6.5);
   }
 
   // Page 6 - Section XIII signatures.
@@ -206,7 +206,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 258,
       height: 16,
     });
-    drawFitted(p6, font, caption(physician), 93, 302, 258, 6.5);
+    drawFitted(p6, font, caption(physician), 93, 329, 258, 6.5);
     drawFitted(p6, font, new Date(physician.signed_at).toLocaleDateString(), 395, 312, 118, 9);
   }
   const sec13Client = sig("sec13_client");
@@ -217,7 +217,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 262,
       height: 16,
     });
-    drawFitted(p6, font, caption(sec13Client), 93, 195, 262, 6.5);
+    drawFitted(p6, font, caption(sec13Client), 93, 222, 262, 6.5);
     drawFitted(p6, font, new Date(sec13Client.signed_at).toLocaleDateString(), 401, 205, 112, 9);
   }
 

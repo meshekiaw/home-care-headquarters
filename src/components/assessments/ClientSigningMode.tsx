@@ -47,6 +47,7 @@ export function ClientSigningMode({
   const [stage, setStage] = useState<"signing" | "handback" | "cancel">("signing");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [completed, setCompleted] = useState<string[]>([]);
+  const [lastName, setLastName] = useState("");
 
   // Block navigation away while the device is out of the nurse's hands.
   useEffect(() => {
@@ -71,11 +72,6 @@ export function ClientSigningMode({
   const emailMatches = confirmEmail.trim().toLowerCase() === nurseEmail.trim().toLowerCase();
   const step = steps[index];
   const outstanding = steps.slice(index).filter((s) => !completed.includes(s.key));
-
-  if (!step && stage === "signing") {
-    // Defensive: nothing left to sign.
-    setStage("handback");
-  }
 
   return (
     <div className="fixed inset-0 z-[100] bg-background overflow-y-auto overscroll-contain">
@@ -117,6 +113,7 @@ export function ClientSigningMode({
               <SignatureCapture
                 key={step.key}
                 attestation={step.attestation}
+                defaultName={lastName}
                 askRelationship={step.askRelationship}
                 namePrompt={step.namePrompt}
                 submitLabel={
@@ -127,6 +124,7 @@ export function ClientSigningMode({
                   const ok = await onSubmit(step, result);
                   if (!ok) return;
                   setCompleted((prev) => [...prev, step.key]);
+                  setLastName(result.signer_name);
                   if (index < steps.length - 1) setIndex(index + 1);
                   else setStage("handback");
                 }}

@@ -72,12 +72,12 @@ const SECTION_XII_ROWS: { task: string; y: number }[] = [
 
 function headerPositions() {
   return [
-    { page: 2, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
-    { page: 3, nameX: 152, nameY: 714, nameW: 139, idX: 391, idY: 714, idW: 142 },
-    { page: 4, nameX: 152, nameY: 714, nameW: 159, idX: 405, idY: 714, idW: 125 },
-    { page: 5, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
-    { page: 6, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
-    { page: 7, nameX: 152, nameY: 714, nameW: 159, idX: 406, idY: 714, idW: 122 },
+    { page: 2, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
+    { page: 3, nameX: 157, nameY: 714, nameW: 134, idX: 391, idY: 714, idW: 142 },
+    { page: 4, nameX: 157, nameY: 714, nameW: 154, idX: 405, idY: 714, idW: 125 },
+    { page: 5, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
+    { page: 6, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
+    { page: 7, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
   ];
 }
 
@@ -120,6 +120,9 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
   const sig = (slot: string) => input.signatures.find((s) => s.signature_slot === slot);
   const caption = (s?: Form618Signature) =>
     s ? `${asciiSafe(s.signer_name)} (${s.signer_type}) - ${new Date(s.signed_at).toLocaleString()}` : "";
+  // Tight slots only have room for the signer's name and date.
+  const shortCaption = (s?: Form618Signature) =>
+    s ? `${asciiSafe(s.signer_name)} - ${new Date(s.signed_at).toLocaleDateString()}` : "";
 
   const sec4Client = sig("sec4_client");
   if (sec4Client) {
@@ -129,7 +132,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 224,
       height: 16,
     });
-    drawFitted(p2, font, caption(sec4Client), 132, 601, 80, 5.5);
+    drawFitted(p2, font, shortCaption(sec4Client), 132, 601, 80, 5.5);
     drawFitted(p2, font, new Date(sec4Client.signed_at).toLocaleDateString(), 399, 613, 128, 9);
   }
   const w1 = sig("sec4_witness_1");

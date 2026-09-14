@@ -50,6 +50,12 @@ export interface Form618PdfInput {
   };
   totalMinutes?: number | string;
   defaults?: Form618AgencyDefaults | null;
+  /** Section XIV extension of benefits request (page 7). Left blank when not requested. */
+  extension?: {
+    additional_service_time_increments?: string;
+    begin_date_of_service?: string;
+    end_date_of_service?: string;
+  } | null;
   signatures: Form618Signature[];
 }
 
@@ -66,12 +72,12 @@ const SECTION_XII_ROWS: { task: string; y: number }[] = [
 
 function headerPositions() {
   return [
-    { page: 2, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
-    { page: 3, nameX: 144, nameY: 714, nameW: 147, idX: 381, idY: 714, idW: 152 },
-    { page: 4, nameX: 144, nameY: 714, nameW: 167, idX: 395, idY: 714, idW: 135 },
-    { page: 5, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
-    { page: 6, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
-    { page: 7, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
+    { page: 2, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
+    { page: 3, nameX: 157, nameY: 714, nameW: 134, idX: 391, idY: 714, idW: 142 },
+    { page: 4, nameX: 157, nameY: 714, nameW: 154, idX: 405, idY: 714, idW: 125 },
+    { page: 5, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
+    { page: 6, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
+    { page: 7, nameX: 157, nameY: 714, nameW: 154, idX: 406, idY: 714, idW: 122 },
   ];
 }
 
@@ -98,7 +104,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
   drawFitted(p1, font, input.clientName, 76, 632, 302, 10);
   drawFitted(p1, font, input.dateOfBirth, 386, 632, 150, 10);
   if (d) {
-    drawFitted(p1, font, d.provider_name, 216, 402, 318, 9);
+    drawFitted(p1, font, d.provider_name, 248, 402, 286, 9);
     drawFitted(p1, font, d.provider_id_number, 185, 377, 46, 8.5);
     drawFitted(p1, font, d.mailing_address, 372, 377, 164, 8);
     drawFitted(p1, font, d.projected_end_date_of_service, 299, 176.5, 232, 9);
@@ -114,6 +120,9 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
   const sig = (slot: string) => input.signatures.find((s) => s.signature_slot === slot);
   const caption = (s?: Form618Signature) =>
     s ? `${asciiSafe(s.signer_name)} (${s.signer_type}) - ${new Date(s.signed_at).toLocaleString()}` : "";
+  // Tight slots only have room for the signer's name and date.
+  const shortCaption = (s?: Form618Signature) =>
+    s ? `${asciiSafe(s.signer_name)} - ${new Date(s.signed_at).toLocaleDateString()}` : "";
 
   const sec4Client = sig("sec4_client");
   if (sec4Client) {
@@ -123,7 +132,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 224,
       height: 16,
     });
-    drawFitted(p2, font, caption(sec4Client), 132, 603, 224, 6.5);
+    drawFitted(p2, font, shortCaption(sec4Client), 116, 601, 92, 5.5);
     drawFitted(p2, font, new Date(sec4Client.signed_at).toLocaleDateString(), 399, 613, 128, 9);
   }
   const w1 = sig("sec4_witness_1");
@@ -134,7 +143,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 155,
       height: 16,
     });
-    drawFitted(p2, font, caption(w1), 75, 571, 155, 6.5);
+    drawFitted(p2, font, caption(w1), 75, 571, 84, 5.5);
   }
   const w2 = sig("sec4_witness_2");
   if (w2) {
@@ -144,7 +153,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 152,
       height: 16,
     });
-    drawFitted(p2, font, caption(w2), 377, 571, 152, 6.5);
+    drawFitted(p2, font, caption(w2), 377, 571, 190, 5.5);
   }
 
   // Page 4 - assessment narrative (Section IX) from the nurse's notes.
@@ -187,7 +196,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 226,
       height: 16,
     });
-    drawFitted(p5, font, caption(nurse), 296, 312, 226, 6.5);
+    drawFitted(p5, font, shortCaption(nurse), 236, 312, 92, 5.5);
   }
 
   // Page 6 - Section XIII signatures.
@@ -200,7 +209,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 258,
       height: 16,
     });
-    drawFitted(p6, font, caption(physician), 93, 302, 258, 6.5);
+    drawFitted(p6, font, shortCaption(physician), 300, 302, 88, 5.5);
     drawFitted(p6, font, new Date(physician.signed_at).toLocaleDateString(), 395, 312, 118, 9);
   }
   const sec13Client = sig("sec13_client");
@@ -211,12 +220,20 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 262,
       height: 16,
     });
-    drawFitted(p6, font, caption(sec13Client), 93, 195, 262, 6.5);
+    drawFitted(p6, font, shortCaption(sec13Client), 300, 195, 88, 5.5);
     drawFitted(p6, font, new Date(sec13Client.signed_at).toLocaleDateString(), 401, 205, 112, 9);
   }
 
   // Page 7 stays in the output on every form; its extension fields are only
-  // filled when an extension of benefits is being requested.
+  // filled when an extension of benefits is being requested. The XIV. Provider
+  // Notification block below them belongs to DMS and is always left blank.
+  const p7 = pages[6];
+  const ext = input.extension;
+  if (p7 && ext) {
+    drawFitted(p7, font, ext.additional_service_time_increments, 100, 515, 145, 9);
+    drawFitted(p7, font, ext.begin_date_of_service, 257, 515, 150, 9);
+    drawFitted(p7, font, ext.end_date_of_service, 418, 515, 115, 9);
+  }
 
   if (narr.overflow || sec12Notes.overflow) {
     addContinuation(doc, font, bold, input, narr.overflow, sec12Notes.overflow);

@@ -327,14 +327,15 @@ export default function Assessment618Form() {
   // Autosave the draft body
   useEffect(() => {
     if (!hydrated.current || !form || form.status !== "draft") return;
-    if ((form.form_data?.working_notes ?? "") === notes) return;
+    const nextData = { ...(form.form_data ?? {}), working_notes: notes, section_xii: sec12 };
+    if (JSON.stringify(form.form_data ?? {}) === JSON.stringify(nextData)) return;
     setSavingState("saving");
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const { error } = await supabase
         .from("assessment_618_forms")
         .update({
-          form_data: { ...(form.form_data ?? {}), working_notes: notes },
+          form_data: nextData,
           last_autosaved_at: new Date().toISOString(),
         })
         .eq("id", form.id);
@@ -343,16 +344,14 @@ export default function Assessment618Form() {
         toast({ title: "Autosave failed", description: error.message, variant: "destructive" });
         return;
       }
-      setForm((prev) =>
-        prev ? { ...prev, form_data: { ...(prev.form_data ?? {}), working_notes: notes } } : prev,
-      );
+      setForm((prev) => (prev ? { ...prev, form_data: nextData } : prev));
       setSavingState("saved");
     }, 1200);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notes, form?.id, form?.status]);
+  }, [notes, sec12, form?.id, form?.status]);
 
   const signed = useMemo(() => {
     const map: Partial<Record<SignatureSlot, SignatureRow>> = {};

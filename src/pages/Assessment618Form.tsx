@@ -559,10 +559,13 @@ export default function Assessment618Form() {
       clientName,
       status: form?.status ?? "draft",
       version: form?.version ?? 1,
-      assessmentDate: form?.signed_at
-        ? new Date(form.signed_at).toLocaleDateString()
-        : new Date().toLocaleDateString(),
-      rnName: user?.email ?? "",
+      ...form618DetailsToPdfInput(details),
+      assessmentDate:
+        details.currentAssessmentDate ||
+        (form?.signed_at
+          ? new Date(form.signed_at).toLocaleDateString()
+          : new Date().toLocaleDateString()),
+      rnName: details.assessingRn || user?.email || "",
       notes,
       sectionXII: sec12,
       totalMinutes: sectionXIITotalMinutes(sec12),
@@ -688,14 +691,27 @@ export default function Assessment618Form() {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         disabled={!isDraft}
-                        placeholder="The full 618 question set will appear here. Notes typed now are saved with the record."
+                        placeholder="Section IX — Assessment Narrative. This prints on page 4 and continues on an attached page if it runs long."
                         className="text-base"
                       />
                       <p className="text-xs text-muted-foreground">
-                        The complete 618 field set comes next; this record structure, autosave and
-                        signing are already in place.
+                        Section IX — Assessment Narrative.
                       </p>
                     </div>
+
+                    {missingRequired.length > 0 && isDraft && (
+                      <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                        <span className="font-medium">Still needed: </span>
+                        {missingRequired.join(", ")}
+                      </div>
+                    )}
+
+                    <Form618Sections
+                      details={details}
+                      disabled={!isDraft}
+                      onChange={(updater) => setDetails((prev) => updater(prev))}
+                    />
+
 
                     <div className="space-y-3 rounded-lg border p-3">
                       <div>

@@ -222,7 +222,15 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
   }
 
   // Page 7 stays in the output on every form; its extension fields are only
-  // filled when an extension of benefits is being requested.
+  // filled when an extension of benefits is being requested. The XIV. Provider
+  // Notification block below them belongs to DMS and is always left blank.
+  const p7 = pages[6];
+  const ext = input.extension;
+  if (p7 && ext) {
+    drawFitted(p7, font, ext.additional_service_time_increments, 100, 515, 145, 9);
+    drawFitted(p7, font, ext.begin_date_of_service, 257, 515, 150, 9);
+    drawFitted(p7, font, ext.end_date_of_service, 418, 515, 115, 9);
+  }
 
   if (narr.overflow || sec12Notes.overflow) {
     addContinuation(doc, font, bold, input, narr.overflow, sec12Notes.overflow);

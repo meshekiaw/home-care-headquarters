@@ -266,6 +266,7 @@ export default function Assessment618Form() {
   const [signatures, setSignatures] = useState<SignatureRow[]>([]);
   const [notes, setNotes] = useState("");
   const [sec12, setSec12] = useState<SectionXII>(() => emptySectionXII());
+  const [details, setDetails] = useState<Form618Details>(() => emptyForm618Details());
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle");
   const [busy, setBusy] = useState(false);
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
@@ -305,6 +306,7 @@ export default function Assessment618Form() {
     setForm(current);
     setNotes(current?.form_data?.working_notes ?? "");
     setSec12(normalizeSectionXII(current?.form_data?.section_xii));
+    setDetails(normalizeForm618Details(current?.form_data?.details));
     hydrated.current = true;
 
     if (current) {
@@ -342,7 +344,12 @@ export default function Assessment618Form() {
   // Autosave the draft body
   useEffect(() => {
     if (!hydrated.current || !form || form.status !== "draft") return;
-    const nextData = { ...(form.form_data ?? {}), working_notes: notes, section_xii: sec12 };
+    const nextData = {
+      ...(form.form_data ?? {}),
+      working_notes: notes,
+      section_xii: sec12,
+      details,
+    };
     if (JSON.stringify(form.form_data ?? {}) === JSON.stringify(nextData)) return;
     setSavingState("saving");
     if (saveTimer.current) clearTimeout(saveTimer.current);

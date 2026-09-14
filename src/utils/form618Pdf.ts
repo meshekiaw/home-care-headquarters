@@ -132,7 +132,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 224,
       height: 16,
     });
-    drawFitted(p2, font, shortCaption(sec4Client), 132, 601, 80, 5.5);
+    drawFitted(p2, font, shortCaption(sec4Client), 116, 601, 92, 5.5);
     drawFitted(p2, font, new Date(sec4Client.signed_at).toLocaleDateString(), 399, 613, 128, 9);
   }
   const w1 = sig("sec4_witness_1");

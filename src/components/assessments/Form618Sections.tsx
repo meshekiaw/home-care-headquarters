@@ -76,6 +76,40 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
     </div>
   );
 
+  const dateField = (
+    id: string,
+    label: string,
+    key: keyof Form618Details,
+    opts: { required?: boolean } = {},
+  ) => (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        {label}
+        {opts.required && <span className="text-destructive ml-1">*</span>}
+      </Label>
+      <DateMaskInput
+        id={id}
+        value={String(details[key] ?? "")}
+        disabled={disabled}
+        onChange={(v) => set(key, v as any)}
+      />
+    </div>
+  );
+
+  /** Selecting anything other than "Other" clears the matching describe lines. */
+  const pickChoice = (key: "planStatus" | "residesType" | "serviceLocationType", value: string) =>
+    onChange((prev) => {
+      const next = { ...prev, [key]: value } as Form618Details;
+      if (key === "residesType" && value !== "Other") {
+        next.residesOther1 = "";
+        next.residesOther2 = "";
+      }
+      if (key === "serviceLocationType" && value !== "Other") {
+        next.serviceLocationOther = "";
+      }
+      return next;
+    });
+
   const choice = (
     label: string,
     key: "planStatus" | "residesType" | "serviceLocationType",
@@ -90,7 +124,7 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
       <Select
         value={details[key] || NONE}
         disabled={disabled}
-        onValueChange={(v) => set(key, (v === NONE ? "" : v) as any)}
+        onValueChange={(v) => pickChoice(key, v === NONE ? "" : v)}
       >
         <SelectTrigger className="min-h-[44px]">
           <SelectValue placeholder="Select..." />

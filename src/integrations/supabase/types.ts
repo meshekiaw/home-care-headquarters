@@ -62,6 +62,54 @@ export type Database = {
         }
         Relationships: []
       }
+      agency_form_defaults: {
+        Row: {
+          attending_physician: string
+          attending_physician_provider_id: string
+          id: string
+          mailing_address: string
+          projected_end_date_of_service: string
+          provider_id_number: string
+          provider_name: string
+          referral_source: string
+          section_xi_certification: string
+          section_xi_comments: string
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          attending_physician?: string
+          attending_physician_provider_id?: string
+          id?: string
+          mailing_address?: string
+          projected_end_date_of_service?: string
+          provider_id_number?: string
+          provider_name?: string
+          referral_source?: string
+          section_xi_certification?: string
+          section_xi_comments?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          attending_physician?: string
+          attending_physician_provider_id?: string
+          id?: string
+          mailing_address?: string
+          projected_end_date_of_service?: string
+          provider_id_number?: string
+          provider_name?: string
+          referral_source?: string
+          section_xi_certification?: string
+          section_xi_comments?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           caregiver_id: string

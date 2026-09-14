@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -183,6 +184,53 @@ const EXCEPTION_LABELS: Record<string, string> = {
   pending: "Awaiting the client's signature",
 };
 
+// Section XII — Personal Care Service Plan task table, exactly as printed on DMS-618 (8/23).
+// "Tolieting" is spelled as it appears on the state form.
+const SECTION_XII_TASKS = [
+  "Eating",
+  "Bathing",
+  "Grooming",
+  "Tolieting",
+  "Dressing",
+  "Transfer/Mobility",
+  "Housekeeping",
+  "Laundry",
+] as const;
+
+type SectionXIITask = (typeof SECTION_XII_TASKS)[number];
+type SectionXIIRow = { minutes: string; days_per_week: string };
+type SectionXII = {
+  tasks: Record<string, SectionXIIRow>;
+  notes: string;
+};
+
+function emptySectionXII(): SectionXII {
+  const tasks: Record<string, SectionXIIRow> = {};
+  for (const t of SECTION_XII_TASKS) tasks[t] = { minutes: "", days_per_week: "" };
+  return { tasks, notes: "" };
+}
+
+function normalizeSectionXII(value: any): SectionXII {
+  const base = emptySectionXII();
+  if (!value) return base;
+  for (const t of SECTION_XII_TASKS) {
+    const row = value?.tasks?.[t];
+    base.tasks[t] = {
+      minutes: typeof row?.minutes === "string" ? row.minutes : "",
+      days_per_week: typeof row?.days_per_week === "string" ? row.days_per_week : "",
+    };
+  }
+  base.notes = typeof value?.notes === "string" ? value.notes : "";
+  return base;
+}
+
+function sectionXIITotalMinutes(value: SectionXII) {
+  return SECTION_XII_TASKS.reduce((sum, t) => {
+    const n = Number(value.tasks[t]?.minutes);
+    return Number.isFinite(n) ? sum + n : sum;
+  }, 0);
+}
+
 function formatStamp(value: string | null) {
   if (!value) return "—";
   return new Date(value).toLocaleString(undefined, {
@@ -205,6 +253,7 @@ export default function Assessment618Form() {
   const [history, setHistory] = useState<FormRow[]>([]);
   const [signatures, setSignatures] = useState<SignatureRow[]>([]);
   const [notes, setNotes] = useState("");
+  const [sec12, setSec12] = useState<SectionXII>(() => emptySectionXII());
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle");
   const [busy, setBusy] = useState(false);
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
@@ -241,6 +290,7 @@ export default function Assessment618Form() {
     setHistory(rows);
     setForm(current);
     setNotes(current?.form_data?.working_notes ?? "");
+    setSec12(normalizeSectionXII(current?.form_data?.section_xii));
     hydrated.current = true;
 
     if (current) {
@@ -278,14 +328,15 @@ export default function Assessment618Form() {
   // Autosave the draft body
   useEffect(() => {
     if (!hydrated.current || !form || form.status !== "draft") return;
-    if ((form.form_data?.working_notes ?? "") === notes) return;
+    const nextData = { ...(form.form_data ?? {}), working_notes: notes, section_xii: sec12 };
+    if (JSON.stringify(form.form_data ?? {}) === JSON.stringify(nextData)) return;
     setSavingState("saving");
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const { error } = await supabase
         .from("assessment_618_forms")
         .update({
-          form_data: { ...(form.form_data ?? {}), working_notes: notes },
+          form_data: nextData,
           last_autosaved_at: new Date().toISOString(),
         })
         .eq("id", form.id);
@@ -294,16 +345,14 @@ export default function Assessment618Form() {
         toast({ title: "Autosave failed", description: error.message, variant: "destructive" });
         return;
       }
-      setForm((prev) =>
-        prev ? { ...prev, form_data: { ...(prev.form_data ?? {}), working_notes: notes } } : prev,
-      );
+      setForm((prev) => (prev ? { ...prev, form_data: nextData } : prev));
       setSavingState("saved");
     }, 1200);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notes, form?.id, form?.status]);
+  }, [notes, sec12, form?.id, form?.status]);
 
   const signed = useMemo(() => {
     const map: Partial<Record<SignatureSlot, SignatureRow>> = {};
@@ -574,6 +623,92 @@ export default function Assessment618Form() {
                         The complete 618 field set comes next; this record structure, autosave and
                         signing are already in place.
                       </p>
+                    </div>
+
+                    <div className="space-y-3 rounded-lg border p-3">
+                      <div>
+                        <h3 className="font-medium">Section XII — Personal Care Service Plan</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Optional. Minutes and days per week for each task; the total adds up
+                          automatically.
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-muted-foreground">
+                              <th className="py-1 pr-2 font-medium">Tasks</th>
+                              <th className="py-1 pr-2 font-medium">Minutes</th>
+                              <th className="py-1 font-medium">Days/wk</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {SECTION_XII_TASKS.map((task) => (
+                              <tr key={task}>
+                                <td className="py-1 pr-2">{task}</td>
+                                <td className="py-1 pr-2">
+                                  <Input
+                                    inputMode="numeric"
+                                    className="h-9 w-24"
+                                    aria-label={`${task} minutes`}
+                                    value={sec12.tasks[task]?.minutes ?? ""}
+                                    disabled={!isDraft}
+                                    onChange={(e) =>
+                                      setSec12((prev) => ({
+                                        ...prev,
+                                        tasks: {
+                                          ...prev.tasks,
+                                          [task]: { ...prev.tasks[task], minutes: e.target.value },
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </td>
+                                <td className="py-1">
+                                  <Input
+                                    inputMode="numeric"
+                                    className="h-9 w-24"
+                                    aria-label={`${task} days per week`}
+                                    value={sec12.tasks[task]?.days_per_week ?? ""}
+                                    disabled={!isDraft}
+                                    onChange={(e) =>
+                                      setSec12((prev) => ({
+                                        ...prev,
+                                        tasks: {
+                                          ...prev.tasks,
+                                          [task]: { ...prev.tasks[task], days_per_week: e.target.value },
+                                        },
+                                      }))
+                                    }
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Label htmlFor="sec12_total">Total Minutes</Label>
+                        <Input
+                          id="sec12_total"
+                          readOnly
+                          className="h-9 w-28"
+                          value={sectionXIITotalMinutes(sec12) || ""}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="sec12_notes">Detailed information</Label>
+                        <Textarea
+                          id="sec12_notes"
+                          rows={4}
+                          value={sec12.notes}
+                          disabled={!isDraft}
+                          onChange={(e) => setSec12((prev) => ({ ...prev, notes: e.target.value }))}
+                        />
+                      </div>
                     </div>
 
                     {form.content_hash && (

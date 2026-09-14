@@ -64,8 +64,6 @@ const SECTION_XII_ROWS: { task: string; y: number }[] = [
   { task: "Laundry", y: 137.5 },
 ];
 
-const HEADER_FIELDS: { page: number; name: number; id: number }[] = [];
-
 function headerPositions() {
   return [
     { page: 1, nameX: 159, nameY: 714, nameW: 152, idX: 406, idY: 714, idW: 122 },

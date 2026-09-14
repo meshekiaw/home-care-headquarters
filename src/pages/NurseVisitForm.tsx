@@ -680,21 +680,34 @@ export default function NurseVisitForm() {
   }
 
   async function handlePdf(action: "print" | "download") {
+    const fileName = `Nurse_Visit_${(data.client_name || clientName || "client").replace(
+      /[^A-Za-z0-9]+/g,
+      "_",
+    )}_v${form?.version ?? 1}${form?.status === "draft" ? "_DRAFT" : ""}.pdf`;
     setPdfBusy(action);
     try {
-      if (action === "print") await printNurseVisitPdf(pdfInput());
-      else
-        await downloadNurseVisitPdf(
-          pdfInput(),
-          `Nurse_Visit_${(data.client_name || clientName || "client").replace(/[^A-Za-z0-9]+/g, "_")}_v${
-            form?.version ?? 1
-          }${form?.status === "draft" ? "_DRAFT" : ""}.pdf`,
-        );
+      if (action === "print") {
+        const result = await printNurseVisitPdf(pdfInput(), fileName);
+        if (result === "saved") {
+          toast({
+            title: "Printing was blocked",
+            description:
+              "Your browser or an installed extension blocked the print window, so the form was saved to your device instead. Open the saved file and print it from there.",
+          });
+        }
+      } else {
+        await downloadNurseVisitPdf(pdfInput(), fileName);
+      }
     } catch (e: any) {
       toast({
-        title: "Could not build the PDF",
-        description: e?.message ?? "Please try again.",
+        title: "The form could not be prepared",
+        description: `${e?.message ?? "Something went wrong while preparing the form."} You can try again.`,
         variant: "destructive",
+        action: (
+          <ToastAction altText="Try again" onClick={() => handlePdf(action)}>
+            Try again
+          </ToastAction>
+        ),
       });
     } finally {
       setPdfBusy(null);

@@ -196,7 +196,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 226,
       height: 16,
     });
-    drawFitted(p5, font, shortCaption(nurse), 296, 312, 140, 5.5);
+    drawFitted(p5, font, shortCaption(nurse), 236, 312, 92, 5.5);
   }
 
   // Page 6 - Section XIII signatures.

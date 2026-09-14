@@ -378,6 +378,8 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
         </div>,
       )}
 
+      {sectionIX}
+
       {section(
         "Section X — Alternate resources",
         "Resources available to the client other than personal care.",

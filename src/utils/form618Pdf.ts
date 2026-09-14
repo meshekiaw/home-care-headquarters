@@ -142,6 +142,7 @@ function fld(
   name: string,
   value: unknown,
   size = 9,
+  bottomAlign = false,
 ) {
   const text = asciiSafe(value);
   if (!text) return;

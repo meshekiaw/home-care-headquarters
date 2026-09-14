@@ -173,42 +173,72 @@ export async function stampEveryPage(doc: PDFDocument, mode: FillMode, footer: s
   }
 }
 
-export function downloadPdf(bytes: Uint8Array, fileName: string) {
+function blobUrl(bytes: Uint8Array) {
   const copy = new Uint8Array(bytes);
-  const blob = new Blob([copy], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName.toLowerCase().endsWith(".pdf") ? fileName : `${fileName}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  return URL.createObjectURL(new Blob([copy], { type: "application/pdf" }));
 }
 
-export function printPdf(bytes: Uint8Array) {
-  const copy = new Uint8Array(bytes);
-  const blob = new Blob([copy], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-  const frame = document.createElement("iframe");
-  frame.style.position = "fixed";
-  frame.style.right = "0";
-  frame.style.bottom = "0";
-  frame.style.width = "0";
-  frame.style.height = "0";
-  frame.style.border = "0";
-  frame.src = url;
-  frame.onload = () => {
-    try {
-      frame.contentWindow?.focus();
-      frame.contentWindow?.print();
-    } catch {
-      window.open(url, "_blank");
-    }
-  };
-  document.body.appendChild(frame);
-  setTimeout(() => {
-    frame.remove();
+/** Save the file in the current tab. No popups, no new windows. */
+export function downloadPdf(bytes: Uint8Array, fileName: string) {
+  const url = blobUrl(bytes);
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.rel = "noopener";
+    a.download = fileName.toLowerCase().endsWith(".pdf") ? fileName : `${fileName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch {
     URL.revokeObjectURL(url);
-  }, 60000);
+    throw new Error(BLOCKED_MESSAGE);
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/**
+ * Print in a hidden same-tab frame. If the browser or an extension blocks the
+ * frame, the file is saved instead and "saved" is returned so the caller can
+ * tell the user what happened.
+ */
+export function printPdf(bytes: Uint8Array, fallbackFileName = "form.pdf"): Promise<"printed" | "saved"> {
+  return new Promise((resolve) => {
+    const url = blobUrl(bytes);
+    const frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    let settled = false;
+
+    const saveInstead = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(guard);
+      frame.remove();
+      URL.revokeObjectURL(url);
+      downloadPdf(bytes, fallbackFileName);
+      resolve("saved");
+    };
+
+    const guard = setTimeout(saveInstead, 6000);
+
+    frame.onload = () => {
+      try {
+        frame.contentWindow?.focus();
+        frame.contentWindow?.print();
+        if (settled) return;
+        settled = true;
+        clearTimeout(guard);
+        resolve("printed");
+        setTimeout(() => {
+          frame.remove();
+          URL.revokeObjectURL(url);
+        }, 60000);
+      } catch {
+        saveInstead();
+      }
+    };
+    frame.onerror = saveInstead;
+    frame.src = url;
+    document.body.appendChild(frame);
+  });
 }

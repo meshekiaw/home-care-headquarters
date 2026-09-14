@@ -60,18 +60,18 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
     id: string,
     label: string,
     key: keyof Form618Details,
-    opts: { required?: boolean; placeholder?: string } = {},
+    opts: { required?: boolean; placeholder?: string; off?: boolean; hint?: string } = {},
   ) => (
     <div className="space-y-2">
-      <Label htmlFor={id}>
+      <Label htmlFor={id} className={opts.off ? "text-muted-foreground" : undefined}>
         {label}
         {opts.required && <span className="text-destructive ml-1">*</span>}
       </Label>
       <Input
         id={id}
         value={String(details[key] ?? "")}
-        placeholder={opts.placeholder}
-        disabled={disabled}
+        placeholder={opts.off ? opts.hint : opts.placeholder}
+        disabled={disabled || opts.off}
         onChange={(e) => set(key, e.target.value as any)}
       />
     </div>

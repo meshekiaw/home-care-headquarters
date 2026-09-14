@@ -2,11 +2,30 @@ import { PDFDocument, PDFFont, PDFName, PDFPage, StandardFonts, rgb, degrees } f
 
 export type FillMode = "draft" | "final";
 
+export const BLOCKED_MESSAGE =
+  "A browser extension (ad blocker or privacy blocker) stopped the form file from loading. Allow this site in that extension, or try another browser, then try again.";
+
+/**
+ * Load a blank form template. Tries the primary path, then a mirrored copy under
+ * a neutral folder, so extension filter lists that match one path cannot break both.
+ */
 export async function loadBlank(url: string): Promise<PDFDocument> {
-  const res = await fetch(url, { cache: "force-cache" });
-  if (!res.ok) throw new Error(`Could not load the blank form (${res.status})`);
-  const bytes = await res.arrayBuffer();
-  return PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+  const candidates = [url, url.replace("/forms/dms-618-8-23.pdf", "/f/a823.pdf").replace("/forms/nurse-visit-03-21.pdf", "/f/nv0321.pdf")];
+  const tried = new Set<string>();
+  for (const candidate of candidates) {
+    if (tried.has(candidate)) continue;
+    tried.add(candidate);
+    try {
+      const res = await fetch(candidate, { cache: "force-cache" });
+      if (!res.ok) continue;
+      const bytes = await res.arrayBuffer();
+      if (!bytes.byteLength) continue;
+      return PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+    } catch {
+      /* try the next path */
+    }
+  }
+  throw new Error(BLOCKED_MESSAGE);
 }
 
 export function asciiSafe(value: unknown): string {

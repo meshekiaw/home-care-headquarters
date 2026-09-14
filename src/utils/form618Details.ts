@@ -197,6 +197,41 @@ export function emptyForm618Details(): Form618Details {
 }
 
 const str = (v: any) => (typeof v === "string" ? v : "");
+
+/** Date answers that must display and print as MM/DD/YYYY. */
+const DATE_KEYS = [
+  "dateOfBirth",
+  "pcpLastExamDate",
+  "startOfCareOriginal",
+  "startOfCarePlan",
+  "currentAssessmentDate",
+  "referralOrderDate",
+] as const;
+
+/** Weekly totals are always the sum of the daily row — never typed by hand. */
+function sumTimeRow(row: string[]): string {
+  let total = 0;
+  let any = false;
+  for (const cell of row) {
+    const n = Number(String(cell ?? "").replace(/[^0-9.\-]/g, ""));
+    if (Number.isFinite(n) && String(cell ?? "").trim() !== "") {
+      total += n;
+      any = true;
+    }
+  }
+  if (!any) return "";
+  return String(Math.round(total * 100) / 100);
+}
+
+export function weeklyServiceTimeTotals(details: Form618Details): {
+  weeklyMax: string;
+  weeklyMin: string;
+} {
+  return {
+    weeklyMax: sumTimeRow(details.serviceTime.max),
+    weeklyMin: sumTimeRow(details.serviceTime.min),
+  };
+}
 const strArray = (v: any) => (Array.isArray(v) ? v.filter((x) => typeof x === "string") : []);
 
 export function normalizeForm618Details(value: any): Form618Details {

@@ -311,8 +311,8 @@ export default function Assessment618Form() {
     setSec12(normalizeSectionXII(current?.form_data?.section_xii));
     const loadedDetails = normalizeForm618Details(current?.form_data?.details);
 
-    // Pull the Medicaid ID (and name) from the client record when the form has none yet.
-    if (!loadedDetails.medicaidId.trim() || !loadedDetails.clientName.trim()) {
+    // Pull the Medicaid ID from the client record when the form has none yet.
+    if (!loadedDetails.medicaidId.trim()) {
       const { data: assessment } = await supabase
         .from("nurse_assessments")
         .select("client_id")
@@ -321,16 +321,11 @@ export default function Assessment618Form() {
       if (assessment?.client_id) {
         const { data: client } = await supabase
           .from("clients")
-          .select("medicaid_id, first_name, last_name")
+          .select("medicaid_id")
           .eq("id", assessment.client_id)
           .maybeSingle();
-        if (client) {
-          if (!loadedDetails.medicaidId.trim() && (client as any).medicaid_id) {
-            loadedDetails.medicaidId = (client as any).medicaid_id;
-          }
-          if (!loadedDetails.clientName.trim()) {
-            loadedDetails.clientName = `${client.first_name ?? ""} ${client.last_name ?? ""}`.trim();
-          }
+        if ((client as any)?.medicaid_id) {
+          loadedDetails.medicaidId = (client as any).medicaid_id;
         }
       }
     }

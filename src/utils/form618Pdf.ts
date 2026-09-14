@@ -66,7 +66,6 @@ const SECTION_XII_ROWS: { task: string; y: number }[] = [
 
 function headerPositions() {
   return [
-    { page: 1, nameX: 159, nameY: 714, nameW: 152, idX: 406, idY: 714, idW: 122 },
     { page: 2, nameX: 144, nameY: 714, nameW: 167, idX: 396, idY: 714, idW: 132 },
     { page: 3, nameX: 144, nameY: 714, nameW: 147, idX: 381, idY: 714, idW: 152 },
     { page: 4, nameX: 144, nameY: 714, nameW: 167, idX: 395, idY: 714, idW: 135 },
@@ -101,10 +100,10 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
     drawFitted(p1, font, d.provider_name, 205.5, 402, 330, 9);
     drawFitted(p1, font, d.provider_id_number, 185, 377, 46, 8.5);
     drawFitted(p1, font, d.mailing_address, 372, 377, 164, 8);
-    drawFitted(p1, font, d.referral_source, 300, 116, 232, 9);
-    drawFitted(p1, font, d.attending_physician, 126, 438, 132, 9);
-    drawFitted(p1, font, d.attending_physician_provider_id, 265, 438, 164, 9);
-    drawFitted(p1, font, d.projected_end_date_of_service, 423, 207, 108, 9);
+    drawFitted(p1, font, d.projected_end_date_of_service, 299, 176.5, 232, 9);
+    drawFitted(p1, font, d.attending_physician, 300, 148.5, 232, 9);
+    drawFitted(p1, font, d.attending_physician_provider_id, 356, 131.5, 176, 9);
+    drawFitted(p1, font, d.referral_source, 298, 101, 234, 9);
   }
   drawFitted(p1, font, input.assessmentDate, 191, 164, 108, 9);
   drawFitted(p1, font, input.rnName, 378, 164, 152, 9);

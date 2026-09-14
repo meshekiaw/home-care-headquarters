@@ -938,7 +938,7 @@ export default function Assessment618Form() {
                                   <Button
                                     key={slot}
                                     className="w-full min-h-[44px]"
-                                    onClick={() => setKioskSlot(slot)}
+                                    onClick={() => setKioskSlot({ slot, signerType: "client" })}
                                   >
                                     <Smartphone className="w-4 h-4 mr-2" />
                                     Hand device to the client — {SLOT_BY_ID[slot].section}
@@ -949,24 +949,30 @@ export default function Assessment618Form() {
                           )}
                         </div>
 
-                        {/* Section IV witnesses for signature by mark */}
-                        {byMark && (
-                          <div className="rounded-lg border p-4 space-y-3">
+                        {/* Section IV witnesses — available whenever a witness is needed */}
+                        <div className="rounded-lg border p-4 space-y-3">
+                          <div>
                             <Label>Section IV witnesses</Label>
-                            {(["sec4_witness_1", "sec4_witness_2"] as SignatureSlot[]).map((slot) =>
-                              signed[slot] ? null : (
-                                <Button
-                                  key={slot}
-                                  variant="outline"
-                                  className="w-full min-h-[44px]"
-                                  onClick={() => setDialogSlot({ slot, signerType: "witness" })}
-                                >
-                                  Capture {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"}
-                                </Button>
-                              ),
-                            )}
+                            <p className="text-xs text-muted-foreground">
+                              {byMark
+                                ? "Both witnesses are required because the client signs by mark."
+                                : "Optional — capture a witness whenever one is needed."}
+                            </p>
                           </div>
-                        )}
+                          {(["sec4_witness_1", "sec4_witness_2"] as SignatureSlot[]).map((slot) =>
+                            signed[slot] ? null : (
+                              <Button
+                                key={slot}
+                                variant="outline"
+                                className="w-full min-h-[44px]"
+                                onClick={() => setKioskSlot({ slot, signerType: "witness" })}
+                              >
+                                <Smartphone className="w-4 h-4 mr-2" />
+                                Hand device to {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"}
+                              </Button>
+                            ),
+                          )}
+                        </div>
 
                         {/* Section XIII physician — optional */}
                         {!signed.sec13_physician && (

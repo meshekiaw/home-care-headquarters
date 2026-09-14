@@ -37,8 +37,17 @@ const clientSchema = z.object({
   form_618_expiration_date: z.string().optional(),
   authorization_begin_date: z.string().optional(),
   payer_type: z.enum(["Medicaid", "VA"], { required_error: "Payer type is required" }),
+  medicaid_id: z.string().max(50).optional(),
   client_hours: z.string().optional(),
   status: z.enum(["active", "inactive", "pending"]),
+}).superRefine((data, ctx) => {
+  if (data.payer_type === "Medicaid" && !data.medicaid_id?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["medicaid_id"],
+      message: "Medicaid ID is required for Medicaid clients",
+    });
+  }
 });
 
 type ClientFormData = z.infer<typeof clientSchema>;
@@ -68,6 +77,7 @@ export default function ClientNew() {
     form_618_expiration_date: "",
     authorization_begin_date: "",
     payer_type: "Medicaid",
+    medicaid_id: "",
     client_hours: "",
     status: "active",
   });
@@ -113,6 +123,7 @@ export default function ClientNew() {
         form_618_expiration_date: validated.form_618_expiration_date || null,
         authorization_begin_date: validated.authorization_begin_date || null,
         payer_type: validated.payer_type,
+        medicaid_id: validated.medicaid_id?.trim() || null,
         client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
         status: validated.status,
         user_id: user.id,

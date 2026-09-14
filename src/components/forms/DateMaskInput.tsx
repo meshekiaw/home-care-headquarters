@@ -6,22 +6,33 @@ import { Input } from "@/components/ui/input";
  * producing MM/DD/YYYY. Impossible dates are flagged as she types.
  */
 export function maskDateInput(raw: string): string {
-  let digits = raw.replace(/\D/g, "").slice(0, 8);
+  const cleaned = raw.replace(/[^\d/]/g, "");
+  if (!cleaned) return "";
+
+  // Respect slashes the nurse types herself: "4/9/2026" becomes "04/09/2026".
+  const typedParts = cleaned.split("/");
+  let digits: string;
+  if (typedParts.length > 1) {
+    const [m = "", d = "", y = ""] = typedParts;
+    const pad = (v: string) => (v.length === 1 ? `0${v}` : v.slice(0, 2));
+    digits = `${pad(m)}${typedParts.length > 2 || d.length ? pad(d) : ""}${y.slice(0, 4)}`;
+  } else {
+    digits = typedParts[0];
+    // A first digit of 2..9 can only be a single-digit month.
+    if (digits.length === 1 && Number(digits) > 1) digits = `0${digits}`;
+  }
+  digits = digits.replace(/\D/g, "").slice(0, 8);
   if (!digits) return "";
 
-  // Month: 2..9 typed first means a single-digit month (e.g. "4" -> "04/").
-  if (digits.length === 1 && Number(digits) > 1) digits = `0${digits}`;
   const mm = digits.slice(0, 2);
   if (digits.length >= 3) {
     let dd = digits.slice(2, 4);
     if (dd.length === 1 && Number(dd) > 3) dd = `0${dd}`;
     const rest = digits.slice(4, 8);
     const head = `${mm}/${dd}`;
-    return rest ? `${head}/${rest}` : dd.length === 2 && digits.length > 4 ? `${head}/` : head;
+    return rest ? `${head}/${rest}` : head;
   }
-  return digits.length === 2 && Number(mm) >= 1 && Number(mm) <= 12 && raw.endsWith("/")
-    ? `${mm}/`
-    : mm;
+  return digits.length === 2 && cleaned.endsWith("/") ? `${mm}/` : mm;
 }
 
 /** True when the value is a complete, real MM/DD/YYYY date. */

@@ -216,8 +216,11 @@ import { parseExcelFile } from "@/utils/excelParser";
                <p className="text-xs text-muted-foreground mt-1">
                  Strongly recommended: <code className="bg-muted px-1 rounded">payer_type</code> (Medicaid or VA) — rows left blank default to Medicaid and will skip the VA Nurse Visit requirement.
                </p>
-               <p className="text-xs text-muted-foreground mt-1">
-                 Optional: email, phone, status, date_of_birth, address, city, state, zip_code, emergency_contact_name, emergency_contact_phone, notes
+                <p className="text-xs text-muted-foreground mt-1">
+                  Also include <code className="bg-muted px-1 rounded">medicaid_id</code> — it is required for every Medicaid client, and optional for VA clients.
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Optional: email, phone, status, date_of_birth, address, city, state, zip_code, emergency_contact_name, emergency_contact_phone, notes
                </p>
              </div>
            </div>

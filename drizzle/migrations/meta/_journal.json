@@ -141,6 +141,13 @@
       "when": 1789351863916,
       "tag": "0019_create_agency_form_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789367944019,
+      "tag": "0020_add_client_medicaid_id",
+      "breakpoints": true
     }
   ]
 }

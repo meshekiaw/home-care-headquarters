@@ -1173,6 +1173,7 @@ export type Database = {
           form_618_expiration_date: string | null
           id: string
           last_name: string
+          medicaid_id: string | null
           notes: string | null
           nurse_visit_due_date: string | null
           payer_type: string
@@ -1201,6 +1202,7 @@ export type Database = {
           form_618_expiration_date?: string | null
           id?: string
           last_name: string
+          medicaid_id?: string | null
           notes?: string | null
           nurse_visit_due_date?: string | null
           payer_type?: string
@@ -1229,6 +1231,7 @@ export type Database = {
           form_618_expiration_date?: string | null
           id?: string
           last_name?: string
+          medicaid_id?: string | null
           notes?: string | null
           nurse_visit_due_date?: string | null
           payer_type?: string

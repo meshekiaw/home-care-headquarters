@@ -287,6 +287,9 @@ export async function downloadNurseVisitPdf(input: NurseVisitPdfInput, fileName:
   downloadPdf(await buildNurseVisitPdf(input), fileName);
 }
 
-export async function printNurseVisitPdf(input: NurseVisitPdfInput) {
-  printPdf(await buildNurseVisitPdf(input));
+export async function printNurseVisitPdf(
+  input: NurseVisitPdfInput,
+  fallbackFileName = "Nurse-Visit.pdf",
+) {
+  return printPdf(await buildNurseVisitPdf(input), fallbackFileName);
 }

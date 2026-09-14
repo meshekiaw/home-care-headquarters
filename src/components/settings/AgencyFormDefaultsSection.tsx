@@ -4,6 +4,7 @@ import { FileText, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DateMaskInput } from "@/components/forms/DateMaskInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -88,12 +89,23 @@ export function AgencyFormDefaultsSection() {
               {SHORT_FIELDS.map((key) => (
                 <div key={key} className="space-y-2">
                   <Label htmlFor={key}>{AGENCY_DEFAULT_FIELD_LABELS[key]}</Label>
-                  <Input
-                    id={key}
-                    value={values[key] ?? ""}
-                    disabled={!isAdmin || saving}
-                    onChange={(e) => setValues((prev) => (prev ? { ...prev, [key]: e.target.value } : prev))}
-                  />
+                  {key === "projected_end_date_of_service" ? (
+                    <DateMaskInput
+                      id={key}
+                      value={values[key] ?? ""}
+                      disabled={!isAdmin || saving}
+                      onChange={(v) => setValues((prev) => (prev ? { ...prev, [key]: v } : prev))}
+                    />
+                  ) : (
+                    <Input
+                      id={key}
+                      value={values[key] ?? ""}
+                      disabled={!isAdmin || saving}
+                      onChange={(e) =>
+                        setValues((prev) => (prev ? { ...prev, [key]: e.target.value } : prev))
+                      }
+                    />
+                  )}
                 </div>
               ))}
             </div>

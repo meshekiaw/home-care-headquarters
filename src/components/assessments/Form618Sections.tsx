@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { DateMaskInput } from "@/components/forms/DateMaskInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -59,22 +60,56 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
     id: string,
     label: string,
     key: keyof Form618Details,
-    opts: { required?: boolean; placeholder?: string } = {},
+    opts: { required?: boolean; placeholder?: string; off?: boolean; hint?: string } = {},
   ) => (
     <div className="space-y-2">
-      <Label htmlFor={id}>
+      <Label htmlFor={id} className={opts.off ? "text-muted-foreground" : undefined}>
         {label}
         {opts.required && <span className="text-destructive ml-1">*</span>}
       </Label>
       <Input
         id={id}
         value={String(details[key] ?? "")}
-        placeholder={opts.placeholder}
-        disabled={disabled}
+        placeholder={opts.off ? opts.hint : opts.placeholder}
+        disabled={disabled || opts.off}
         onChange={(e) => set(key, e.target.value as any)}
       />
     </div>
   );
+
+  const dateField = (
+    id: string,
+    label: string,
+    key: keyof Form618Details,
+    opts: { required?: boolean } = {},
+  ) => (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        {label}
+        {opts.required && <span className="text-destructive ml-1">*</span>}
+      </Label>
+      <DateMaskInput
+        id={id}
+        value={String(details[key] ?? "")}
+        disabled={disabled}
+        onChange={(v) => set(key, v as any)}
+      />
+    </div>
+  );
+
+  /** Selecting anything other than "Other" clears the matching describe lines. */
+  const pickChoice = (key: "planStatus" | "residesType" | "serviceLocationType", value: string) =>
+    onChange((prev) => {
+      const next = { ...prev, [key]: value } as Form618Details;
+      if (key === "residesType" && value !== "Other") {
+        next.residesOther1 = "";
+        next.residesOther2 = "";
+      }
+      if (key === "serviceLocationType" && value !== "Other") {
+        next.serviceLocationOther = "";
+      }
+      return next;
+    });
 
   const choice = (
     label: string,
@@ -90,7 +125,7 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
       <Select
         value={details[key] || NONE}
         disabled={disabled}
-        onValueChange={(v) => set(key, (v === NONE ? "" : v) as any)}
+        onValueChange={(v) => pickChoice(key, v === NONE ? "" : v)}
       >
         <SelectTrigger className="min-h-[44px]">
           <SelectValue placeholder="Select..." />
@@ -144,28 +179,39 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
         "Medicaid ID, date of birth and the service plan status are required.",
         <div className="grid gap-4 sm:grid-cols-2">
           {text("medicaid_id", "Medicaid ID", "medicaidId", { required: true })}
-          {text("dob", "Date of Birth (MM/DD/YYYY)", "dateOfBirth", { required: true })}
+          {dateField("dob", "Date of Birth", "dateOfBirth", { required: true })}
           {text("county", "County of Residence", "county")}
           {text("phone", "Telephone Number(s)", "phone")}
           {text("guardian", "Parent(s) / Guardian(s)", "guardianName")}
           {text("mailing", "Complete Mailing Address", "mailingAddress")}
           {choice("Service Plan Status", "planStatus", PLAN_STATUS_OPTIONS, true)}
           {choice("Client Resides", "residesType", RESIDES_OPTIONS)}
-          {text("resides_other_1", "Client Resides — Other (describe), line 1", "residesOther1")}
-          {text("resides_other_2", "Client Resides — Other (describe), line 2", "residesOther2")}
+          {text("resides_other_1", "Client Resides — Other (describe), line 1", "residesOther1", {
+            off: details.residesType !== "Other",
+            hint: 'Only used when Client Resides is "Other"',
+          })}
+          {text("resides_other_2", "Client Resides — Other (describe), line 2", "residesOther2", {
+            off: details.residesType !== "Other",
+            hint: 'Only used when Client Resides is "Other"',
+          })}
           {text("pcp_name", "PCP Name", "pcpName")}
           {text("pcp_id", "PCP Provider ID Number / Taxonomy Code", "pcpProviderId")}
-          {text("pcp_exam", "Date of Last Exam", "pcpLastExamDate")}
+          {dateField("pcp_exam", "Date of Last Exam", "pcpLastExamDate")}
         </div>,
       )}
 
       {section(
         "Section II — Service location",
-        "Where personal care services are provided.",
+        "The street address goes on the Address(es) lines. The describe line is only for \"Other\".",
         <div className="grid gap-4 sm:grid-cols-2">
           {choice("Service Location", "serviceLocationType", SERVICE_LOCATION_OPTIONS)}
-          {text("loc_other", "Service Location — Other (describe)", "serviceLocationOther")}
-          {text("addr1", "Service Location Address(es), line 1", "serviceAddress1")}
+          {text("loc_other", "Service Location — Other (describe)", "serviceLocationOther", {
+            off: details.serviceLocationType !== "Other",
+            hint: 'Only used when Service Location is "Other"',
+          })}
+          {text("addr1", "Service Location Address(es), line 1", "serviceAddress1", {
+            placeholder: "e.g. 2607 W. 28th",
+          })}
           {text("addr2", "Service Location Address(es), line 2", "serviceAddress2")}
         </div>,
       )}
@@ -174,15 +220,19 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
         "Section III — Dates of service",
         "The original start of care date, current assessment date and assessing RN are required.",
         <div className="grid gap-4 sm:grid-cols-2">
-          {text("soc_original", "Start of Care Date (original)", "startOfCareOriginal", {
+          {dateField("soc_original", "Start of Care Date (original)", "startOfCareOriginal", {
             required: true,
           })}
-          {text("soc_plan", "Start of Care Date (this service plan)", "startOfCarePlan")}
-          {text("assessment_date", "Current Assessment Date", "currentAssessmentDate", {
+          {dateField("soc_plan", "Start of Care Date (this service plan)", "startOfCarePlan")}
+          {dateField("assessment_date", "Current Assessment Date", "currentAssessmentDate", {
             required: true,
           })}
           {text("assessing_rn", "Assessing RN", "assessingRn", { required: true })}
-          {text("referral_date", "Date of the Order or Referral for Assessment", "referralOrderDate")}
+          {dateField(
+            "referral_date",
+            "Date of the Order or Referral for Assessment",
+            "referralOrderDate",
+          )}
         </div>,
       )}
 
@@ -508,22 +558,34 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
                   ["begin_date_of_service", "Begin Date of Service"],
                   ["end_date_of_service", "End Date of Service"],
                 ] as const
-              ).map(([field, label]) => (
-                <div key={field} className="space-y-2">
-                  <Label htmlFor={field}>{label}</Label>
-                  <Input
-                    id={field}
-                    value={details.extension[field]}
-                    disabled={disabled}
-                    onChange={(e) =>
-                      onChange((prev) => ({
-                        ...prev,
-                        extension: { ...prev.extension, [field]: e.target.value },
-                      }))
-                    }
-                  />
-                </div>
-              ))}
+              ).map(([field, label]) => {
+                const isDate = field !== "additional_service_time_increments";
+                const setExt = (value: string) =>
+                  onChange((prev) => ({
+                    ...prev,
+                    extension: { ...prev.extension, [field]: value },
+                  }));
+                return (
+                  <div key={field} className="space-y-2">
+                    <Label htmlFor={field}>{label}</Label>
+                    {isDate ? (
+                      <DateMaskInput
+                        id={field}
+                        value={details.extension[field]}
+                        disabled={disabled}
+                        onChange={setExt}
+                      />
+                    ) : (
+                      <Input
+                        id={field}
+                        value={details.extension[field]}
+                        disabled={disabled}
+                        onChange={(e) => setExt(e.target.value)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>,

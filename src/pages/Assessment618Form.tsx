@@ -121,7 +121,7 @@ const SLOTS: {
   {
     slot: "sec4_witness_1",
     section: "Section IV",
-    label: "Witness 1 — required only if the client signs by mark",
+    label: "Witness 1 — may be captured any time; required if the client signs by mark",
     required: "if_mark",
     attestation: {
       witness:
@@ -131,7 +131,7 @@ const SLOTS: {
   {
     slot: "sec4_witness_2",
     section: "Section IV",
-    label: "Witness 2 — required only if the client signs by mark",
+    label: "Witness 2 — may be captured any time; required if the client signs by mark",
     required: "if_mark",
     attestation: {
       witness:
@@ -272,7 +272,10 @@ export default function Assessment618Form() {
   const [dialogSlot, setDialogSlot] = useState<null | { slot: SignatureSlot; signerType: SignerType }>(
     null,
   );
-  const [kioskSlot, setKioskSlot] = useState<SignatureSlot | null>(null);
+  const [kioskSlot, setKioskSlot] = useState<{
+    slot: SignatureSlot;
+    signerType: SignerType;
+  } | null>(null);
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
   const [pdfBusy, setPdfBusy] = useState<"print" | "download" | null>(null);
@@ -552,7 +555,7 @@ export default function Assessment618Form() {
               {meta.required === "optional"
                 ? "Not signed — optional"
                 : meta.required === "if_mark" && !byMark
-                  ? "Not needed unless the client signs by mark"
+                  ? "Optional — only required if the client signs by mark"
                   : "Not signed yet"}
             </p>
           )}
@@ -611,7 +614,7 @@ export default function Assessment618Form() {
   }
 
   const visibleSlots = SLOTS.filter((s) => {
-    if (s.required === "if_mark") return byMark || !!signed[s.slot];
+    if (s.required === "if_mark") return isDraft || byMark || !!signed[s.slot];
     if (s.required === "optional") return isDraft || !!signed[s.slot];
     return true;
   });
@@ -935,7 +938,7 @@ export default function Assessment618Form() {
                                   <Button
                                     key={slot}
                                     className="w-full min-h-[44px]"
-                                    onClick={() => setKioskSlot(slot)}
+                                    onClick={() => setKioskSlot({ slot, signerType: "client" })}
                                   >
                                     <Smartphone className="w-4 h-4 mr-2" />
                                     Hand device to the client — {SLOT_BY_ID[slot].section}
@@ -946,24 +949,30 @@ export default function Assessment618Form() {
                           )}
                         </div>
 
-                        {/* Section IV witnesses for signature by mark */}
-                        {byMark && (
-                          <div className="rounded-lg border p-4 space-y-3">
+                        {/* Section IV witnesses — available whenever a witness is needed */}
+                        <div className="rounded-lg border p-4 space-y-3">
+                          <div>
                             <Label>Section IV witnesses</Label>
-                            {(["sec4_witness_1", "sec4_witness_2"] as SignatureSlot[]).map((slot) =>
-                              signed[slot] ? null : (
-                                <Button
-                                  key={slot}
-                                  variant="outline"
-                                  className="w-full min-h-[44px]"
-                                  onClick={() => setDialogSlot({ slot, signerType: "witness" })}
-                                >
-                                  Capture {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"}
-                                </Button>
-                              ),
-                            )}
+                            <p className="text-xs text-muted-foreground">
+                              {byMark
+                                ? "Both witnesses are required because the client signs by mark."
+                                : "Optional — capture a witness whenever one is needed."}
+                            </p>
                           </div>
-                        )}
+                          {(["sec4_witness_1", "sec4_witness_2"] as SignatureSlot[]).map((slot) =>
+                            signed[slot] ? null : (
+                              <Button
+                                key={slot}
+                                variant="outline"
+                                className="w-full min-h-[44px]"
+                                onClick={() => setKioskSlot({ slot, signerType: "witness" })}
+                              >
+                                <Smartphone className="w-4 h-4 mr-2" />
+                                Hand device to {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"}
+                              </Button>
+                            ),
+                          )}
+                        </div>
 
                         {/* Section XIII physician — optional */}
                         {!signed.sec13_physician && (
@@ -1153,16 +1162,19 @@ export default function Assessment618Form() {
       {kioskSlot && form && (
         <ClientSigningMode
           clientName={clientName || "this client"}
-          attestation={attestationFor(kioskSlot, "client")}
+          attestation={attestationFor(kioskSlot.slot, kioskSlot.signerType)}
+          askRelationship={kioskSlot.signerType === "witness"}
           heading={
-            kioskSlot === "sec4_client"
-              ? "Please sign: your choice of provider"
-              : "Please sign: your plan of care"
+            kioskSlot.signerType === "witness"
+              ? "Please sign as a witness"
+              : kioskSlot.slot === "sec4_client"
+                ? "Please sign: your choice of provider"
+                : "Please sign: your plan of care"
           }
-          instructions="Your nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
+          instructions="The nurse has handed you this device. Read the statement, type your name and sign below. Nothing else on this device can be opened until you are finished."
           nurseEmail={user?.email ?? ""}
           saving={busy}
-          onSubmit={(result) => addSignature(kioskSlot, "client", result)}
+          onSubmit={(result) => addSignature(kioskSlot.slot, kioskSlot.signerType, result)}
           onExit={() => setKioskSlot(null)}
         />
       )}

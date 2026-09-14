@@ -209,7 +209,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 258,
       height: 16,
     });
-    drawFitted(p6, font, caption(physician), 420, 302, 110, 5.5);
+    drawFitted(p6, font, shortCaption(physician), 300, 302, 88, 5.5);
     drawFitted(p6, font, new Date(physician.signed_at).toLocaleDateString(), 395, 312, 118, 9);
   }
   const sec13Client = sig("sec13_client");
@@ -220,7 +220,7 @@ export async function buildForm618Pdf(input: Form618PdfInput): Promise<Uint8Arra
       width: 262,
       height: 16,
     });
-    drawFitted(p6, font, caption(sec13Client), 420, 195, 110, 5.5);
+    drawFitted(p6, font, shortCaption(sec13Client), 300, 195, 88, 5.5);
     drawFitted(p6, font, new Date(sec13Client.signed_at).toLocaleDateString(), 401, 205, 112, 9);
   }
 

@@ -955,15 +955,17 @@ export default function Assessment618Form() {
 
                         <Button
                           className="w-full min-h-[44px]"
-                          disabled={!readyToLock || busy}
+                          disabled={!canComplete || busy}
                           onClick={lockForm}
                         >
                           {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           Complete and lock this assessment
                         </Button>
-                        {!readyToLock && (
+                        {!canComplete && (
                           <p className="text-sm text-muted-foreground text-center">
-                            Every required signature must be captured before this can be completed.
+                            {missingRequired.length > 0
+                              ? `These are still needed: ${missingRequired.join(", ")}.`
+                              : "Every required signature must be captured before this can be completed."}
                           </p>
                         )}
                       </div>

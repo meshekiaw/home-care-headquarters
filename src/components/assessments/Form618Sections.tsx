@@ -558,22 +558,34 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
                   ["begin_date_of_service", "Begin Date of Service"],
                   ["end_date_of_service", "End Date of Service"],
                 ] as const
-              ).map(([field, label]) => (
-                <div key={field} className="space-y-2">
-                  <Label htmlFor={field}>{label}</Label>
-                  <Input
-                    id={field}
-                    value={details.extension[field]}
-                    disabled={disabled}
-                    onChange={(e) =>
-                      onChange((prev) => ({
-                        ...prev,
-                        extension: { ...prev.extension, [field]: e.target.value },
-                      }))
-                    }
-                  />
-                </div>
-              ))}
+              ).map(([field, label]) => {
+                const isDate = field !== "additional_service_time_increments";
+                const setExt = (value: string) =>
+                  onChange((prev) => ({
+                    ...prev,
+                    extension: { ...prev.extension, [field]: value },
+                  }));
+                return (
+                  <div key={field} className="space-y-2">
+                    <Label htmlFor={field}>{label}</Label>
+                    {isDate ? (
+                      <DateMaskInput
+                        id={field}
+                        value={details.extension[field]}
+                        disabled={disabled}
+                        onChange={setExt}
+                      />
+                    ) : (
+                      <Input
+                        id={field}
+                        value={details.extension[field]}
+                        disabled={disabled}
+                        onChange={(e) => setExt(e.target.value)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>,

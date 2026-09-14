@@ -32,6 +32,10 @@ interface Props {
   details: Form618Details;
   disabled?: boolean;
   onChange: (updater: (prev: Form618Details) => Form618Details) => void;
+  /** Section IX — Assessment Narrative, rendered between Sections VIII and X. */
+  sectionIX?: React.ReactNode;
+  /** Section XII — Personal Care Service Plan, rendered between Sections XI and XIII. */
+  sectionXII?: React.ReactNode;
 }
 
 const NONE = "__none__";

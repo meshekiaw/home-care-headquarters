@@ -32,11 +32,15 @@ interface Props {
   details: Form618Details;
   disabled?: boolean;
   onChange: (updater: (prev: Form618Details) => Form618Details) => void;
+  /** Section IX — Assessment Narrative, rendered between Sections VIII and X. */
+  sectionIX?: React.ReactNode;
+  /** Section XII — Personal Care Service Plan, rendered between Sections XI and XIII. */
+  sectionXII?: React.ReactNode;
 }
 
 const NONE = "__none__";
 
-export function Form618Sections({ details, disabled, onChange }: Props) {
+export function Form618Sections({ details, disabled, onChange, sectionIX, sectionXII }: Props) {
   const set = <K extends keyof Form618Details>(key: K, value: Form618Details[K]) =>
     onChange((prev) => ({ ...prev, [key]: value }));
 
@@ -374,6 +378,8 @@ export function Form618Sections({ details, disabled, onChange }: Props) {
         </div>,
       )}
 
+      {sectionIX}
+
       {section(
         "Section X — Alternate resources",
         "Resources available to the client other than personal care.",
@@ -463,6 +469,8 @@ export function Form618Sections({ details, disabled, onChange }: Props) {
           </div>
         </div>,
       )}
+
+      {sectionXII}
 
       {section(
         "Section XIII — Authorized service plan",

@@ -284,6 +284,7 @@ export default function NurseVisitForm() {
   const [dialogSlot, setDialogSlot] = useState<null | { slot: Slot; signerType: SignerType }>(null);
   const [kiosk, setKiosk] = useState(false);
   const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrated = useRef(false);

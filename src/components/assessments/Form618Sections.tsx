@@ -470,6 +470,8 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
         </div>,
       )}
 
+      {sectionXII}
+
       {section(
         "Section XIII — Authorized service plan",
         "The plan text printed above the physician and client signature lines.",

@@ -614,7 +614,7 @@ export default function Assessment618Form() {
   }
 
   const visibleSlots = SLOTS.filter((s) => {
-    if (s.required === "if_mark") return byMark || !!signed[s.slot];
+    if (s.required === "if_mark") return isDraft || byMark || !!signed[s.slot];
     if (s.required === "optional") return isDraft || !!signed[s.slot];
     return true;
   });

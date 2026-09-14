@@ -460,6 +460,14 @@ export default function Assessment618Form() {
 
   async function lockForm() {
     if (!form) return;
+    if (missingRequired.length > 0) {
+      toast({
+        title: "Some required answers are missing",
+        description: `Please fill in: ${missingRequired.join(", ")}.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setBusy(true);
     try {
       const { data, error } = await supabase.rpc("complete_618_form", { p_form_id: form.id });

@@ -708,6 +708,6 @@ export async function downloadForm618Pdf(input: Form618PdfInput, fileName: strin
   downloadPdf(await buildForm618Pdf(input), fileName);
 }
 
-export async function printForm618Pdf(input: Form618PdfInput) {
-  printPdf(await buildForm618Pdf(input));
+export async function printForm618Pdf(input: Form618PdfInput, fallbackFileName = "DMS-618.pdf") {
+  return printPdf(await buildForm618Pdf(input), fallbackFileName);
 }

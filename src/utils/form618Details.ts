@@ -1,6 +1,7 @@
 // Every DMS-618 (8/23) answer the printing side can place on the form.
 // Option strings must match the checkbox keys in form618Pdf.ts exactly.
 import type { AdlLevel, Form618PdfInput, HelpLevel } from "./form618Pdf";
+import { maskDateInput } from "@/components/forms/DateMaskInput";
 
 export const PLAN_STATUS_OPTIONS = ["Initial", "Revision", "Renewal"] as const;
 

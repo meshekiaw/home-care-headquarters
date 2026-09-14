@@ -2946,6 +2946,7 @@ export type Database = {
         }
         Returns: Json
       }
+      reset_nurse_visit_form: { Args: { p_form_id: string }; Returns: Json }
       start_618_form: { Args: { p_assessment_id: string }; Returns: string }
       start_nurse_visit_form: {
         Args: { p_assessment_id: string }

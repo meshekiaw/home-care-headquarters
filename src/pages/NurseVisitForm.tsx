@@ -38,6 +38,7 @@ import {
   FilePlus2,
   Plus,
   Trash2,
+  RotateCcw,
 } from "lucide-react";
 
 type Slot = "client" | "nurse";
@@ -284,6 +285,7 @@ export default function NurseVisitForm() {
   const [dialogSlot, setDialogSlot] = useState<null | { slot: Slot; signerType: SignerType }>(null);
   const [kiosk, setKiosk] = useState(false);
   const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [correctionReason, setCorrectionReason] = useState("");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrated = useRef(false);
@@ -519,6 +521,32 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not complete the form",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resetDraft() {
+    if (!form || form.status !== "draft") return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.rpc("reset_nurse_visit_form", { p_form_id: form.id });
+      if (error) throw error;
+      setResetOpen(false);
+      setKiosk(false);
+      setDialogSlot(null);
+      setData(EMPTY);
+      await load();
+      toast({
+        title: "Draft cleared",
+        description: "All answers and signatures were removed. You can start over.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Could not clear the draft",
         description: error.message,
         variant: "destructive",
       });
@@ -1121,6 +1149,15 @@ export default function NurseVisitForm() {
                             completed.
                           </p>
                         )}
+                        <Button
+                          variant="outline"
+                          className="w-full min-h-[44px] text-destructive"
+                          disabled={busy}
+                          onClick={() => setResetOpen(true)}
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Clear this draft and start over
+                        </Button>
                       </div>
                     )}
 
@@ -1243,6 +1280,38 @@ export default function NurseVisitForm() {
               onClick={startCorrection}
             >
               Start the correction
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear this draft?</DialogTitle>
+            <DialogDescription>
+              Every answer and any signature already captured on this draft will be removed and the
+              form goes back to empty. This cannot be undone, and it is only possible while the form
+              is still a draft.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              className="min-h-[44px] flex-1"
+              onClick={() => setResetOpen(false)}
+              disabled={busy}
+            >
+              Keep the draft
+            </Button>
+            <Button
+              variant="destructive"
+              className="min-h-[44px] flex-1"
+              onClick={resetDraft}
+              disabled={busy}
+            >
+              {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Clear everything
             </Button>
           </div>
         </DialogContent>

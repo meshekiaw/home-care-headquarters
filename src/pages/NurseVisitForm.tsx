@@ -1285,6 +1285,38 @@ export default function NurseVisitForm() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clear this draft?</DialogTitle>
+            <DialogDescription>
+              Every answer and any signature already captured on this draft will be removed and the
+              form goes back to empty. This cannot be undone, and it is only possible while the form
+              is still a draft.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              className="min-h-[44px] flex-1"
+              onClick={() => setResetOpen(false)}
+              disabled={busy}
+            >
+              Keep the draft
+            </Button>
+            <Button
+              variant="destructive"
+              className="min-h-[44px] flex-1"
+              onClick={resetDraft}
+              disabled={busy}
+            >
+              {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Clear everything
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {kiosk && form && (
         <ClientSigningMode
           clientName={clientName || "this client"}

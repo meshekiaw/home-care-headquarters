@@ -933,15 +933,32 @@ export default function Assessment618Form() {
                                 </Label>
                               </div>
 
+                              {!signed.sec4_client && !signed.sec13_client && (
+                                <Button
+                                  className="w-full min-h-[44px]"
+                                  onClick={() =>
+                                    setKioskSteps([
+                                      { slot: "sec4_client", signerType: "client" },
+                                      { slot: "sec13_client", signerType: "client" },
+                                    ])
+                                  }
+                                >
+                                  <Smartphone className="w-4 h-4 mr-2" />
+                                  Hand device to the client — both signatures
+                                </Button>
+                              )}
                               {(["sec4_client", "sec13_client"] as SignatureSlot[]).map((slot) =>
                                 signed[slot] ? null : (
                                   <Button
                                     key={slot}
+                                    variant={
+                                      !signed.sec4_client && !signed.sec13_client ? "outline" : "default"
+                                    }
                                     className="w-full min-h-[44px]"
-                                    onClick={() => setKioskSlot({ slot, signerType: "client" })}
+                                    onClick={() => setKioskSteps([{ slot, signerType: "client" }])}
                                   >
                                     <Smartphone className="w-4 h-4 mr-2" />
-                                    Hand device to the client — {SLOT_BY_ID[slot].section}
+                                    Hand device to the client — {SLOT_BY_ID[slot].section} only
                                   </Button>
                                 ),
                               )}

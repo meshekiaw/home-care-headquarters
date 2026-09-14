@@ -1,6 +1,7 @@
 // Every DMS-618 (8/23) answer the printing side can place on the form.
 // Option strings must match the checkbox keys in form618Pdf.ts exactly.
 import type { AdlLevel, Form618PdfInput, HelpLevel } from "./form618Pdf";
+import { maskDateInput } from "@/components/forms/DateMaskInput";
 
 export const PLAN_STATUS_OPTIONS = ["Initial", "Revision", "Renewal"] as const;
 
@@ -197,6 +198,41 @@ export function emptyForm618Details(): Form618Details {
 }
 
 const str = (v: any) => (typeof v === "string" ? v : "");
+
+/** Date answers that must display and print as MM/DD/YYYY. */
+const DATE_KEYS = [
+  "dateOfBirth",
+  "pcpLastExamDate",
+  "startOfCareOriginal",
+  "startOfCarePlan",
+  "currentAssessmentDate",
+  "referralOrderDate",
+] as const;
+
+/** Weekly totals are always the sum of the daily row — never typed by hand. */
+function sumTimeRow(row: string[]): string {
+  let total = 0;
+  let any = false;
+  for (const cell of row) {
+    const n = Number(String(cell ?? "").replace(/[^0-9.\-]/g, ""));
+    if (Number.isFinite(n) && String(cell ?? "").trim() !== "") {
+      total += n;
+      any = true;
+    }
+  }
+  if (!any) return "";
+  return String(Math.round(total * 100) / 100);
+}
+
+export function weeklyServiceTimeTotals(details: Form618Details): {
+  weeklyMax: string;
+  weeklyMin: string;
+} {
+  return {
+    weeklyMax: sumTimeRow(details.serviceTime.max),
+    weeklyMin: sumTimeRow(details.serviceTime.min),
+  };
+}
 const strArray = (v: any) => (Array.isArray(v) ? v.filter((x) => typeof x === "string") : []);
 
 export function normalizeForm618Details(value: any): Form618Details {
@@ -233,6 +269,11 @@ export function normalizeForm618Details(value: any): Form618Details {
     (base as any)[key] = str(value[key]);
   }
 
+  // Values saved before date auto-formatting existed (e.g. "02011979") are repaired here.
+  for (const key of DATE_KEYS) {
+    base[key] = maskDateInput(base[key]);
+  }
+
   base.diagnoses = base.diagnoses.map((row, i) => ({
     icd_code: str(value?.diagnoses?.[i]?.icd_code),
     description: str(value?.diagnoses?.[i]?.description),
@@ -256,9 +297,11 @@ export function normalizeForm618Details(value: any): Form618Details {
   base.serviceTime = {
     max: Array.from({ length: 7 }, (_, i) => str(value?.serviceTime?.max?.[i])),
     min: Array.from({ length: 7 }, (_, i) => str(value?.serviceTime?.min?.[i])),
-    weeklyMax: str(value?.serviceTime?.weeklyMax),
-    weeklyMin: str(value?.serviceTime?.weeklyMin),
+    weeklyMax: "",
+    weeklyMin: "",
   };
+  // Weekly totals are always derived, never trusted from the saved record.
+  base.serviceTime = { ...base.serviceTime, ...weeklyServiceTimeTotals(base) };
 
   base.extensionRequested = value.extensionRequested === true;
   base.extension = {
@@ -333,7 +376,7 @@ export function form618DetailsToPdfInput(
     meals: details.meals,
     adl: adl as Form618PdfInput["adl"],
     alternateResources: details.alternateResources,
-    serviceTime: details.serviceTime,
+    serviceTime: { ...details.serviceTime, ...weeklyServiceTimeTotals(details) },
     sectionXIIIPlan: details.sectionXIIIPlan,
     extension: details.extensionRequested ? details.extension : null,
   };

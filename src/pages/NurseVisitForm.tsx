@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { SignatureCapture, type SignatureResult } from "@/components/assessments/SignatureCapture";

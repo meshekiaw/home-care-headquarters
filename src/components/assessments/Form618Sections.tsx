@@ -492,29 +492,25 @@ export function Form618Sections({ details, disabled, onChange, sectionIX, sectio
               <Label htmlFor="weekly_max">Weekly total — Maximum</Label>
               <Input
                 id="weekly_max"
-                value={details.serviceTime.weeklyMax}
-                disabled={disabled}
-                onChange={(e) =>
-                  onChange((prev) => ({
-                    ...prev,
-                    serviceTime: { ...prev.serviceTime, weeklyMax: e.target.value },
-                  }))
-                }
+                readOnly
+                value={weeklyTotals.weeklyMax}
+                className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground">
+                Added up from the Maximum row above.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="weekly_min">Weekly total — Minimum</Label>
               <Input
                 id="weekly_min"
-                value={details.serviceTime.weeklyMin}
-                disabled={disabled}
-                onChange={(e) =>
-                  onChange((prev) => ({
-                    ...prev,
-                    serviceTime: { ...prev.serviceTime, weeklyMin: e.target.value },
-                  }))
-                }
+                readOnly
+                value={weeklyTotals.weeklyMin}
+                className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground">
+                Added up from the Minimum row above.
+              </p>
             </div>
           </div>
         </div>,

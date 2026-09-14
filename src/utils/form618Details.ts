@@ -374,7 +374,7 @@ export function form618DetailsToPdfInput(
     meals: details.meals,
     adl: adl as Form618PdfInput["adl"],
     alternateResources: details.alternateResources,
-    serviceTime: details.serviceTime,
+    serviceTime: { ...details.serviceTime, ...weeklyServiceTimeTotals(details) },
     sectionXIIIPlan: details.sectionXIIIPlan,
     extension: details.extensionRequested ? details.extension : null,
   };

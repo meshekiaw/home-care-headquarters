@@ -976,16 +976,30 @@ export default function Assessment618Form() {
                                 : "Optional — capture a witness whenever one is needed."}
                             </p>
                           </div>
+                          {!signed.sec4_witness_1 && !signed.sec4_witness_2 && (
+                            <Button
+                              className="w-full min-h-[44px]"
+                              onClick={() =>
+                                setKioskSteps([
+                                  { slot: "sec4_witness_1", signerType: "witness" },
+                                  { slot: "sec4_witness_2", signerType: "witness" },
+                                ])
+                              }
+                            >
+                              <Smartphone className="w-4 h-4 mr-2" />
+                              Hand device to both witnesses
+                            </Button>
+                          )}
                           {(["sec4_witness_1", "sec4_witness_2"] as SignatureSlot[]).map((slot) =>
                             signed[slot] ? null : (
                               <Button
                                 key={slot}
                                 variant="outline"
                                 className="w-full min-h-[44px]"
-                                onClick={() => setKioskSlot({ slot, signerType: "witness" })}
+                                onClick={() => setKioskSteps([{ slot, signerType: "witness" }])}
                               >
                                 <Smartphone className="w-4 h-4 mr-2" />
-                                Hand device to {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"}
+                                Hand device to {slot === "sec4_witness_1" ? "Witness 1" : "Witness 2"} only
                               </Button>
                             ),
                           )}

@@ -94,6 +94,7 @@ function statusBadge(status: string) {
 
 export default function NurseAssessments() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [clients, setClients] = useState<Option[]>([]);
   const [nurses, setNurses] = useState<Option[]>([]);

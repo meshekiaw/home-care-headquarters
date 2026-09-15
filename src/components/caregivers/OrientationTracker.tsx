@@ -158,7 +158,7 @@ export default function OrientationTracker() {
         supabase.functions.invoke('send-sms', { body: { notification_id: notificationId } })
           .then(({ error: smsErr }) => {
             if (smsErr) {
-              sonnerToast.error('SMS delivery failed', { description: smsErr.message });
+              sonnerToast.error('SMS delivery failed', { description: friendlyError(smsErr) });
             } else {
               sonnerToast.success('SMS dispatched via Twilio', { description: `Sent to ${row.phone}` });
             }

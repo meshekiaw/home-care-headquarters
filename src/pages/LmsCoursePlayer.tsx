@@ -265,7 +265,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     });
     setSubmitting(false);
     if (error || data?.error) {
-      toast({ title: "Quiz submission failed", description: data?.error || error?.message, variant: "destructive" });
+      toast({ title: "Quiz submission failed", description: data?.error || friendlyError(error), variant: "destructive" });
       return;
     }
     setResult(data);

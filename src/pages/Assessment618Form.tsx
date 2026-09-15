@@ -300,7 +300,7 @@ export default function Assessment618Form() {
     if (row) setClientName(row.client_name ?? "");
 
     if (formRes.error) {
-      toast({ title: "Could not load the 618 form", description: formRes.error.message, variant: "destructive" });
+      toast({ title: "Could not load the 618 form", description: friendlyError(formRes.error), variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -634,7 +634,7 @@ export default function Assessment618Form() {
     } catch (e: any) {
       toast({
         title: "The form could not be prepared",
-        description: `${e?.message ?? "Something went wrong while preparing the form."} You can try again.`,
+        description: `${friendlyError(e, "Something went wrong while preparing the form.")} You can try again.`,
         variant: "destructive",
         action: (
           <ToastAction altText="Try again" onClick={() => handlePdf(action)}>

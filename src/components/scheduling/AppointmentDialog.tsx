@@ -224,7 +224,7 @@ export function AppointmentDialog({
       console.error("Error saving appointment:", error);
       toast({
         title: "Could not save appointment",
-        description: error instanceof Error ? error.message : "Please try again.",
+        description: friendlyError(error, "Please try again."),
         variant: "destructive",
       });
     } finally {

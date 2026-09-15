@@ -313,7 +313,7 @@ export default function NurseVisitForm() {
     if (formRes.error) {
       toast({
         title: "Could not load the Nurse Visit form",
-        description: formRes.error.message,
+        description: friendlyError(formRes.error),
         variant: "destructive",
       });
       setLoading(false);
@@ -703,7 +703,7 @@ export default function NurseVisitForm() {
     } catch (e: any) {
       toast({
         title: "The form could not be prepared",
-        description: `${e?.message ?? "Something went wrong while preparing the form."} You can try again.`,
+        description: `${friendlyError(e, "Something went wrong while preparing the form.")} You can try again.`,
         variant: "destructive",
         action: (
           <ToastAction altText="Try again" onClick={() => handlePdf(action)}>

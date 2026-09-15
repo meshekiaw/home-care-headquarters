@@ -288,7 +288,31 @@ export default function NurseAssessments() {
         claimed_at: form.assigned_nurse_id ? new Date().toISOString() : null,
         notes: form.notes || null,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505" || error.message?.toLowerCase().includes("duplicate key value")) {
+          const type = form.assessment_type || "618";
+          const client = clients.find((c) => c.id === form.client_id);
+          const clientName = client ? `${client.first_name} ${client.last_name}` : "This client";
+          const existing = assessments.find(
+            (a) =>
+              a.client_id === form.client_id &&
+              (a.assessment_type ?? "618") === type &&
+              a.status !== "Completed",
+          );
+          toast({
+            title: "Already has an open assessment",
+            description: `${clientName} already has an open ${type === "Nurse Visit" ? "Nurse Visit" : "618"} assessment. Open the existing one instead of creating a new one.`,
+            variant: "destructive",
+            action: existing ? (
+              <ToastAction altText="Open the existing assessment" onClick={() => navigate(`/assessments/${existing.id}/claim`)}>
+                Open it
+              </ToastAction>
+            ) : undefined,
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({ title: "Assessment created" });
       setCreateOpen(false);

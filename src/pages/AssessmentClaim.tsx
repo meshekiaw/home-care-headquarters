@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { ClipboardCheck, Loader2, CheckCircle } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface AssessmentDetail {
   id: string;
@@ -66,7 +67,7 @@ export default function AssessmentClaim() {
     });
 
     if (error) {
-      toast({ title: "Could not load assessment", description: error.message, variant: "destructive" });
+      toast({ title: "Could not load assessment", description: friendlyError(error), variant: "destructive" });
     }
     const row = ((data as AssessmentDetail[]) ?? [])[0] ?? null;
     setAssessment(row);
@@ -139,7 +140,7 @@ export default function AssessmentClaim() {
 
       toast({ title: "Assessment not found", variant: "destructive" });
     } catch (error: any) {
-      toast({ title: "Could not claim assessment", description: error.message, variant: "destructive" });
+      toast({ title: "Could not claim assessment", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -182,7 +183,7 @@ export default function AssessmentClaim() {
       });
       await load();
     } catch (error: any) {
-      toast({ title: "Could not save the visit time", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save the visit time", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -204,7 +205,7 @@ export default function AssessmentClaim() {
       toast({ title: "Assessment completed", description: "Your notes have been saved." });
       await load();
     } catch (error: any) {
-      toast({ title: "Could not mark completed", description: error.message, variant: "destructive" });
+      toast({ title: "Could not mark completed", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -221,7 +222,7 @@ export default function AssessmentClaim() {
       toast({ title: "Notes saved" });
       await load();
     } catch (error: any) {
-      toast({ title: "Could not save notes", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save notes", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { friendlyError } from "@/lib/friendlyError";
 
 type Caregiver = Tables<"caregivers">;
 type CaregiverCredential = Tables<"caregiver_credentials">;
@@ -35,7 +36,7 @@ export function useCaregivers() {
     } catch (error: any) {
       toast({
         title: "Error fetching caregivers",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -61,7 +62,7 @@ export function useCaregivers() {
     } catch (error: any) {
       toast({
         title: "Error adding caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return null;
@@ -85,7 +86,7 @@ export function useCaregivers() {
     } catch (error: any) {
       toast({
         title: "Error updating caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return null;
@@ -103,7 +104,7 @@ export function useCaregivers() {
     } catch (error: any) {
       toast({
         title: "Error removing caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return false;
@@ -156,7 +157,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
     } catch (error: any) {
       toast({
         title: "Error fetching caregiver details",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -180,7 +181,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Credential added successfully" });
       return data;
     } catch (error: any) {
-      toast({ title: "Error adding credential", description: error.message, variant: "destructive" });
+      toast({ title: "Error adding credential", description: friendlyError(error), variant: "destructive" });
       return null;
     }
   };
@@ -199,7 +200,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Credential updated successfully" });
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating credential", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating credential", description: friendlyError(error), variant: "destructive" });
       return null;
     }
   };
@@ -212,7 +213,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Credential removed successfully" });
       return true;
     } catch (error: any) {
-      toast({ title: "Error removing credential", description: error.message, variant: "destructive" });
+      toast({ title: "Error removing credential", description: friendlyError(error), variant: "destructive" });
       return false;
     }
   };
@@ -236,7 +237,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Availability updated successfully" });
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating availability", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating availability", description: friendlyError(error), variant: "destructive" });
       return null;
     }
   };
@@ -249,7 +250,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Availability slot removed" });
       return true;
     } catch (error: any) {
-      toast({ title: "Error removing availability", description: error.message, variant: "destructive" });
+      toast({ title: "Error removing availability", description: friendlyError(error), variant: "destructive" });
       return false;
     }
   };
@@ -270,7 +271,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Skill added successfully" });
       return data;
     } catch (error: any) {
-      toast({ title: "Error adding skill", description: error.message, variant: "destructive" });
+      toast({ title: "Error adding skill", description: friendlyError(error), variant: "destructive" });
       return null;
     }
   };
@@ -289,7 +290,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Skill updated successfully" });
       return data;
     } catch (error: any) {
-      toast({ title: "Error updating skill", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating skill", description: friendlyError(error), variant: "destructive" });
       return null;
     }
   };
@@ -302,7 +303,7 @@ export function useCaregiverDetails(caregiverId: string | null) {
       toast({ title: "Skill removed successfully" });
       return true;
     } catch (error: any) {
-      toast({ title: "Error removing skill", description: error.message, variant: "destructive" });
+      toast({ title: "Error removing skill", description: friendlyError(error), variant: "destructive" });
       return false;
     }
   };

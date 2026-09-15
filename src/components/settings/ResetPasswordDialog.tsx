@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface ResetPasswordDialogProps {
   open: boolean;
@@ -41,7 +42,7 @@ export function ResetPasswordDialog({ open, onOpenChange, user }: ResetPasswordD
       setConfirmPassword("");
       onOpenChange(false);
     } catch (err: any) {
-      toast({ title: "Error resetting password", description: err.message, variant: "destructive" });
+      toast({ title: "Error resetting password", description: friendlyError(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }

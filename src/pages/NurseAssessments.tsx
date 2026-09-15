@@ -181,7 +181,7 @@ export default function NurseAssessments() {
       setEditTarget(null);
       await loadAll();
     } catch (error: any) {
-      toast({ title: "Could not save changes", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save changes", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -199,7 +199,7 @@ export default function NurseAssessments() {
       })
       .eq("id", a.id);
     if (error) {
-      toast({ title: "Could not unclaim", description: error.message, variant: "destructive" });
+      toast({ title: "Could not unclaim", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({
@@ -219,7 +219,7 @@ export default function NurseAssessments() {
       setDeleteTarget(null);
       await loadAll();
     } catch (error: any) {
-      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+      toast({ title: "Could not delete", description: friendlyError(error), variant: "destructive" });
     } finally {
       setDeleting(false);
     }
@@ -244,7 +244,7 @@ export default function NurseAssessments() {
       ]);
 
     if (error) {
-      toast({ title: "Could not load assessments", description: error.message, variant: "destructive" });
+      toast({ title: "Could not load assessments", description: friendlyError(error), variant: "destructive" });
     }
     setAssessments((rows as unknown as Assessment[]) ?? []);
     setClients((clientRows as Option[]) ?? []);
@@ -330,7 +330,7 @@ export default function NurseAssessments() {
       });
       await loadAll();
     } catch (error: any) {
-      toast({ title: "Could not create assessment", description: error.message, variant: "destructive" });
+      toast({ title: "Could not create assessment", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -362,7 +362,7 @@ export default function NurseAssessments() {
       .eq("id", assessment.id);
 
     if (error) {
-      toast({ title: "Could not reassign", description: error.message, variant: "destructive" });
+      toast({ title: "Could not reassign", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({ title: nurseId === "unassigned" ? "Assessment released" : "Nurse reassigned" });
@@ -375,7 +375,7 @@ export default function NurseAssessments() {
       .update({ status: "Completed", completed_at: new Date().toISOString() })
       .eq("id", id);
     if (error) {
-      toast({ title: "Could not update", description: error.message, variant: "destructive" });
+      toast({ title: "Could not update", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Assessment marked completed" });

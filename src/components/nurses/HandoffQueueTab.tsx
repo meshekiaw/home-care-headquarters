@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import { Button } from "@/components/ui/button";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,7 +134,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
      } catch (error: any) {
        toast({
          title: "Error loading handoffs",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -196,7 +197,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
      } catch (error: any) {
        toast({
          title: "Error picking up assessment",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -230,7 +231,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
      } catch (error: any) {
        toast({
          title: "Error cancelling handoff",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }

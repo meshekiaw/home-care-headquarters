@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -52,7 +53,7 @@ export default function Login() {
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

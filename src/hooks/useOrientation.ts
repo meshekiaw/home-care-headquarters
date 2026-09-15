@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { friendlyError } from "@/lib/friendlyError";
 
 export interface OrientationModule {
   id: string;
@@ -55,7 +56,7 @@ export function useOrientationModules() {
       if (error) throw error;
       setModules((data as any[]) || []);
     } catch (error: any) {
-      toast({ title: "Error loading orientation modules", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading orientation modules", description: friendlyError(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -71,7 +72,7 @@ export function useOrientationModules() {
       toast({ title: "Section added" });
       fetchModules();
     } catch (error: any) {
-      toast({ title: "Error adding section", description: error.message, variant: "destructive" });
+      toast({ title: "Error adding section", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -82,7 +83,7 @@ export function useOrientationModules() {
       toast({ title: "Section updated" });
       fetchModules();
     } catch (error: any) {
-      toast({ title: "Error updating section", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating section", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -93,7 +94,7 @@ export function useOrientationModules() {
       toast({ title: "Section deleted" });
       fetchModules();
     } catch (error: any) {
-      toast({ title: "Error deleting section", description: error.message, variant: "destructive" });
+      toast({ title: "Error deleting section", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -111,7 +112,7 @@ export function useOrientationModules() {
       toast({ title: "Orientation content loaded successfully" });
       fetchModules();
     } catch (error: any) {
-      toast({ title: "Error seeding modules", description: error.message, variant: "destructive" });
+      toast({ title: "Error seeding modules", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -135,7 +136,7 @@ export function useOrientationQuizzes() {
       if (error) throw error;
       setQuizzes((data as any[])?.map((q: any) => ({ ...q, options: q.options || [] })) || []);
     } catch (error: any) {
-      toast({ title: "Error loading quizzes", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading quizzes", description: friendlyError(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -160,7 +161,7 @@ export function useOrientationQuizzes() {
       toast({ title: "Quiz questions loaded successfully" });
       fetchQuizzes();
     } catch (error: any) {
-      toast({ title: "Error seeding quizzes", description: error.message, variant: "destructive" });
+      toast({ title: "Error seeding quizzes", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -172,7 +173,7 @@ export function useOrientationQuizzes() {
       toast({ title: "Question added" });
       fetchQuizzes();
     } catch (error: any) {
-      toast({ title: "Error adding question", description: error.message, variant: "destructive" });
+      toast({ title: "Error adding question", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -183,7 +184,7 @@ export function useOrientationQuizzes() {
       toast({ title: "Question updated" });
       fetchQuizzes();
     } catch (error: any) {
-      toast({ title: "Error updating question", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating question", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -194,7 +195,7 @@ export function useOrientationQuizzes() {
       toast({ title: "Question deleted" });
       fetchQuizzes();
     } catch (error: any) {
-      toast({ title: "Error deleting question", description: error.message, variant: "destructive" });
+      toast({ title: "Error deleting question", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -203,7 +204,7 @@ export function useOrientationQuizzes() {
       body: { section_number: sectionNumber, answers },
     });
     if (error) {
-      toast({ title: "Error grading quiz", description: error.message, variant: "destructive" });
+      toast({ title: "Error grading quiz", description: friendlyError(error), variant: "destructive" });
       throw error;
     }
     if (data?.error) {
@@ -239,7 +240,7 @@ export function useOrientationProgress() {
         })) || []
       );
     } catch (error: any) {
-      toast({ title: "Error loading progress", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading progress", description: friendlyError(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -264,7 +265,7 @@ export function useOrientationProgress() {
       }
       fetchProgress();
     } catch (error: any) {
-      toast({ title: "Error saving progress", description: error.message, variant: "destructive" });
+      toast({ title: "Error saving progress", description: friendlyError(error), variant: "destructive" });
     }
   };
 

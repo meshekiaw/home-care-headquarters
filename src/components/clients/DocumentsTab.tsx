@@ -36,6 +36,7 @@ import {
 import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Document {
   id: string;
@@ -87,7 +88,7 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error loading documents",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -128,7 +129,7 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error adding document",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -150,7 +151,7 @@ export function DocumentsTab({ clientId }: DocumentsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error deleting document",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

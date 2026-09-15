@@ -36,6 +36,7 @@ import {
 import { useClientRequiredSkills, useSkillMatching } from "@/hooks/useSkillMatching";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface ClientRequiredSkillsTabProps {
   clientId: string;
@@ -150,7 +151,7 @@ export function ClientRequiredSkillsTab({ clientId }: ClientRequiredSkillsTabPro
     } catch (error: any) {
       toast({
         title: "Error assigning caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

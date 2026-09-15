@@ -21,6 +21,7 @@ import {
 import { AlertTriangle, Users, Send, Eye, Loader2, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { friendlyError } from "@/lib/friendlyError";
 
 const TOTAL_SECTIONS = 28;
 const AT_RISK_MS = 72 * 60 * 60 * 1000;
@@ -68,7 +69,7 @@ export default function OrientationTracker() {
       .select("id,user_id,first_name,last_name,email,phone,cleared_to_schedule,orientation_deadline,first_shift_at")
       .order("last_name", { ascending: true });
     if (error) {
-      toast({ title: "Failed to load caregivers", description: error.message, variant: "destructive" });
+      toast({ title: "Failed to load caregivers", description: friendlyError(error), variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -127,7 +128,7 @@ export default function OrientationTracker() {
     }).select("id, created_at").single();
     setSendingId(null);
     if (error) {
-      toast({ title: "Reminder failed", description: error.message, variant: "destructive" });
+      toast({ title: "Reminder failed", description: friendlyError(error), variant: "destructive" });
     } else {
       setRecentReminderIds((prev) => new Set(prev).add(row.id));
       const channels = [row.email ? "Email" : null, row.phone ? "SMS" : null].filter(Boolean).join(" + ") || "In-app";

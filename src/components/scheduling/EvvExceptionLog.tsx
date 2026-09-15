@@ -9,6 +9,7 @@ import { Loader2, Sparkles, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { AiResponseCard } from "./AiResponseCard";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Exception {
   id: string;
@@ -92,7 +93,7 @@ export function EvvExceptionLog() {
         ai_note: result,
       });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(e, "Failed"), variant: "destructive" });
     } finally {
       setAiLoading(false);
     }

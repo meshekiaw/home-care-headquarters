@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import DashboardLayout from "@/components/layout/DashboardLayout";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,7 +91,7 @@
      } catch (error: any) {
        toast({
          title: "Error loading notifications",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -126,7 +127,7 @@
      } catch (error: any) {
        toast({
          title: "Error running notification check",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -171,7 +172,7 @@
      } catch (error: any) {
        toast({
          title: "Error resending notification",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {

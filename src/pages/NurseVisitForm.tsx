@@ -31,6 +31,7 @@ import LegalFooter from "@/components/layout/LegalFooter";
 import { SignatureCapture, type SignatureResult } from "@/components/assessments/SignatureCapture";
 import { ClientSigningMode } from "@/components/assessments/ClientSigningMode";
 import {
+import { friendlyError } from "@/lib/friendlyError";
   ClipboardCheck,
   Loader2,
   Lock,
@@ -354,7 +355,7 @@ export default function NurseVisitForm() {
       await load();
       toast({ title: "Draft started", description: "Your work saves automatically as you go." });
     } catch (error: any) {
-      toast({ title: "Could not start the form", description: error.message, variant: "destructive" });
+      toast({ title: "Could not start the form", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -379,7 +380,7 @@ export default function NurseVisitForm() {
         .eq("id", form.id);
       if (error) {
         setSavingState("idle");
-        toast({ title: "Autosave failed", description: error.message, variant: "destructive" });
+        toast({ title: "Autosave failed", description: friendlyError(error), variant: "destructive" });
         return;
       }
       setForm((prev) => (prev ? { ...prev, form_data: snapshot } : prev));
@@ -478,7 +479,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not save the signature",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return false;
@@ -491,7 +492,7 @@ export default function NurseVisitForm() {
     if (!form) return;
     const { error } = await supabase.from("nurse_visit_forms").update(patch).eq("id", form.id);
     if (error) {
-      toast({ title: "Could not save that", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save that", description: friendlyError(error), variant: "destructive" });
       return;
     }
     await load();
@@ -526,7 +527,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not complete the form",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -552,7 +553,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not clear the draft",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -584,7 +585,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not start the correction",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

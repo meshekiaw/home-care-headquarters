@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import { Button } from "@/components/ui/button";
  import { Card, CardContent } from "@/components/ui/card";
@@ -95,7 +96,7 @@
      } catch (error: any) {
        toast({
          title: "Error loading clients",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -144,7 +145,7 @@
      } catch (error: any) {
        toast({
          title: "Error assigning client",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -166,7 +167,7 @@
      } catch (error: any) {
        toast({
          title: "Error removing client",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }

@@ -24,6 +24,7 @@ import {
 import { Plus, Users, Phone, Mail, Calendar, UserCheck, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Caregiver {
   id: string;
@@ -97,7 +98,7 @@ export function AssignedCaregiversTab({ clientId }: AssignedCaregiversTabProps) 
     } catch (error: any) {
       toast({
         title: "Error loading caregivers",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -146,7 +147,7 @@ export function AssignedCaregiversTab({ clientId }: AssignedCaregiversTabProps) 
     } catch (error: any) {
       toast({
         title: "Error assigning caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -168,7 +169,7 @@ export function AssignedCaregiversTab({ clientId }: AssignedCaregiversTabProps) 
     } catch (error: any) {
       toast({
         title: "Error removing caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import {
+import { friendlyError } from "@/lib/friendlyError";
   AGENCY_DEFAULT_FIELD_LABELS,
   useAgencyFormDefaults,
   type AgencyFormDefaults,
@@ -58,7 +59,7 @@ export function AgencyFormDefaultsSection() {
     if (error) {
       toast({
         title: "Could not save",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return;

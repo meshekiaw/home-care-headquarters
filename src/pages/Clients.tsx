@@ -71,6 +71,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
 import OnboardingPipeline from "@/components/clients/OnboardingPipeline";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Client {
   id: string;
@@ -128,7 +129,7 @@ export default function Clients() {
     } catch (error: any) {
       toast({
         title: "Error loading clients",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -471,7 +472,7 @@ export default function Clients() {
                         setSelectedIds(new Set());
                         fetchClients();
                       } catch (error: any) {
-                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                        toast({ title: "Error", description: friendlyError(error), variant: "destructive" });
                       }
                     }}
                   >
@@ -771,7 +772,7 @@ export default function Clients() {
                   setSelectedIds(new Set());
                   fetchClients();
                 } catch (error: any) {
-                  toast({ title: "Error", description: error.message, variant: "destructive" });
+                  toast({ title: "Error", description: friendlyError(error), variant: "destructive" });
                 }
               }}
             >

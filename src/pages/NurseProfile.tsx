@@ -30,6 +30,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { deleteNurses } from "@/lib/deleteNurses";
+import { friendlyError } from "@/lib/friendlyError";
  import { NurseOverviewTab } from "@/components/nurses/NurseOverviewTab";
  import { NurseCredentialsTab } from "@/components/nurses/NurseCredentialsTab";
  import { AssignedClientsTab } from "@/components/nurses/AssignedClientsTab";
@@ -76,7 +77,7 @@ import { deleteNurses } from "@/lib/deleteNurses";
     } catch (error: any) {
       toast({
         title: "Error deleting nurse",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -114,7 +115,7 @@ import { deleteNurses } from "@/lib/deleteNurses";
      } catch (error: any) {
        toast({
          title: "Error loading nurse",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {

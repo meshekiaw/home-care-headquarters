@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState } from "react";
  import { Button } from "@/components/ui/button";
  import {
@@ -104,7 +105,7 @@
      } catch (error: any) {
        toast({
          title: "Error adding nurse",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {

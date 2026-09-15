@@ -17,6 +17,7 @@ import { ArrowLeft, User, Phone, MapPin, FileText, Loader2 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { friendlyError } from "@/lib/friendlyError";
 
 const clientSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(100),
@@ -122,7 +123,7 @@ export default function ClientEdit() {
       } catch (error: any) {
         toast({
           title: "Error loading client",
-          description: error.message,
+          description: friendlyError(error),
           variant: "destructive",
         });
         navigate("/clients");
@@ -203,7 +204,7 @@ export default function ClientEdit() {
       } else {
         toast({
           title: "Error updating client",
-          description: error.message,
+          description: friendlyError(error),
           variant: "destructive",
         });
       }

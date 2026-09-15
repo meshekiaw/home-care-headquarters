@@ -19,6 +19,7 @@ import { format, isPast, differenceInDays } from "date-fns";
 import { downloadLmsCertificate } from "@/utils/lmsCertificatePdf";
 import { caregiverPortalUrl } from "@/lib/publicOrigin";
 import LegalFooter from "@/components/layout/LegalFooter";
+import { friendlyError } from "@/lib/friendlyError";
 
 
 interface PortalAssignment {
@@ -98,7 +99,7 @@ export default function CaregiverPortal() {
         .eq("caregiver_id", cg.id)
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) {
-        toast({ title: "Error loading training", description: error.message, variant: "destructive" });
+        toast({ title: "Error loading training", description: friendlyError(error), variant: "destructive" });
       } else {
         setAssignments((data as any) || []);
       }
@@ -121,7 +122,7 @@ export default function CaregiverPortal() {
 
     setSending(false);
     if (error) {
-      toast({ title: "Could not send link", description: error.message, variant: "destructive" });
+      toast({ title: "Could not send link", description: friendlyError(error), variant: "destructive" });
       return;
     }
     setSent(true);

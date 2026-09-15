@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import { Button } from "@/components/ui/button";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,7 +106,7 @@
      } catch (error: any) {
        toast({
          title: "Error loading assessments",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -163,7 +164,7 @@
      } catch (error: any) {
        toast({
          title: "Error scheduling assessment",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -188,7 +189,7 @@
      } catch (error: any) {
        toast({
          title: "Error updating assessment",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }
@@ -232,7 +233,7 @@
      } catch (error: any) {
        toast({
          title: "Error releasing assessment",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {

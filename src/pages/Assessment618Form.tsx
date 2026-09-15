@@ -39,6 +39,7 @@ import LegalFooter from "@/components/layout/LegalFooter";
 import { SignatureCapture, type SignatureResult } from "@/components/assessments/SignatureCapture";
 import { ClientSigningMode } from "@/components/assessments/ClientSigningMode";
 import {
+import { friendlyError } from "@/lib/friendlyError";
   ClipboardCheck,
   Loader2,
   Lock,
@@ -359,7 +360,7 @@ export default function Assessment618Form() {
       await load();
       toast({ title: "Draft started", description: "Your work saves automatically as you go." });
     } catch (error: any) {
-      toast({ title: "Could not start the form", description: error.message, variant: "destructive" });
+      toast({ title: "Could not start the form", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -387,7 +388,7 @@ export default function Assessment618Form() {
         .eq("id", form.id);
       if (error) {
         setSavingState("idle");
-        toast({ title: "Autosave failed", description: error.message, variant: "destructive" });
+        toast({ title: "Autosave failed", description: friendlyError(error), variant: "destructive" });
         return;
       }
       setForm((prev) => (prev ? { ...prev, form_data: nextData } : prev));
@@ -465,7 +466,7 @@ export default function Assessment618Form() {
       toast({ title: "Signature saved" });
       return true;
     } catch (error: any) {
-      toast({ title: "Could not save the signature", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save the signature", description: friendlyError(error), variant: "destructive" });
       return false;
     } finally {
       setBusy(false);
@@ -476,7 +477,7 @@ export default function Assessment618Form() {
     if (!form) return;
     const { error } = await supabase.from("assessment_618_forms").update(patch).eq("id", form.id);
     if (error) {
-      toast({ title: "Could not save that", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save that", description: friendlyError(error), variant: "destructive" });
       return;
     }
     await load();
@@ -513,7 +514,7 @@ export default function Assessment618Form() {
       await load();
       toast({ title: "618 assessment completed", description: "The record is now locked." });
     } catch (error: any) {
-      toast({ title: "Could not complete the form", description: error.message, variant: "destructive" });
+      toast({ title: "Could not complete the form", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -538,7 +539,7 @@ export default function Assessment618Form() {
       await load();
       toast({ title: "Correction started", description: "The original record stays on file unchanged." });
     } catch (error: any) {
-      toast({ title: "Could not start the correction", description: error.message, variant: "destructive" });
+      toast({ title: "Could not start the correction", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }

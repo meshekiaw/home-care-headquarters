@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface EditUserDialogProps {
   open: boolean;
@@ -47,7 +48,7 @@ export function EditUserDialog({ open, onOpenChange, user, onSaved }: EditUserDi
       onSaved();
       onOpenChange(false);
     } catch (err: any) {
-      toast({ title: "Error updating user", description: err.message, variant: "destructive" });
+      toast({ title: "Error updating user", description: friendlyError(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }

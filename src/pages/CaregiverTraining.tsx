@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { BookOpen, CheckCircle2, Clock, Download, Award, FileText, AlertTriangle } from "lucide-react";
 import { format, isPast, differenceInDays } from "date-fns";
 import { downloadLmsCertificate, generateLmsCertificateBlob } from "@/utils/lmsCertificatePdf";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Assignment {
   id: string;
@@ -59,7 +60,7 @@ export default function CaregiverTraining() {
         .eq("caregiver_id", cg.id)
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) {
-        toast({ title: "Error loading training", description: error.message, variant: "destructive" });
+        toast({ title: "Error loading training", description: friendlyError(error), variant: "destructive" });
       } else {
         setAssignments((data as any) || []);
       }
@@ -112,7 +113,7 @@ export default function CaregiverTraining() {
       setActiveCourse(null);
       await load();
     } catch (e: any) {
-      toast({ title: "Could not complete course", description: e.message, variant: "destructive" });
+      toast({ title: "Could not complete course", description: friendlyError(e), variant: "destructive" });
     } finally {
       setCompleting(false);
     }

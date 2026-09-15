@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -135,7 +136,7 @@ export function EditNurseDialog({ nurse, open, onOpenChange, onSaved }: Props) {
       onOpenChange(false);
       onSaved();
     } catch (err: any) {
-      toast({ title: "Could not save changes", description: err.message, variant: "destructive" });
+      toast({ title: "Could not save changes", description: friendlyError(err), variant: "destructive" });
     } finally {
       setSaving(false);
     }

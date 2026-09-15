@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface CaregiverLocation {
   id: string;
@@ -125,7 +126,7 @@ export function useProximityMatching(clientId: string | null) {
     } catch (error: any) {
       toast({
         title: "Error loading proximity data",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -164,7 +165,7 @@ export function useAllCaregiverLocations() {
     } catch (error: any) {
       toast({
         title: "Error loading caregiver locations",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

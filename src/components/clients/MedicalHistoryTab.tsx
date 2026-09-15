@@ -25,6 +25,7 @@ import {
 import { Plus, Stethoscope, Calendar, AlertTriangle, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface MedicalRecord {
   id: string;
@@ -72,7 +73,7 @@ export function MedicalHistoryTab({ clientId }: MedicalHistoryTabProps) {
     } catch (error: any) {
       toast({
         title: "Error loading medical history",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -113,7 +114,7 @@ export function MedicalHistoryTab({ clientId }: MedicalHistoryTabProps) {
     } catch (error: any) {
       toast({
         title: "Error adding medical record",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -135,7 +136,7 @@ export function MedicalHistoryTab({ clientId }: MedicalHistoryTabProps) {
     } catch (error: any) {
       toast({
         title: "Error deleting medical record",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

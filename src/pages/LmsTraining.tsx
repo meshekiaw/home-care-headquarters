@@ -28,6 +28,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeWithRefresh } from "@/lib/invokeWithRefresh";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 export default function LmsTraining() {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function LmsTraining() {
       toast({ title: "Notification re-sent" });
       refetch();
     } catch (e: any) {
-      toast({ title: "Failed to send notification", description: e.message, variant: "destructive" });
+      toast({ title: "Failed to send notification", description: friendlyError(e), variant: "destructive" });
     }
   };
 
@@ -81,7 +82,7 @@ export default function LmsTraining() {
       setSelectedIds([]);
       refetch();
     } catch (e: any) {
-      toast({ title: "Failed to send notifications", description: e.message, variant: "destructive" });
+      toast({ title: "Failed to send notifications", description: friendlyError(e), variant: "destructive" });
     } finally {
       setBulkSending(false);
     }
@@ -98,7 +99,7 @@ export default function LmsTraining() {
       setBulkDeleteOpen(false);
       refetch();
     } catch (e: any) {
-      toast({ title: "Failed to delete", description: e.message, variant: "destructive" });
+      toast({ title: "Failed to delete", description: friendlyError(e), variant: "destructive" });
     } finally {
       setBulkDeleting(false);
     }
@@ -108,7 +109,7 @@ export default function LmsTraining() {
     if (!path) return;
     const { data, error } = await supabase.storage.from("lms-certificates").createSignedUrl(path, 60);
     if (error || !data) {
-      toast({ title: "Could not load certificate", description: error?.message, variant: "destructive" });
+      toast({ title: "Could not load certificate", description: friendlyError(error?), variant: "destructive" });
       return;
     }
     window.open(data.signedUrl, "_blank");

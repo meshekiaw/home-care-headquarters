@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { ClipboardCheck, Loader2, LogOut } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface NurseAssessmentRow {
   id: string;
@@ -58,7 +59,7 @@ export default function NursePortal() {
     setLoading(true);
     const { data, error } = await supabase.rpc("nurse_visible_assessments");
     if (error) {
-      toast({ title: "Could not load assessments", description: error.message, variant: "destructive" });
+      toast({ title: "Could not load assessments", description: friendlyError(error), variant: "destructive" });
     }
     setRows((data as NurseAssessmentRow[]) ?? []);
     setLoading(false);

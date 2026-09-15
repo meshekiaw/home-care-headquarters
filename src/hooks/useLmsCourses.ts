@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { friendlyError } from "@/lib/friendlyError";
 
 export interface LmsCourse {
   id: string;
@@ -63,7 +64,7 @@ export function useLmsCourses() {
       if (error) throw error;
       setCourses((data as LmsCourse[]) || []);
     } catch (error: any) {
-      toast({ title: "Error loading courses", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading courses", description: friendlyError(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ export function useLmsCourses() {
       toast({ title: "Course created" });
       fetchCourses();
     } catch (error: any) {
-      toast({ title: "Error creating course", description: error.message, variant: "destructive" });
+      toast({ title: "Error creating course", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -90,7 +91,7 @@ export function useLmsCourses() {
       toast({ title: "Course updated" });
       fetchCourses();
     } catch (error: any) {
-      toast({ title: "Error updating course", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating course", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -101,7 +102,7 @@ export function useLmsCourses() {
       toast({ title: "Course deleted" });
       fetchCourses();
     } catch (error: any) {
-      toast({ title: "Error deleting course", description: error.message, variant: "destructive" });
+      toast({ title: "Error deleting course", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -129,7 +130,7 @@ export function useLmsAssignments() {
       }));
       setAssignments(processed);
     } catch (error: any) {
-      toast({ title: "Error loading assignments", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading assignments", description: friendlyError(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -179,7 +180,7 @@ export function useLmsAssignments() {
       fetchAssignments();
       return { ok: true, assignmentIds: (data || []).map((r: any) => r.id), skipped };
     } catch (error: any) {
-      toast({ title: "Error assigning course", description: error.message, variant: "destructive" });
+      toast({ title: "Error assigning course", description: friendlyError(error), variant: "destructive" });
       return { ok: false, assignmentIds: [], skipped: 0 };
     }
   };
@@ -190,7 +191,7 @@ export function useLmsAssignments() {
       if (error) throw error;
       fetchAssignments();
     } catch (error: any) {
-      toast({ title: "Error updating assignment", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating assignment", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -201,7 +202,7 @@ export function useLmsAssignments() {
       toast({ title: "Assignment removed" });
       fetchAssignments();
     } catch (error: any) {
-      toast({ title: "Error removing assignment", description: error.message, variant: "destructive" });
+      toast({ title: "Error removing assignment", description: friendlyError(error), variant: "destructive" });
     }
   };
 

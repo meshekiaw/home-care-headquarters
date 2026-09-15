@@ -33,7 +33,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastAction } from "@/components/ui/toast";
+import { friendlyError } from "@/lib/friendlyError";
 import { ClipboardCheck, Plus, CheckCircle, Loader2, Pencil, Trash2, RotateCcw, FileText } from "lucide-react";
 
 interface Assessment {

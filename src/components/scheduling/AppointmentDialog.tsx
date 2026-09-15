@@ -259,7 +259,7 @@ export function AppointmentDialog({
     } catch (err: any) {
       toast({
         title: "Error",
-        description: friendlyError(err?) ?? "Failed to send the reminder.",
+        description: friendlyError(err) ?? "Failed to send the reminder.",
         variant: "destructive",
       });
     } finally {

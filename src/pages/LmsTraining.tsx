@@ -109,7 +109,7 @@ export default function LmsTraining() {
     if (!path) return;
     const { data, error } = await supabase.storage.from("lms-certificates").createSignedUrl(path, 60);
     if (error || !data) {
-      toast({ title: "Could not load certificate", description: friendlyError(error?), variant: "destructive" });
+      toast({ title: "Could not load certificate", description: friendlyError(error), variant: "destructive" });
       return;
     }
     window.open(data.signedUrl, "_blank");

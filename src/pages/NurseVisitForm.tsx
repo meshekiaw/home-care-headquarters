@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,6 @@ import LegalFooter from "@/components/layout/LegalFooter";
 import { SignatureCapture, type SignatureResult } from "@/components/assessments/SignatureCapture";
 import { ClientSigningMode } from "@/components/assessments/ClientSigningMode";
 import {
-import { friendlyError } from "@/lib/friendlyError";
   ClipboardCheck,
   Loader2,
   Lock,

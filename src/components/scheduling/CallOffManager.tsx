@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { AiResponseCard } from "./AiResponseCard";
 import { Loader2, Sparkles } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 const REASONS = ["Illness", "Family Emergency", "Transportation", "No-Show", "Personal", "Other"];
 const SERVICE_TYPES = ["Personal Care", "Attendant Care", "Respite", "Companion"];
@@ -91,7 +92,7 @@ export function CallOffManager() {
       });
       toast({ title: "Response generated", description: "AI packet ready below." });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(e, "Failed"), variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -38,6 +38,7 @@ import {
   PenLine
 } from "lucide-react";
 import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDialog";
+import { friendlyError } from "@/lib/friendlyError";
  import { supabase } from "@/integrations/supabase/client";
  import { useToast } from "@/hooks/use-toast";
  import { prebuiltFormTemplates, FormTemplate } from "@/data/admissionFormTemplates";
@@ -155,7 +156,7 @@ import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDia
      } catch (error: any) {
        toast({
          title: "Error loading forms",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -260,7 +261,7 @@ import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDia
      } catch (error: any) {
        toast({
          title: "Error saving form",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -316,7 +317,7 @@ import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDia
      } catch (error: any) {
        toast({
          title: "Error sending requests",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -350,7 +351,7 @@ import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDia
      } catch (error: any) {
        toast({
          title: "Error creating template",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -376,7 +377,7 @@ import { SignatureRequestDialog } from "@/components/clients/SignatureRequestDia
      } catch (error: any) {
        toast({
          title: "Error deleting form",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }

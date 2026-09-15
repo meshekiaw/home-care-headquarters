@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
  import { Button } from "@/components/ui/button";
@@ -105,7 +106,7 @@
        });
        fetchCredentials();
      } catch (error: any) {
-       toast({ title: "Error", description: error.message, variant: "destructive" });
+       toast({ title: "Error", description: friendlyError(error), variant: "destructive" });
      } finally {
        setSaving(false);
      }
@@ -118,7 +119,7 @@
        toast({ title: "Deleted", description: "Credential removed." });
        fetchCredentials();
      } catch (error: any) {
-       toast({ title: "Error", description: error.message, variant: "destructive" });
+       toast({ title: "Error", description: friendlyError(error), variant: "destructive" });
      }
    }
  

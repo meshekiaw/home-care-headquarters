@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
 import { useEffect, useState } from "react";
 import { FileText, Save } from "lucide-react";
 
@@ -58,7 +59,7 @@ export function AgencyFormDefaultsSection() {
     if (error) {
       toast({
         title: "Could not save",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return;

@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Props {
   open: boolean;
@@ -49,7 +50,7 @@ export default function AssignCourseDialog({ open, onOpenChange }: Props) {
         .order("first_name", { ascending: true });
       if (cancelled) return;
       if (error) {
-        toast({ title: "Error loading caregivers", description: error.message, variant: "destructive" });
+        toast({ title: "Error loading caregivers", description: friendlyError(error), variant: "destructive" });
         setCaregivers([]);
       } else {
         setCaregivers(data || []);
@@ -115,7 +116,7 @@ export default function AssignCourseDialog({ open, onOpenChange }: Props) {
       } catch (e: any) {
         toast({
           title: "Assignments saved, notification failed",
-          description: e.message || "Could not send notification email.",
+          description: friendlyError(e, "Could not send notification email."),
           variant: "destructive",
         });
       }

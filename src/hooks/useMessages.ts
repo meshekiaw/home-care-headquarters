@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { friendlyError } from "@/lib/friendlyError";
 
 export interface Message {
   id: string;
@@ -170,7 +171,7 @@ export function useMessages(conversationId?: string) {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       throw error;
@@ -211,7 +212,7 @@ export function useMessages(conversationId?: string) {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       throw error;

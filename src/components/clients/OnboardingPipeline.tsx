@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar, User, Eye, AlertCircle, Inbox, RefreshCw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { friendlyError } from "@/lib/friendlyError";
 
 type Assessment = {
   id: string;
@@ -94,7 +95,7 @@ export default function OnboardingPipeline() {
       .order("created_at", { ascending: false });
     if (error) {
       setError(error.message);
-      toast({ title: "Error loading pipeline", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading pipeline", description: friendlyError(error), variant: "destructive" });
     } else {
       setItems((data as unknown as Assessment[]) || []);
     }

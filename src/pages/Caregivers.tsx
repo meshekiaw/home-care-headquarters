@@ -31,6 +31,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
 import { downloadCSV, formatCaregiverForExport } from "@/utils/csvExport";
 import { getExpiryStatus, formatDateOnly } from "@/utils/expiryStatus";
+import { friendlyError } from "@/lib/friendlyError";
 
 const EXPIRY_FIELDS: { key: string; label: string }[] = [
   { key: "maltreatment_expiration_date", label: "Maltreatment" },
@@ -114,7 +115,7 @@ export default function Caregivers() {
       setDeleteTargets(null);
       await refetch();
     } catch (err: any) {
-      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+      toast({ title: "Delete failed", description: friendlyError(err), variant: "destructive" });
     } finally {
       setDeleting(false);
     }

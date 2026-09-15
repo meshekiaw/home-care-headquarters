@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, BellRing } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface AssessmentRow {
   id: string;
@@ -96,7 +97,7 @@ export default function NeedsActionNow() {
       .update({ status: "scheduled" })
       .eq("id", id);
     if (error) {
-      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't update", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Marked as scheduled" });

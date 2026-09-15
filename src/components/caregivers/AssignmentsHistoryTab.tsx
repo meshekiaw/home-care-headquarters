@@ -12,6 +12,7 @@ import {
 import { Users, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface ClientAssignment {
   id: string;
@@ -69,7 +70,7 @@ export default function AssignmentsHistoryTab({ caregiverId }: AssignmentsHistor
     } catch (error: any) {
       toast({
         title: "Error loading assignments",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

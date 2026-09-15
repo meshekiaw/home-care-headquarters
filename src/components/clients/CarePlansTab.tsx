@@ -24,6 +24,7 @@ import {
 import { Plus, ClipboardList, Calendar, Target, Clock, Trash2, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface CarePlan {
   id: string;
@@ -74,7 +75,7 @@ export function CarePlansTab({ clientId }: CarePlansTabProps) {
     } catch (error: any) {
       toast({
         title: "Error loading care plans",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -119,7 +120,7 @@ export function CarePlansTab({ clientId }: CarePlansTabProps) {
     } catch (error: any) {
       toast({
         title: "Error adding care plan",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -141,7 +142,7 @@ export function CarePlansTab({ clientId }: CarePlansTabProps) {
     } catch (error: any) {
       toast({
         title: "Error deleting care plan",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

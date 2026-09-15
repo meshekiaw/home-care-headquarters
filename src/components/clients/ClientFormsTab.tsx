@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Trash2, Download, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface ClientFormsTabProps {
   clientId: string;
@@ -54,7 +55,7 @@ export function ClientFormsTab({ clientId }: ClientFormsTabProps) {
       if (error) throw error;
       setDocs(data || []);
     } catch (e: any) {
-      toast({ title: "Error loading forms", description: e.message, variant: "destructive" });
+      toast({ title: "Error loading forms", description: friendlyError(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -92,7 +93,7 @@ export function ClientFormsTab({ clientId }: ClientFormsTabProps) {
       toast({ title: "File uploaded successfully" });
       fetchDocs();
     } catch (e: any) {
-      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+      toast({ title: "Upload failed", description: friendlyError(e), variant: "destructive" });
     } finally {
       setUploading(null);
     }
@@ -105,7 +106,7 @@ export function ClientFormsTab({ clientId }: ClientFormsTabProps) {
       setDocs((prev) => prev.filter((d) => d.id !== doc.id));
       toast({ title: "File deleted" });
     } catch (e: any) {
-      toast({ title: "Delete failed", description: e.message, variant: "destructive" });
+      toast({ title: "Delete failed", description: friendlyError(e), variant: "destructive" });
     }
   }
 

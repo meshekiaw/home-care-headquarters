@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyError } from "@/lib/friendlyError";
 
 const signatureRequestSchema = z.object({
   signerName: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -88,7 +89,7 @@ export function SignatureRequestDialog({
       console.error("Error sending signature request:", error);
       toast({
         title: "Failed to send request",
-        description: error.message || "Please try again later",
+        description: friendlyError(error, "Please try again later"),
         variant: "destructive",
       });
     } finally {

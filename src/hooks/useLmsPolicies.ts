@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { friendlyError } from "@/lib/friendlyError";
 
 export interface LmsPolicy {
   id: string;
@@ -53,7 +54,7 @@ export function useLmsPolicies() {
       const processedAcks = (acksRes.data || []).map((a: any) => ({ ...a, caregiver: a.caregivers }));
       setAcknowledgments(processedAcks);
     } catch (error: any) {
-      toast({ title: "Error loading policies", description: error.message, variant: "destructive" });
+      toast({ title: "Error loading policies", description: friendlyError(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -69,7 +70,7 @@ export function useLmsPolicies() {
       toast({ title: "Policy created" });
       fetchPolicies();
     } catch (error: any) {
-      toast({ title: "Error creating policy", description: error.message, variant: "destructive" });
+      toast({ title: "Error creating policy", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -80,7 +81,7 @@ export function useLmsPolicies() {
       toast({ title: "Policy updated" });
       fetchPolicies();
     } catch (error: any) {
-      toast({ title: "Error updating policy", description: error.message, variant: "destructive" });
+      toast({ title: "Error updating policy", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -91,7 +92,7 @@ export function useLmsPolicies() {
       toast({ title: "Policy deleted" });
       fetchPolicies();
     } catch (error: any) {
-      toast({ title: "Error deleting policy", description: error.message, variant: "destructive" });
+      toast({ title: "Error deleting policy", description: friendlyError(error), variant: "destructive" });
     }
   };
 
@@ -107,7 +108,7 @@ export function useLmsPolicies() {
       toast({ title: "Acknowledgment recorded" });
       fetchPolicies();
     } catch (error: any) {
-      toast({ title: "Error recording acknowledgment", description: error.message, variant: "destructive" });
+      toast({ title: "Error recording acknowledgment", description: friendlyError(error), variant: "destructive" });
     }
   };
 

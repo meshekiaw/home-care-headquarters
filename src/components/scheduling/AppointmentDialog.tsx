@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/hooks/useAppointments";
 import { checkSchedulingConflicts, type ConflictResult } from "@/hooks/useSchedulingConflicts";
 import { ConflictAlert } from "./ConflictAlert";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Client {
   id: string;
@@ -223,7 +224,7 @@ export function AppointmentDialog({
       console.error("Error saving appointment:", error);
       toast({
         title: "Could not save appointment",
-        description: error instanceof Error ? error.message : "Please try again.",
+        description: friendlyError(error, "Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -258,7 +259,7 @@ export function AppointmentDialog({
     } catch (err: any) {
       toast({
         title: "Error",
-        description: err?.message ?? "Failed to send the reminder.",
+        description: friendlyError(err) ?? "Failed to send the reminder.",
         variant: "destructive",
       });
     } finally {

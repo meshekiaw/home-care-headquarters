@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -44,7 +45,7 @@ export default function ResetPassword() {
       navigate("/login", { replace: true });
       await supabase.auth.signOut();
     } catch (err: any) {
-      toast({ title: "Could not reset password", description: err.message, variant: "destructive" });
+      toast({ title: "Could not reset password", description: friendlyError(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -299,7 +300,7 @@ export default function Assessment618Form() {
     if (row) setClientName(row.client_name ?? "");
 
     if (formRes.error) {
-      toast({ title: "Could not load the 618 form", description: formRes.error.message, variant: "destructive" });
+      toast({ title: "Could not load the 618 form", description: friendlyError(formRes.error), variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -359,7 +360,7 @@ export default function Assessment618Form() {
       await load();
       toast({ title: "Draft started", description: "Your work saves automatically as you go." });
     } catch (error: any) {
-      toast({ title: "Could not start the form", description: error.message, variant: "destructive" });
+      toast({ title: "Could not start the form", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -387,7 +388,7 @@ export default function Assessment618Form() {
         .eq("id", form.id);
       if (error) {
         setSavingState("idle");
-        toast({ title: "Autosave failed", description: error.message, variant: "destructive" });
+        toast({ title: "Autosave failed", description: friendlyError(error), variant: "destructive" });
         return;
       }
       setForm((prev) => (prev ? { ...prev, form_data: nextData } : prev));
@@ -465,7 +466,7 @@ export default function Assessment618Form() {
       toast({ title: "Signature saved" });
       return true;
     } catch (error: any) {
-      toast({ title: "Could not save the signature", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save the signature", description: friendlyError(error), variant: "destructive" });
       return false;
     } finally {
       setBusy(false);
@@ -476,7 +477,7 @@ export default function Assessment618Form() {
     if (!form) return;
     const { error } = await supabase.from("assessment_618_forms").update(patch).eq("id", form.id);
     if (error) {
-      toast({ title: "Could not save that", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save that", description: friendlyError(error), variant: "destructive" });
       return;
     }
     await load();
@@ -513,7 +514,7 @@ export default function Assessment618Form() {
       await load();
       toast({ title: "618 assessment completed", description: "The record is now locked." });
     } catch (error: any) {
-      toast({ title: "Could not complete the form", description: error.message, variant: "destructive" });
+      toast({ title: "Could not complete the form", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -538,7 +539,7 @@ export default function Assessment618Form() {
       await load();
       toast({ title: "Correction started", description: "The original record stays on file unchanged." });
     } catch (error: any) {
-      toast({ title: "Could not start the correction", description: error.message, variant: "destructive" });
+      toast({ title: "Could not start the correction", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -633,7 +634,7 @@ export default function Assessment618Form() {
     } catch (e: any) {
       toast({
         title: "The form could not be prepared",
-        description: `${e?.message ?? "Something went wrong while preparing the form."} You can try again.`,
+        description: `${friendlyError(e, "Something went wrong while preparing the form.")} You can try again.`,
         variant: "destructive",
         action: (
           <ToastAction altText="Try again" onClick={() => handlePdf(action)}>

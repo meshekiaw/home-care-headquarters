@@ -17,6 +17,7 @@ import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AiResponseCard } from "@/components/scheduling/AiResponseCard";
+import { friendlyError } from "@/lib/friendlyError";
 
 const SECTIONS = [
   { key: "care_plan", label: "Care Plan Draft" },
@@ -73,7 +74,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       setResult(data.result || {});
       toast({ title: "Intake packet generated" });
     } catch (err: any) {
-      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+      toast({ title: "Generation failed", description: friendlyError(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -134,7 +135,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       });
       onSaved?.();
     } catch (err: any) {
-      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+      toast({ title: "Save failed", description: friendlyError(err), variant: "destructive" });
     } finally {
       setSaving(false);
     }

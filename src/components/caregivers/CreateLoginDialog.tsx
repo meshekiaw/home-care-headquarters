@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface CreateLoginDialogProps {
   open: boolean;
@@ -59,7 +60,7 @@ export default function CreateLoginDialog({
     } catch (err: any) {
       toast({
         title: "Failed to create account",
-        description: err.message || "An error occurred",
+        description: friendlyError(err, "An error occurred"),
         variant: "destructive",
       });
     } finally {

@@ -17,6 +17,7 @@ import { ArrowLeft, User, Phone, MapPin, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { friendlyError } from "@/lib/friendlyError";
 
 const clientSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(100),
@@ -165,7 +166,7 @@ export default function ClientNew() {
       } else {
         toast({
           title: "Error adding client",
-          description: error.message,
+          description: friendlyError(error),
           variant: "destructive",
         });
       }

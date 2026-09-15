@@ -33,7 +33,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastAction } from "@/components/ui/toast";
+import { friendlyError } from "@/lib/friendlyError";
 import { ClipboardCheck, Plus, CheckCircle, Loader2, Pencil, Trash2, RotateCcw, FileText } from "lucide-react";
 
 interface Assessment {
@@ -92,6 +94,7 @@ function statusBadge(status: string) {
 
 export default function NurseAssessments() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [clients, setClients] = useState<Option[]>([]);
   const [nurses, setNurses] = useState<Option[]>([]);
@@ -178,7 +181,7 @@ export default function NurseAssessments() {
       setEditTarget(null);
       await loadAll();
     } catch (error: any) {
-      toast({ title: "Could not save changes", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save changes", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -196,7 +199,7 @@ export default function NurseAssessments() {
       })
       .eq("id", a.id);
     if (error) {
-      toast({ title: "Could not unclaim", description: error.message, variant: "destructive" });
+      toast({ title: "Could not unclaim", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({
@@ -216,7 +219,7 @@ export default function NurseAssessments() {
       setDeleteTarget(null);
       await loadAll();
     } catch (error: any) {
-      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+      toast({ title: "Could not delete", description: friendlyError(error), variant: "destructive" });
     } finally {
       setDeleting(false);
     }
@@ -241,7 +244,7 @@ export default function NurseAssessments() {
       ]);
 
     if (error) {
-      toast({ title: "Could not load assessments", description: error.message, variant: "destructive" });
+      toast({ title: "Could not load assessments", description: friendlyError(error), variant: "destructive" });
     }
     setAssessments((rows as unknown as Assessment[]) ?? []);
     setClients((clientRows as Option[]) ?? []);
@@ -288,7 +291,31 @@ export default function NurseAssessments() {
         claimed_at: form.assigned_nurse_id ? new Date().toISOString() : null,
         notes: form.notes || null,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505" || error.message?.toLowerCase().includes("duplicate key value")) {
+          const type = form.assessment_type || "618";
+          const client = clients.find((c) => c.id === form.client_id);
+          const clientName = client ? `${client.first_name} ${client.last_name}` : "This client";
+          const existing = assessments.find(
+            (a) =>
+              a.client_id === form.client_id &&
+              (a.assessment_type ?? "618") === type &&
+              a.status !== "Completed",
+          );
+          toast({
+            title: "Already has an open assessment",
+            description: `${clientName} already has an open ${type === "Nurse Visit" ? "Nurse Visit" : "618"} assessment. Open the existing one instead of creating a new one.`,
+            variant: "destructive",
+            action: existing ? (
+              <ToastAction altText="Open the existing assessment" onClick={() => navigate(`/assessments/${existing.id}/claim`)}>
+                Open it
+              </ToastAction>
+            ) : undefined,
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({ title: "Assessment created" });
       setCreateOpen(false);
@@ -303,7 +330,7 @@ export default function NurseAssessments() {
       });
       await loadAll();
     } catch (error: any) {
-      toast({ title: "Could not create assessment", description: error.message, variant: "destructive" });
+      toast({ title: "Could not create assessment", description: friendlyError(error), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -335,7 +362,7 @@ export default function NurseAssessments() {
       .eq("id", assessment.id);
 
     if (error) {
-      toast({ title: "Could not reassign", description: error.message, variant: "destructive" });
+      toast({ title: "Could not reassign", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({ title: nurseId === "unassigned" ? "Assessment released" : "Nurse reassigned" });
@@ -348,7 +375,7 @@ export default function NurseAssessments() {
       .update({ status: "Completed", completed_at: new Date().toISOString() })
       .eq("id", id);
     if (error) {
-      toast({ title: "Could not update", description: error.message, variant: "destructive" });
+      toast({ title: "Could not update", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({ title: "Assessment marked completed" });

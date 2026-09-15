@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import { Button } from "@/components/ui/button";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,7 +65,7 @@
      } catch (error: any) {
        toast({
          title: "Error loading credentials",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -96,7 +97,7 @@
      } catch (error: any) {
        toast({
          title: "Error deleting credential",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }

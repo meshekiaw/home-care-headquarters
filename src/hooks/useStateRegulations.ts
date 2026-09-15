@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect, useCallback } from "react";
  import { supabase } from "@/integrations/supabase/client";
  import { useToast } from "@/hooks/use-toast";
@@ -68,7 +69,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      } catch (error: any) {
        toast({
          title: "Error loading regulations",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {
@@ -104,7 +105,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      } catch (error: any) {
        toast({
          title: "Error adding regulation",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
        return null;
@@ -136,7 +137,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
     } catch (error: any) {
       toast({
         title: "Error adding regulations",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return [];
@@ -161,7 +162,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      } catch (error: any) {
        toast({
          title: "Error deleting regulation",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }
@@ -203,7 +204,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      } catch (error: any) {
        toast({
          title: "Error generating policy",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
        return null;
@@ -237,7 +238,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      } catch (error: any) {
        toast({
          title: "Error updating policy",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }
@@ -260,7 +261,7 @@ export { PREDEFINED_REGULATIONS, US_STATES } from "@/data/stateRegulations";
      } catch (error: any) {
        toast({
          title: "Error deleting policy",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      }

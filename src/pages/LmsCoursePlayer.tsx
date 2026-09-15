@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 import LegalFooter from "@/components/layout/LegalFooter";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Assignment {
   id: string;
@@ -240,7 +241,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       }).eq("id", assignment.id);
       setSubmitting(false);
       if (error) {
-        toast({ title: "Could not mark complete", description: error.message, variant: "destructive" });
+        toast({ title: "Could not mark complete", description: friendlyError(error), variant: "destructive" });
         return;
       }
       setResult({ score: 100, passed: true, results: {} });
@@ -264,7 +265,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     });
     setSubmitting(false);
     if (error || data?.error) {
-      toast({ title: "Quiz submission failed", description: data?.error || error?.message, variant: "destructive" });
+      toast({ title: "Quiz submission failed", description: data?.error || friendlyError(error), variant: "destructive" });
       return;
     }
     setResult(data);

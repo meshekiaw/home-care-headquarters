@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 export default function Signup() {
   const [agencyName, setAgencyName] = useState("");
@@ -87,7 +88,7 @@ export default function Signup() {
 
       toast({
         title: "Signup failed",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

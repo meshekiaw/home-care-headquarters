@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Mail } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export default function ForgotPassword() {
       setSent(true);
       toast({ title: "Check your email", description: "We sent a password reset link." });
     } catch (err: any) {
-      toast({ title: "Could not send reset email", description: err.message, variant: "destructive" });
+      toast({ title: "Could not send reset email", description: friendlyError(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }

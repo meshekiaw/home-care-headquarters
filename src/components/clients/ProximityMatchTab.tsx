@@ -16,6 +16,7 @@ import { useProximityMatching } from "@/hooks/useProximityMatching";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface ProximityMatchTabProps {
   clientId: string;
@@ -64,7 +65,7 @@ export default function ProximityMatchTab({ clientId, onAssign }: ProximityMatch
     } catch (error: any) {
       toast({
         title: "Error assigning caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

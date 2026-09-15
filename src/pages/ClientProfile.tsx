@@ -32,6 +32,7 @@ import { AssignedNursesTab } from "@/components/clients/AssignedNursesTab";
 import { NursingFormsTab } from "@/components/clients/NursingFormsTab";
 import { ClientFormsTab } from "@/components/clients/ClientFormsTab";
 import { calculateAgeFromDateOnly, formatDateOnly, isDateOnlyString } from "@/utils/dateOnly";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface Client {
   id: string;
@@ -95,7 +96,7 @@ export default function ClientProfile() {
     } catch (error: any) {
       toast({
         title: "Error loading client",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

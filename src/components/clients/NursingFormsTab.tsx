@@ -49,6 +49,7 @@ import { SignaturePad } from "@/components/forms/SignaturePad";
 import { UploadedPdfFiller, type UploadedPdfFillerHandle } from "@/components/clients/UploadedPdfFiller";
 import { PdfCanvasViewer } from "@/components/clients/PdfCanvasViewer";
 import { Form618Filler, type Form618FillerHandle } from "@/components/clients/Form618Filler";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface FormSubmission {
   id: string;
@@ -213,7 +214,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error loading forms",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -311,7 +312,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error saving form",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -361,7 +362,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error uploading form",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -395,7 +396,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error creating template",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -421,7 +422,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error deleting form",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }
@@ -440,7 +441,7 @@ export function NursingFormsTab({ clientId }: NursingFormsTabProps) {
     } catch (error: any) {
       toast({
         title: "Error deleting form",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     }

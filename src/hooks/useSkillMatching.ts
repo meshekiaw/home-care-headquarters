@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface RequiredSkill {
   id: string;
@@ -58,7 +59,7 @@ export function useClientRequiredSkills(clientId: string) {
     } catch (error: any) {
       toast({
         title: "Error loading required skills",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -93,7 +94,7 @@ export function useClientRequiredSkills(clientId: string) {
     } catch (error: any) {
       toast({
         title: "Error adding required skill",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return false;
@@ -115,7 +116,7 @@ export function useClientRequiredSkills(clientId: string) {
     } catch (error: any) {
       toast({
         title: "Error removing skill",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return false;
@@ -265,7 +266,7 @@ export function useSkillMatching(clientId: string) {
     } catch (error: any) {
       toast({
         title: "Error finding matches",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

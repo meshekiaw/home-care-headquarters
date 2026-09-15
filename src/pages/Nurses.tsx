@@ -33,6 +33,7 @@ import { nurseHistoryCounts } from "@/lib/nurseHistory";
 import { EditNurseDialog, type EditableNurse } from "@/components/nurses/EditNurseDialog";
 import { Switch } from "@/components/ui/switch";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
+import { friendlyError } from "@/lib/friendlyError";
  
  interface Nurse {
    id: string;
@@ -87,7 +88,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
         description: `${nurse.first_name} ${nurse.last_name} will receive a sign-in link at ${nurse.email}. It expires in 24 hours.`,
       });
     } catch (err: any) {
-      toast({ title: "Could not send invite", description: err.message, variant: "destructive" });
+      toast({ title: "Could not send invite", description: friendlyError(err), variant: "destructive" });
     } finally {
       setInvitingId(null);
     }
@@ -105,7 +106,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
       setNurses((prev) =>
         prev.map((n) => (n.id === nurse.id ? { ...n, receives_618_notifications: !enabled } : n)),
       );
-      toast({ title: "Could not update alerts", description: error.message, variant: "destructive" });
+      toast({ title: "Could not update alerts", description: friendlyError(error), variant: "destructive" });
       return;
     }
     toast({
@@ -135,7 +136,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
         });
       }
     } catch (error: any) {
-      toast({ title: "Could not check records", description: error.message, variant: "destructive" });
+      toast({ title: "Could not check records", description: friendlyError(error), variant: "destructive" });
     } finally {
       setCheckingHistory(false);
     }
@@ -171,7 +172,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
       setStatusTarget(null);
       await fetchNurses();
     } catch (error: any) {
-      toast({ title: "Could not update status", description: error.message, variant: "destructive" });
+      toast({ title: "Could not update status", description: friendlyError(error), variant: "destructive" });
     } finally {
       setStatusSaving(false);
     }
@@ -192,7 +193,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
     } catch (error: any) {
       toast({
         title: "Error deleting",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -216,7 +217,7 @@ import { supabase as supabaseClient } from "@/integrations/supabase/client";
      } catch (error: any) {
        toast({
          title: "Error loading nurses",
-         description: error.message,
+         description: friendlyError(error),
          variant: "destructive",
        });
      } finally {

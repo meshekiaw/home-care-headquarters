@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { friendlyError } from "@/lib/friendlyError";
 
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
@@ -546,7 +547,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       }
       toast({ title: "Application saved" });
     } catch (err: any) {
-      toast({ title: "Error saving", description: err.message, variant: "destructive" });
+      toast({ title: "Error saving", description: friendlyError(err), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -636,7 +637,7 @@ export function ApplicationFormFiller({ fileUrl, caregiverId, caregiverData, cla
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      toast({ title: "Download error", description: err.message, variant: "destructive" });
+      toast({ title: "Download error", description: friendlyError(err), variant: "destructive" });
     }
   };
 

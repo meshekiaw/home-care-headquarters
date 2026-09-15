@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyError";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -312,7 +313,7 @@ export default function NurseVisitForm() {
     if (formRes.error) {
       toast({
         title: "Could not load the Nurse Visit form",
-        description: formRes.error.message,
+        description: friendlyError(formRes.error),
         variant: "destructive",
       });
       setLoading(false);
@@ -354,7 +355,7 @@ export default function NurseVisitForm() {
       await load();
       toast({ title: "Draft started", description: "Your work saves automatically as you go." });
     } catch (error: any) {
-      toast({ title: "Could not start the form", description: error.message, variant: "destructive" });
+      toast({ title: "Could not start the form", description: friendlyError(error), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -379,7 +380,7 @@ export default function NurseVisitForm() {
         .eq("id", form.id);
       if (error) {
         setSavingState("idle");
-        toast({ title: "Autosave failed", description: error.message, variant: "destructive" });
+        toast({ title: "Autosave failed", description: friendlyError(error), variant: "destructive" });
         return;
       }
       setForm((prev) => (prev ? { ...prev, form_data: snapshot } : prev));
@@ -478,7 +479,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not save the signature",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
       return false;
@@ -491,7 +492,7 @@ export default function NurseVisitForm() {
     if (!form) return;
     const { error } = await supabase.from("nurse_visit_forms").update(patch).eq("id", form.id);
     if (error) {
-      toast({ title: "Could not save that", description: error.message, variant: "destructive" });
+      toast({ title: "Could not save that", description: friendlyError(error), variant: "destructive" });
       return;
     }
     await load();
@@ -526,7 +527,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not complete the form",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -552,7 +553,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not clear the draft",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -584,7 +585,7 @@ export default function NurseVisitForm() {
     } catch (error: any) {
       toast({
         title: "Could not start the correction",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -702,7 +703,7 @@ export default function NurseVisitForm() {
     } catch (e: any) {
       toast({
         title: "The form could not be prepared",
-        description: `${e?.message ?? "Something went wrong while preparing the form."} You can try again.`,
+        description: `${friendlyError(e, "Something went wrong while preparing the form.")} You can try again.`,
         variant: "destructive",
         action: (
           <ToastAction altText="Try again" onClick={() => handlePdf(action)}>

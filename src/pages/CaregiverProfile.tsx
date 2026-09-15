@@ -33,6 +33,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
+import { friendlyError } from "@/lib/friendlyError";
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
@@ -110,7 +111,7 @@ export default function CaregiverProfile() {
     } catch (error: any) {
       toast({
         title: "Error updating caregiver",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

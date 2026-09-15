@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { Eye, EyeOff, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
+import { friendlyError } from "@/lib/friendlyError";
 
 /**
  * Nurse invite landing page.
@@ -81,7 +82,7 @@ export default function NurseInvite() {
       toast({ title: "You're all set", description: "Your password has been saved." });
       navigate("/nurse", { replace: true });
     } catch (err: any) {
-      toast({ title: "Could not save password", description: err.message, variant: "destructive" });
+      toast({ title: "Could not save password", description: friendlyError(err), variant: "destructive" });
     } finally {
       setSaving(false);
     }

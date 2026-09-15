@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { addDays, isPast, isBefore, isAfter, differenceInDays } from "date-fns";
+import { friendlyError } from "@/lib/friendlyError";
 
 interface CaregiverCredential {
   id: string;
@@ -165,7 +166,7 @@ export function useComplianceDashboard() {
     } catch (error: any) {
       toast({
         title: "Error loading compliance data",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {
@@ -269,7 +270,7 @@ export function useTrainingCompliance() {
     } catch (error: any) {
       toast({
         title: "Error loading training data",
-        description: error.message,
+        description: friendlyError(error),
         variant: "destructive",
       });
     } finally {

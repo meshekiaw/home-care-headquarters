@@ -420,19 +420,24 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6">
-              {(course.content_url || sessionVideoId) && (
-                <CourseVideo
-                  url={course.content_url}
+              {sessionVideoId && caregiverId && user ? (
+                <GatedVideoPlayer
                   videoId={sessionVideoId}
-                  onEnded={() => setVideoEnded(true)}
+                  assignmentId={assignment.id}
+                  courseId={course.id}
+                  caregiverId={caregiverId}
+                  userId={user.id}
+                  onProgress={handleVideoProgress}
                 />
-              )}
+              ) : course.content_url ? (
+                <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />
+              ) : null}
               {!course.content_url && !sessionVideoId && videoChecked && course.content_type === "video" && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
                   Video coming soon for this session. Check back shortly.
                 </div>
               )}
-              {videoEnded && (
+              {videoEnded && !sessionVideoId && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success" /> Video finished
@@ -454,11 +459,19 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                 className="prose prose-sm max-w-none dark:prose-invert break-words"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}
               />
-              <div className="mt-8 flex justify-end">
-                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
-                  {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
-                </Button>
+              <div className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2">
+                {videoLocked ? (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    {videoPercent}% watched — the quiz unlocks at {VIDEO_GATE_PERCENT}%.
+                  </p>
+                ) : (
+                  <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
+                    {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
+                  </Button>
+                )}
               </div>
+
             </CardContent>
           </Card>
         )}

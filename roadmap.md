@@ -16,9 +16,9 @@
 - [ ] Next: PDF export and a 618 history list on the client record
 
 ## Annual In-Service Video Training
-- [ ] 12 numbered in-service sessions (title, description, video link, quiz); Session 2 link set
-- [ ] Admin-only video links (separate table + RLS), embedded playback, no URL on caregiver screen
-- [ ] Passing score 70%, editable per session from admin
-- [ ] Quiz attempt history retained (every attempt, pass/fail, timestamp); completion date = passing attempt
-- [ ] Completion tracking admin view filterable by caregiver and session
-- [ ] Shareable per-session links into the app with sign-in redirect
+- [x] 12 numbered in-service sessions (title, description, video link, quiz); Session 2 link set
+- [x] Admin-only video links (separate table + RLS), embedded playback, no URL on caregiver screen
+- [x] Passing score 70%, editable per session from admin
+- [x] Quiz attempt history retained (every attempt, pass/fail, timestamp); completion date = passing attempt
+- [x] Completion tracking admin view filterable by caregiver and session
+- [x] Shareable per-session links into the app with sign-in redirect

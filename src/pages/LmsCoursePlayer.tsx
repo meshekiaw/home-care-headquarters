@@ -296,7 +296,17 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     });
     setSubmitting(false);
     if (error || data?.error) {
-      toast({ title: "Quiz submission failed", description: data?.error || friendlyError(error), variant: "destructive" });
+      // A non-2xx reply (e.g. the video gate) carries its message in the response body.
+      let message: string | null = data?.error ?? null;
+      const ctx = (error as any)?.context;
+      if (!message && ctx?.json) {
+        try { message = (await ctx.json())?.error ?? null; } catch { /* no JSON body */ }
+      }
+      toast({
+        title: "Quiz submission failed",
+        description: message || friendlyError(error),
+        variant: "destructive",
+      });
       return;
     }
     setResult(data);

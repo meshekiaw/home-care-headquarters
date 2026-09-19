@@ -237,12 +237,19 @@ export default function SessionCompletionTab() {
                         )}
                       </TableCell>
                       <TableCell>{r.completed_at ? format(new Date(r.completed_at), "MMM d, yyyy h:mm a") : "—"}</TableCell>
+                      <TableCell>
+                        {r.watched_percent != null ? (
+                          <span className={r.watched_percent >= 95 ? "text-success" : ""}>{r.watched_percent}%</span>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
                       <TableCell>{r.score != null ? `${r.score}%` : "—"}</TableCell>
                       <TableCell>{r.attempts}</TableCell>
                     </TableRow>
                     {expanded === r.id && (
                       <TableRow key={`${r.id}-attempts`}>
-                        <TableCell colSpan={7} className="bg-muted/40">
+                        <TableCell colSpan={8} className="bg-muted/40">
                           <p className="text-xs font-medium mb-2">Quiz attempts (all retained)</p>
                           {!attempts[r.id] ? (
                             <Skeleton className="h-8" />

@@ -174,6 +174,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       setLoading(false);
       return;
     }
+    setCaregiverId(cg.id);
 
     const { data, error } = await supabase
       .from("lms_assignments")

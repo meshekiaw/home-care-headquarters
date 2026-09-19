@@ -313,6 +313,8 @@ export default function LmsTraining() {
               Overdue {overdueAssignments > 0 && `(${overdueAssignments})`}
             </TabsTrigger>
             <TabsTrigger value="courses">Courses ({courses.length})</TabsTrigger>
+            <TabsTrigger value="in-service">In-Service Sessions</TabsTrigger>
+            <TabsTrigger value="completions">Session Completion</TabsTrigger>
           </TabsList>
 
           <TabsContent value="assignments" className="space-y-4">
@@ -533,6 +535,14 @@ export default function LmsTraining() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="in-service" className="space-y-4">
+            <InServiceSessionsTab />
+          </TabsContent>
+
+          <TabsContent value="completions" className="space-y-4">
+            <SessionCompletionTab />
           </TabsContent>
         </Tabs>
       </div>

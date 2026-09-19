@@ -11,10 +11,11 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle, Lock } from "lucide-react";
 import { format } from "date-fns";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { friendlyError } from "@/lib/friendlyError";
+import GatedVideoPlayer, { VIDEO_GATE_PERCENT } from "@/components/lms/GatedVideoPlayer";
 
 interface Assignment {
   id: string;
@@ -149,6 +150,17 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [videoEnded, setVideoEnded] = useState(false);
   const [sessionVideoId, setSessionVideoId] = useState<string | null>(null);
   const [videoChecked, setVideoChecked] = useState(false);
+  const [caregiverId, setCaregiverId] = useState<string | null>(null);
+  const [videoPercent, setVideoPercent] = useState(0);
+  const [videoUnlocked, setVideoUnlocked] = useState(false);
+
+  const handleVideoProgress = useCallback((pct: number, unlocked: boolean) => {
+    setVideoPercent(pct);
+    setVideoUnlocked(unlocked);
+  }, []);
+
+  // Sessions with a video keep the quiz locked until it has been watched.
+  const videoLocked = !!sessionVideoId && !videoUnlocked;
 
 
   const load = useCallback(async () => {
@@ -162,6 +174,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       setLoading(false);
       return;
     }
+    setCaregiverId(cg.id);
 
     const { data, error } = await supabase
       .from("lms_assignments")
@@ -283,7 +296,17 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     });
     setSubmitting(false);
     if (error || data?.error) {
-      toast({ title: "Quiz submission failed", description: data?.error || friendlyError(error), variant: "destructive" });
+      // A non-2xx reply (e.g. the video gate) carries its message in the response body.
+      let message: string | null = data?.error ?? null;
+      const ctx = (error as any)?.context;
+      if (!message && ctx?.json) {
+        try { message = (await ctx.json())?.error ?? null; } catch { /* no JSON body */ }
+      }
+      toast({
+        title: "Quiz submission failed",
+        description: message || friendlyError(error),
+        variant: "destructive",
+      });
       return;
     }
     setResult(data);
@@ -411,19 +434,24 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6">
-              {(course.content_url || sessionVideoId) && (
-                <CourseVideo
-                  url={course.content_url}
+              {sessionVideoId && caregiverId && user ? (
+                <GatedVideoPlayer
                   videoId={sessionVideoId}
-                  onEnded={() => setVideoEnded(true)}
+                  assignmentId={assignment.id}
+                  courseId={course.id}
+                  caregiverId={caregiverId}
+                  userId={user.id}
+                  onProgress={handleVideoProgress}
                 />
-              )}
+              ) : course.content_url ? (
+                <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />
+              ) : null}
               {!course.content_url && !sessionVideoId && videoChecked && course.content_type === "video" && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
                   Video coming soon for this session. Check back shortly.
                 </div>
               )}
-              {videoEnded && (
+              {videoEnded && !sessionVideoId && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success" /> Video finished
@@ -445,11 +473,19 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                 className="prose prose-sm max-w-none dark:prose-invert break-words"
                 dangerouslySetInnerHTML={{ __html: course.content_body || "<p class='text-muted-foreground'>No written content for this course. Please contact your administrator.</p>" }}
               />
-              <div className="mt-8 flex justify-end">
-                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
-                  {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
-                </Button>
+              <div className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2">
+                {videoLocked ? (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    {videoPercent}% watched — the quiz unlocks at {VIDEO_GATE_PERCENT}%.
+                  </p>
+                ) : (
+                  <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
+                    {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
+                  </Button>
+                )}
               </div>
+
             </CardContent>
           </Card>
         )}

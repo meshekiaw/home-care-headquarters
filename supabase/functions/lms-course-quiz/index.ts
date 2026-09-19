@@ -54,6 +54,42 @@ Deno.serve(async (req) => {
     if (action === "check_answers") {
       if (!answers || typeof answers !== "object") return json({ error: "Missing answers" }, 400);
 
+      // Video gate: when this course has a video, the quiz cannot be graded until
+      // the caregiver has watched at least VIDEO_GATE_PERCENT of it. Sessions with
+      // no video link yet are not gated.
+      const VIDEO_GATE_PERCENT = 95;
+      const { data: courseMedia } = await admin
+        .from("lms_courses")
+        .select("content_url")
+        .eq("id", assignment.course_id)
+        .maybeSingle();
+      const { data: sessionVideo } = await admin
+        .from("lms_session_videos")
+        .select("course_id")
+        .eq("course_id", assignment.course_id)
+        .maybeSingle();
+      const hasVideo = !!sessionVideo || !!courseMedia?.content_url;
+      if (hasVideo) {
+        const { data: progress } = await admin
+          .from("lms_video_progress")
+          .select("percent_complete")
+          .eq("assignment_id", assignment_id)
+          .maybeSingle();
+        const watched = progress?.percent_complete ?? 0;
+        if (watched < VIDEO_GATE_PERCENT) {
+          return json(
+            {
+              error: `You must watch the training video before taking the quiz. You have watched ${watched}% so far.`,
+              watched_percent: watched,
+              required_percent: VIDEO_GATE_PERCENT,
+            },
+            403,
+          );
+        }
+      }
+
+
+
       const { data: course } = await admin
         .from("lms_courses")
         .select("passing_score")

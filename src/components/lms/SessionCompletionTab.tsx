@@ -24,6 +24,9 @@ interface Row {
   session_number: number;
   session_title: string;
   passing_score: number | null;
+  watched_percent: number | null;
+  watched_seconds: number | null;
+  video_completed_at: string | null;
 }
 
 interface Attempt {
@@ -62,6 +65,13 @@ export default function SessionCompletionTab() {
       setLoading(false);
       return;
     }
+    const ids = ((data as any[]) || []).map((a) => a.id);
+    const { data: progress } = await supabase
+      .from("lms_video_progress")
+      .select("assignment_id, percent_complete, watched_seconds, video_completed_at")
+      .in("assignment_id", ids);
+    const progressMap = new Map((progress || []).map((p: any) => [p.assignment_id, p]));
+
     const mapped: Row[] = ((data as any[]) || []).map((a) => ({
       id: a.id,
       status: a.status,
@@ -74,6 +84,9 @@ export default function SessionCompletionTab() {
       session_number: a.lms_courses.session_number,
       session_title: a.lms_courses.title,
       passing_score: a.lms_courses.passing_score,
+      watched_percent: progressMap.get(a.id)?.percent_complete ?? null,
+      watched_seconds: progressMap.get(a.id)?.watched_seconds ?? null,
+      video_completed_at: progressMap.get(a.id)?.video_completed_at ?? null,
     }));
     mapped.sort((x, y) =>
       x.caregiver_name.localeCompare(y.caregiver_name) || x.session_number - y.session_number
@@ -130,6 +143,9 @@ export default function SessionCompletionTab() {
         Score: r.score ?? "",
         "Pass Mark": r.passing_score ?? 70,
         Attempts: r.attempts,
+        "Video Watched %": r.watched_percent ?? "",
+        "Video Watched Minutes": r.watched_seconds != null ? Math.round(r.watched_seconds / 60) : "",
+        "Video Finished": r.video_completed_at ? format(new Date(r.video_completed_at), "MM/dd/yyyy h:mm a") : "",
         Due: r.due_date ? format(new Date(r.due_date), "MM/dd/yyyy") : "",
       })),
       `in-service-completions-${format(new Date(), "yyyy-MM-dd")}.csv`
@@ -197,6 +213,7 @@ export default function SessionCompletionTab() {
                   <TableHead>Session</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date completed</TableHead>
+                  <TableHead>Video watched</TableHead>
                   <TableHead>Score</TableHead>
                   <TableHead>Attempts</TableHead>
                 </TableRow>
@@ -220,12 +237,19 @@ export default function SessionCompletionTab() {
                         )}
                       </TableCell>
                       <TableCell>{r.completed_at ? format(new Date(r.completed_at), "MMM d, yyyy h:mm a") : "—"}</TableCell>
+                      <TableCell>
+                        {r.watched_percent != null ? (
+                          <span className={r.watched_percent >= 95 ? "text-success" : ""}>{r.watched_percent}%</span>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
                       <TableCell>{r.score != null ? `${r.score}%` : "—"}</TableCell>
                       <TableCell>{r.attempts}</TableCell>
                     </TableRow>
                     {expanded === r.id && (
                       <TableRow key={`${r.id}-attempts`}>
-                        <TableCell colSpan={7} className="bg-muted/40">
+                        <TableCell colSpan={8} className="bg-muted/40">
                           <p className="text-xs font-medium mb-2">Quiz attempts (all retained)</p>
                           {!attempts[r.id] ? (
                             <Skeleton className="h-8" />

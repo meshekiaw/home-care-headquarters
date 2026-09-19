@@ -399,7 +399,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
             {course.duration_minutes && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{course.duration_minutes} min</span>}
             {assignment.due_date && <span>Due: {format(new Date(assignment.due_date), "MMM d, yyyy")}</span>}
-            {questions.length > 0 && <span>{questions.length} quiz questions · pass {course.passing_score ?? 80}%</span>}
+            {questions.length > 0 && <span>{questions.length} quiz questions · pass {course.passing_score ?? 70}%</span>}
           </div>
         </div>
 
@@ -459,7 +459,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           <Card>
             <CardHeader className="border-b px-4 sm:px-6">
               <CardTitle className="text-base sm:text-lg">Quiz</CardTitle>
-              <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 80}%.</p>
+              <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 70}%.</p>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6 space-y-6">
               {questions.map((q, idx) => {
@@ -511,7 +511,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                 <>
                   <XCircle className="w-14 h-14 sm:w-16 sm:h-16 text-destructive mx-auto" />
                   <h3 className="text-xl sm:text-2xl font-bold">Not Quite There</h3>
-                  <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 80}% to pass.</p>
+                  <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 70}% to pass.</p>
                   <div className="flex flex-col-reverse sm:flex-row sm:justify-center gap-2">
                     <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>Back</Link></Button>
                     <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={retryQuiz}>Review & Retry</Button>

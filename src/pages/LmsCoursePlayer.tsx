@@ -147,6 +147,8 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [result, setResult] = useState<{ score: number; passed: boolean; results: Record<string, { correct: boolean; correct_answer: string }> } | null>(null);
   const [siblings, setSiblings] = useState<SiblingAssignment[]>([]);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [sessionVideoId, setSessionVideoId] = useState<string | null>(null);
+  const [videoChecked, setVideoChecked] = useState(false);
 
 
   const load = useCallback(async () => {
@@ -197,6 +199,15 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     });
     if (!qErr && qData?.questions) {
       setQuestions(qData.questions);
+    }
+
+    // In-service sessions: the video is stored admin-only and resolved through a
+    // security-definer function that checks this caregiver owns the assignment.
+    if (!a.lms_courses.content_url) {
+      const { data: v } = await supabase.rpc("get_session_video", { p_assignment_id: a.id });
+      const row = Array.isArray(v) ? v[0] : v;
+      if (row?.video_id) setSessionVideoId(row.video_id as string);
+      setVideoChecked(true);
     }
 
     if (a.status === "completed") {
@@ -400,7 +411,18 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6">
-              {course.content_url && <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />}
+              {(course.content_url || sessionVideoId) && (
+                <CourseVideo
+                  url={course.content_url}
+                  videoId={sessionVideoId}
+                  onEnded={() => setVideoEnded(true)}
+                />
+              )}
+              {!course.content_url && !sessionVideoId && videoChecked && course.content_type === "video" && (
+                <div className="mb-6 rounded-lg border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
+                  Video coming soon for this session. Check back shortly.
+                </div>
+              )}
               {videoEnded && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <p className="text-sm font-medium flex items-center gap-2">

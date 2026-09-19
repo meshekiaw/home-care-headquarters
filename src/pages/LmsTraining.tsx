@@ -24,6 +24,8 @@ import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
 import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
+import InServiceSessionsTab from "@/components/lms/InServiceSessionsTab";
+import SessionCompletionTab from "@/components/lms/SessionCompletionTab";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeWithRefresh } from "@/lib/invokeWithRefresh";

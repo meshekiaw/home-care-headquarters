@@ -24,6 +24,9 @@ interface Row {
   session_number: number;
   session_title: string;
   passing_score: number | null;
+  watched_percent: number | null;
+  watched_seconds: number | null;
+  video_completed_at: string | null;
 }
 
 interface Attempt {
@@ -62,6 +65,13 @@ export default function SessionCompletionTab() {
       setLoading(false);
       return;
     }
+    const ids = ((data as any[]) || []).map((a) => a.id);
+    const { data: progress } = await supabase
+      .from("lms_video_progress")
+      .select("assignment_id, percent_complete, watched_seconds, video_completed_at")
+      .in("assignment_id", ids);
+    const progressMap = new Map((progress || []).map((p: any) => [p.assignment_id, p]));
+
     const mapped: Row[] = ((data as any[]) || []).map((a) => ({
       id: a.id,
       status: a.status,
@@ -74,6 +84,9 @@ export default function SessionCompletionTab() {
       session_number: a.lms_courses.session_number,
       session_title: a.lms_courses.title,
       passing_score: a.lms_courses.passing_score,
+      watched_percent: progressMap.get(a.id)?.percent_complete ?? null,
+      watched_seconds: progressMap.get(a.id)?.watched_seconds ?? null,
+      video_completed_at: progressMap.get(a.id)?.video_completed_at ?? null,
     }));
     mapped.sort((x, y) =>
       x.caregiver_name.localeCompare(y.caregiver_name) || x.session_number - y.session_number

@@ -82,6 +82,9 @@ const App = () => (
             <Route path="/caregiver-training/orientation" element={<CaregiverPortalOrientation />} />
             <Route path="/caregiver-training/course/:assignmentId" element={<LmsCoursePlayer standalone />} />
 
+            {/* Shareable per-session training link */}
+            <Route path="/training/session/:sessionNumber" element={<SessionRedirect />} />
+
             
             {/* Admin-only routes */}
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><Dashboard /></ProtectedRoute>} />

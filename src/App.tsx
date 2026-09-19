@@ -37,6 +37,7 @@ import CaregiverApplication from "./pages/CaregiverApplication";
 import AuditLog from "./pages/AuditLog";
 import CaregiverAvailability from "./pages/CaregiverAvailability";
 import CaregiverTraining from "./pages/CaregiverTraining";
+import SessionRedirect from "./pages/SessionRedirect";
 import LmsCoursePlayer from "./pages/LmsCoursePlayer";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -80,6 +81,9 @@ const App = () => (
             <Route path="/caregiver-training" element={<CaregiverPortal />} />
             <Route path="/caregiver-training/orientation" element={<CaregiverPortalOrientation />} />
             <Route path="/caregiver-training/course/:assignmentId" element={<LmsCoursePlayer standalone />} />
+
+            {/* Shareable per-session training link */}
+            <Route path="/training/session/:sessionNumber" element={<SessionRedirect />} />
 
             
             {/* Admin-only routes */}

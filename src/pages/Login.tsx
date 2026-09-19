@@ -28,7 +28,12 @@ export default function Login() {
       // "Setting up your account" state instead of leaving the user on /login.
       const defaultPath =
         role === "admin" ? "/dashboard" : role === "nurse" ? "/nurse" : "/my-dashboard";
-      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || defaultPath;
+      // ?redirect=/path supports shared links (e.g. a training session link)
+      const redirectParam = new URLSearchParams(location.search).get("redirect");
+      const from =
+        (redirectParam && redirectParam.startsWith("/") ? redirectParam : null) ||
+        (location.state as { from?: { pathname: string } })?.from?.pathname ||
+        defaultPath;
       navigate(from, { replace: true });
     }
   }, [user, role, roleLoading, navigate, location]);

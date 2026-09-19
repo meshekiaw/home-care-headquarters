@@ -1,7 +1,9 @@
 // Edge function: get LMS quiz questions (without answers) and grade submissions.
-// Also updates lms_assignments status/score/completed_at on pass.
+// Records every attempt in lms_quiz_attempts and completes the assignment on a pass.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2/cors";
+
+const DEFAULT_PASSING_SCORE = 70;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -31,7 +33,7 @@ Deno.serve(async (req) => {
     // Verify caregiver owns this assignment
     const { data: assignment, error: aErr } = await admin
       .from("lms_assignments")
-      .select("id, course_id, caregiver_id, status, score, caregivers!inner(auth_user_id)")
+      .select("id, user_id, course_id, caregiver_id, status, score, completed_at, caregivers!inner(auth_user_id)")
       .eq("id", assignment_id)
       .maybeSingle();
     if (aErr || !assignment) return json({ error: "Assignment not found" }, 404);
@@ -51,6 +53,13 @@ Deno.serve(async (req) => {
 
     if (action === "check_answers") {
       if (!answers || typeof answers !== "object") return json({ error: "Missing answers" }, 400);
+
+      const { data: course } = await admin
+        .from("lms_courses")
+        .select("passing_score")
+        .eq("id", assignment.course_id)
+        .maybeSingle();
+
       const { data: qs, error } = await admin
         .from("lms_quiz_questions")
         .select("id, correct_answer, points")
@@ -67,26 +76,51 @@ Deno.serve(async (req) => {
         results[q.id] = { correct, correct_answer: q.correct_answer };
       }
       const score = total > 0 ? Math.round((earned / total) * 100) : 0;
-      const passingScore = 80;
+      const passingScore = course?.passing_score ?? DEFAULT_PASSING_SCORE;
       const passed = score >= passingScore;
+
+      // Every attempt is retained, pass or fail.
+      const { count } = await admin
+        .from("lms_quiz_attempts")
+        .select("id", { count: "exact", head: true })
+        .eq("assignment_id", assignment_id);
+      const attemptNumber = (count ?? 0) + 1;
+      const attemptedAt = new Date().toISOString();
+
+      await admin.from("lms_quiz_attempts").insert({
+        user_id: assignment.user_id,
+        assignment_id,
+        course_id: assignment.course_id,
+        caregiver_id: assignment.caregiver_id,
+        attempt_number: attemptNumber,
+        score,
+        passing_score: passingScore,
+        passed,
+        answers,
+        attempted_at: attemptedAt,
+      });
 
       if (passed) {
         await admin.from("lms_assignments").update({
           status: "completed",
-          completed_at: new Date().toISOString(),
+          // Completion timestamp is the moment of the passing attempt; an earlier
+          // pass is never overwritten by a later retake.
+          completed_at: assignment.completed_at ?? attemptedAt,
           progress_percentage: 100,
           score,
+          attempts: attemptNumber,
           updated_at: new Date().toISOString(),
         }).eq("id", assignment_id);
       } else {
         await admin.from("lms_assignments").update({
-          status: "in_progress",
-          score,
+          status: assignment.status === "completed" ? "completed" : "in_progress",
+          score: assignment.status === "completed" ? assignment.score : score,
+          attempts: attemptNumber,
           updated_at: new Date().toISOString(),
         }).eq("id", assignment_id);
       }
 
-      return json({ score, passed, passingScore, results });
+      return json({ score, passed, passingScore, attemptNumber, results });
     }
 
     return json({ error: "Unknown action" }, 400);

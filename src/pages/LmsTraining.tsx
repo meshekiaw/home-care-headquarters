@@ -24,6 +24,8 @@ import { useLmsCourses, useLmsAssignments } from "@/hooks/useLmsCourses";
 import { format, isPast, differenceInDays } from "date-fns";
 import AddCourseDialog from "@/components/lms/AddCourseDialog";
 import AssignCourseDialog from "@/components/lms/AssignCourseDialog";
+import InServiceSessionsTab from "@/components/lms/InServiceSessionsTab";
+import SessionCompletionTab from "@/components/lms/SessionCompletionTab";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeWithRefresh } from "@/lib/invokeWithRefresh";
@@ -313,6 +315,8 @@ export default function LmsTraining() {
               Overdue {overdueAssignments > 0 && `(${overdueAssignments})`}
             </TabsTrigger>
             <TabsTrigger value="courses">Courses ({courses.length})</TabsTrigger>
+            <TabsTrigger value="in-service">In-Service Sessions</TabsTrigger>
+            <TabsTrigger value="completions">Session Completion</TabsTrigger>
           </TabsList>
 
           <TabsContent value="assignments" className="space-y-4">
@@ -533,6 +537,14 @@ export default function LmsTraining() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="in-service" className="space-y-4">
+            <InServiceSessionsTab />
+          </TabsContent>
+
+          <TabsContent value="completions" className="space-y-4">
+            <SessionCompletionTab />
           </TabsContent>
         </Tabs>
       </div>

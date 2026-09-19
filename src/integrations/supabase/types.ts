@@ -1725,6 +1725,7 @@ export type Database = {
           is_required: boolean
           passing_score: number | null
           required_for_role: string | null
+          session_number: number | null
           title: string
           updated_at: string
           user_id: string
@@ -1742,6 +1743,7 @@ export type Database = {
           is_required?: boolean
           passing_score?: number | null
           required_for_role?: string | null
+          session_number?: number | null
           title: string
           updated_at?: string
           user_id: string
@@ -1759,6 +1761,7 @@ export type Database = {
           is_required?: boolean
           passing_score?: number | null
           required_for_role?: string | null
+          session_number?: number | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -1858,6 +1861,73 @@ export type Database = {
           },
         ]
       }
+      lms_quiz_attempts: {
+        Row: {
+          answers: Json
+          assignment_id: string
+          attempt_number: number
+          attempted_at: string
+          caregiver_id: string
+          course_id: string
+          created_at: string
+          id: string
+          passed: boolean
+          passing_score: number
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          assignment_id: string
+          attempt_number: number
+          attempted_at?: string
+          caregiver_id: string
+          course_id: string
+          created_at?: string
+          id?: string
+          passed: boolean
+          passing_score: number
+          score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          assignment_id?: string
+          attempt_number?: number
+          attempted_at?: string
+          caregiver_id?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          passed?: boolean
+          passing_score?: number
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_quiz_attempts_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "lms_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_quiz_attempts_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_quiz_attempts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "lms_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lms_quiz_questions: {
         Row: {
           correct_answer: string
@@ -1900,6 +1970,47 @@ export type Database = {
             foreignKeyName: "lms_quiz_questions_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
+            referencedRelation: "lms_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lms_session_videos: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          provider: string
+          updated_at: string
+          updated_by: string | null
+          video_id: string
+          video_url: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+          video_id: string
+          video_url: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+          video_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_session_videos_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: true
             referencedRelation: "lms_courses"
             referencedColumns: ["id"]
           },
@@ -2922,6 +3033,13 @@ export type Database = {
         Returns: string
       }
       get_masked_ssn: { Args: { encrypted_ssn: string }; Returns: string }
+      get_session_video: {
+        Args: { p_assignment_id: string }
+        Returns: {
+          provider: string
+          video_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

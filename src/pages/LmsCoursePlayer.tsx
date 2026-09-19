@@ -46,14 +46,20 @@ function embedUrl(url: string): string | null {
   return null;
 }
 
-function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
-  const embed = embedUrl(url);
+function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?: string | null; onEnded?: () => void }) {
+  // In-service sessions pass only a videoId, fetched server-side, so the
+  // original link never reaches the page as text or a shareable href.
+  const embed = videoId
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3`
+    : url
+      ? embedUrl(url)
+      : null;
 
   useEffect(() => {
     if (!embed || !onEnded) return;
     const handler = (e: MessageEvent) => {
       const origin = e.origin || "";
-      if (!/youtube\.com|vimeo\.com/.test(origin)) return;
+      if (!/youtube\.com|youtube-nocookie\.com|vimeo\.com/.test(origin)) return;
       try {
         const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
         // YouTube: info.playerState === 0 (ended). Vimeo: event === "ended"
@@ -74,12 +80,13 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
           src={embed}
           title="Course video"
           className="w-full h-full"
+          referrerPolicy="no-referrer"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
           allowFullScreen
         />
-      ) : (
+      ) : url ? (
         <video src={url} controls playsInline className="w-full h-full" onEnded={onEnded} />
-      )}
+      ) : null}
     </div>
   );
 }
@@ -140,6 +147,8 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [result, setResult] = useState<{ score: number; passed: boolean; results: Record<string, { correct: boolean; correct_answer: string }> } | null>(null);
   const [siblings, setSiblings] = useState<SiblingAssignment[]>([]);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [sessionVideoId, setSessionVideoId] = useState<string | null>(null);
+  const [videoChecked, setVideoChecked] = useState(false);
 
 
   const load = useCallback(async () => {
@@ -190,6 +199,15 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     });
     if (!qErr && qData?.questions) {
       setQuestions(qData.questions);
+    }
+
+    // In-service sessions: the video is stored admin-only and resolved through a
+    // security-definer function that checks this caregiver owns the assignment.
+    if (!a.lms_courses.content_url) {
+      const { data: v } = await supabase.rpc("get_session_video", { p_assignment_id: a.id });
+      const row = Array.isArray(v) ? v[0] : v;
+      if (row?.video_id) setSessionVideoId(row.video_id as string);
+      setVideoChecked(true);
     }
 
     if (a.status === "completed") {
@@ -381,7 +399,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
             {course.duration_minutes && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{course.duration_minutes} min</span>}
             {assignment.due_date && <span>Due: {format(new Date(assignment.due_date), "MMM d, yyyy")}</span>}
-            {questions.length > 0 && <span>{questions.length} quiz questions · pass {course.passing_score ?? 80}%</span>}
+            {questions.length > 0 && <span>{questions.length} quiz questions · pass {course.passing_score ?? 70}%</span>}
           </div>
         </div>
 
@@ -393,7 +411,18 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><FileText className="w-5 h-5 text-primary" /> Course Content</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6">
-              {course.content_url && <CourseVideo url={course.content_url} onEnded={() => setVideoEnded(true)} />}
+              {(course.content_url || sessionVideoId) && (
+                <CourseVideo
+                  url={course.content_url}
+                  videoId={sessionVideoId}
+                  onEnded={() => setVideoEnded(true)}
+                />
+              )}
+              {!course.content_url && !sessionVideoId && videoChecked && course.content_type === "video" && (
+                <div className="mb-6 rounded-lg border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
+                  Video coming soon for this session. Check back shortly.
+                </div>
+              )}
               {videoEnded && (
                 <div className="mb-6 rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <p className="text-sm font-medium flex items-center gap-2">
@@ -430,7 +459,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
           <Card>
             <CardHeader className="border-b px-4 sm:px-6">
               <CardTitle className="text-base sm:text-lg">Quiz</CardTitle>
-              <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 80}%.</p>
+              <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 70}%.</p>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6 space-y-6">
               {questions.map((q, idx) => {
@@ -482,7 +511,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                 <>
                   <XCircle className="w-14 h-14 sm:w-16 sm:h-16 text-destructive mx-auto" />
                   <h3 className="text-xl sm:text-2xl font-bold">Not Quite There</h3>
-                  <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 80}% to pass.</p>
+                  <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 70}% to pass.</p>
                   <div className="flex flex-col-reverse sm:flex-row sm:justify-center gap-2">
                     <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>Back</Link></Button>
                     <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={retryQuiz}>Review & Retry</Button>

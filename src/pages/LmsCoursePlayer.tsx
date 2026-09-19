@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, XCircle, PlayCircle, Lock } from "lucide-react";
 import { format } from "date-fns";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { friendlyError } from "@/lib/friendlyError";
@@ -158,6 +158,9 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     setVideoPercent(pct);
     setVideoUnlocked(unlocked);
   }, []);
+
+  // Sessions with a video keep the quiz locked until it has been watched.
+  const videoLocked = !!sessionVideoId && !videoUnlocked;
 
 
   const load = useCallback(async () => {

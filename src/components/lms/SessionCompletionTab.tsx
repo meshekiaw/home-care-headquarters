@@ -143,6 +143,9 @@ export default function SessionCompletionTab() {
         Score: r.score ?? "",
         "Pass Mark": r.passing_score ?? 70,
         Attempts: r.attempts,
+        "Video Watched %": r.watched_percent ?? "",
+        "Video Watched Minutes": r.watched_seconds != null ? Math.round(r.watched_seconds / 60) : "",
+        "Video Finished": r.video_completed_at ? format(new Date(r.video_completed_at), "MM/dd/yyyy h:mm a") : "",
         Due: r.due_date ? format(new Date(r.due_date), "MM/dd/yyyy") : "",
       })),
       `in-service-completions-${format(new Date(), "yyyy-MM-dd")}.csv`
@@ -210,6 +213,7 @@ export default function SessionCompletionTab() {
                   <TableHead>Session</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date completed</TableHead>
+                  <TableHead>Video watched</TableHead>
                   <TableHead>Score</TableHead>
                   <TableHead>Attempts</TableHead>
                 </TableRow>

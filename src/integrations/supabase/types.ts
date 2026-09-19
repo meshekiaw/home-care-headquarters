@@ -2016,6 +2016,73 @@ export type Database = {
           },
         ]
       }
+      lms_video_progress: {
+        Row: {
+          assignment_id: string
+          caregiver_id: string
+          course_id: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          last_position_seconds: number
+          percent_complete: number
+          updated_at: string
+          user_id: string
+          video_completed_at: string | null
+          watched_seconds: number
+        }
+        Insert: {
+          assignment_id: string
+          caregiver_id: string
+          course_id: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          last_position_seconds?: number
+          percent_complete?: number
+          updated_at?: string
+          user_id: string
+          video_completed_at?: string | null
+          watched_seconds?: number
+        }
+        Update: {
+          assignment_id?: string
+          caregiver_id?: string
+          course_id?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          last_position_seconds?: number
+          percent_complete?: number
+          updated_at?: string
+          user_id?: string
+          video_completed_at?: string | null
+          watched_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_video_progress_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: true
+            referencedRelation: "lms_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_video_progress_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_video_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "lms_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_history: {
         Row: {
           client_id: string

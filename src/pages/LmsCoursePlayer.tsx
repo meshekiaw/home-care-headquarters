@@ -15,6 +15,7 @@ import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, FileText, Award, 
 import { format } from "date-fns";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { friendlyError } from "@/lib/friendlyError";
+import GatedVideoPlayer, { VIDEO_GATE_PERCENT } from "@/components/lms/GatedVideoPlayer";
 
 interface Assignment {
   id: string;
@@ -149,6 +150,14 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [videoEnded, setVideoEnded] = useState(false);
   const [sessionVideoId, setSessionVideoId] = useState<string | null>(null);
   const [videoChecked, setVideoChecked] = useState(false);
+  const [caregiverId, setCaregiverId] = useState<string | null>(null);
+  const [videoPercent, setVideoPercent] = useState(0);
+  const [videoUnlocked, setVideoUnlocked] = useState(false);
+
+  const handleVideoProgress = useCallback((pct: number, unlocked: boolean) => {
+    setVideoPercent(pct);
+    setVideoUnlocked(unlocked);
+  }, []);
 
 
   const load = useCallback(async () => {

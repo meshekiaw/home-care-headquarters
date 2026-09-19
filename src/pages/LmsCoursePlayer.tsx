@@ -46,14 +46,20 @@ function embedUrl(url: string): string | null {
   return null;
 }
 
-function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
-  const embed = embedUrl(url);
+function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?: string | null; onEnded?: () => void }) {
+  // In-service sessions pass only a videoId, fetched server-side, so the
+  // original link never reaches the page as text or a shareable href.
+  const embed = videoId
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3`
+    : url
+      ? embedUrl(url)
+      : null;
 
   useEffect(() => {
     if (!embed || !onEnded) return;
     const handler = (e: MessageEvent) => {
       const origin = e.origin || "";
-      if (!/youtube\.com|vimeo\.com/.test(origin)) return;
+      if (!/youtube\.com|youtube-nocookie\.com|vimeo\.com/.test(origin)) return;
       try {
         const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
         // YouTube: info.playerState === 0 (ended). Vimeo: event === "ended"
@@ -74,12 +80,13 @@ function CourseVideo({ url, onEnded }: { url: string; onEnded?: () => void }) {
           src={embed}
           title="Course video"
           className="w-full h-full"
+          referrerPolicy="no-referrer"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
           allowFullScreen
         />
-      ) : (
+      ) : url ? (
         <video src={url} controls playsInline className="w-full h-full" onEnded={onEnded} />
-      )}
+      ) : null}
     </div>
   );
 }

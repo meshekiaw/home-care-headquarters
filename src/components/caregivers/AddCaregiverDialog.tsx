@@ -24,6 +24,7 @@ interface AddCaregiverDialogProps {
     zip_code?: string;
     service_radius_miles?: number;
     date_of_birth?: string;
+    hire_date?: string;
   }) => Promise<any>;
 }
 
@@ -56,6 +57,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
     zip_code: "",
     service_radius_miles: "25",
     date_of_birth: "",
+    hire_date: "",
   });
 
   const handleSubmit = async () => {
@@ -75,6 +77,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         zip_code: formData.zip_code || undefined,
         service_radius_miles: formData.service_radius_miles ? parseInt(formData.service_radius_miles) : undefined,
         date_of_birth: formData.date_of_birth || undefined,
+        hire_date: formData.hire_date,
       });
       onOpenChange(false);
       setFormData({
@@ -91,6 +94,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         zip_code: "",
         service_radius_miles: "25",
         date_of_birth: "",
+        hire_date: "",
       });
     } finally {
       setLoading(false);
@@ -190,6 +194,17 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
                 onChange={(e) => setFormData((f) => ({ ...f, date_of_birth: e.target.value }))}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Hire Date *</Label>
+              <Input
+                type="date"
+                value={formData.hire_date}
+                onChange={(e) => setFormData((f) => ({ ...f, hire_date: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Sets the annual in-service year for this employee.
+              </p>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Specializations</Label>
@@ -284,7 +299,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!formData.first_name || !formData.last_name || loading}
+            disabled={!formData.first_name || !formData.last_name || !formData.hire_date || loading}
             loading={loading}
           >
             Add Caregiver

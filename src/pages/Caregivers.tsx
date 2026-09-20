@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,16 @@ import type { ParsedCaregiver } from "@/utils/csvParser";
 import { downloadCSV, formatCaregiverForExport } from "@/utils/csvExport";
 import { getExpiryStatus, formatDateOnly } from "@/utils/expiryStatus";
 import { friendlyError } from "@/lib/friendlyError";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useInServiceCompletions } from "@/hooks/useInServiceCompliance";
+import {
+  IN_SERVICE_STATUS_LABEL,
+  IN_SERVICE_STATUS_ORDER,
+  REQUIRED_IN_SERVICE_HOURS,
+  formatPeriodDate,
+  inServiceStatusStyle,
+  type InServiceStatus,
+} from "@/utils/inServiceStatus";
 
 const EXPIRY_FIELDS: { key: string; label: string }[] = [
   { key: "maltreatment_expiration_date", label: "Maltreatment" },
@@ -77,14 +87,36 @@ export default function Caregivers() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTargets, setDeleteTargets] = useState<Tables<"caregivers">[] | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [inServiceFilter, setInServiceFilter] = useState<"all" | InServiceStatus>("all");
+  const [sortBy, setSortBy] = useState<"name" | "in_service" | "period_end">("name");
   const navigate = useNavigate();
+  const { forCaregiver } = useInServiceCompletions();
 
-  const filteredCaregivers = caregivers.filter((caregiver) => {
-    const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
-    const specializations = caregiver.specializations?.join(" ").toLowerCase() || "";
+  const filteredCaregivers = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || specializations.includes(query);
-  });
+    const list = caregivers.filter((caregiver) => {
+      const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
+      const specializations = caregiver.specializations?.join(" ").toLowerCase() || "";
+      const matchesSearch = fullName.includes(query) || specializations.includes(query);
+      if (!matchesSearch) return false;
+      if (inServiceFilter === "all") return true;
+      return forCaregiver(caregiver.id, (caregiver as any).hire_date).status === inServiceFilter;
+    });
+    return [...list].sort((a, b) => {
+      if (sortBy === "in_service") {
+        const ia = forCaregiver(a.id, (a as any).hire_date);
+        const ib = forCaregiver(b.id, (b as any).hire_date);
+        const d =
+          IN_SERVICE_STATUS_ORDER.indexOf(ia.status) - IN_SERVICE_STATUS_ORDER.indexOf(ib.status);
+        if (d !== 0) return d;
+      } else if (sortBy === "period_end") {
+        const ea = forCaregiver(a.id, (a as any).hire_date).period?.end.getTime() ?? Infinity;
+        const eb = forCaregiver(b.id, (b as any).hire_date).period?.end.getTime() ?? Infinity;
+        if (ea !== eb) return ea - eb;
+      }
+      return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
+    });
+  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver]);
 
   const allSelected =
     filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));
@@ -151,7 +183,17 @@ export default function Caregivers() {
             <Button 
               variant="outline" 
               onClick={() => {
-                const exportData = caregivers.map(formatCaregiverForExport);
+                const exportData = caregivers.map((c) => {
+                  const info = forCaregiver(c.id, (c as any).hire_date);
+                  return {
+                    ...formatCaregiverForExport(c),
+                    in_service_period_start: info.period ? formatPeriodDate(info.period.start) : "",
+                    in_service_period_end: info.period ? formatPeriodDate(info.period.end) : "",
+                    in_service_hours_completed: info.hoursThisPeriod,
+                    in_service_hours_required: REQUIRED_IN_SERVICE_HOURS,
+                    in_service_status: IN_SERVICE_STATUS_LABEL[info.status],
+                  };
+                });
                 downloadCSV(exportData, `caregivers-${new Date().toISOString().split('T')[0]}`);
                 toast({ title: "Export complete", description: `Exported ${caregivers.length} caregivers` });
               }}
@@ -186,6 +228,35 @@ export default function Caregivers() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="w-56">
+                <label className="text-xs text-muted-foreground">In-service status</label>
+                <Select
+                  value={inServiceFilter}
+                  onValueChange={(v) => setInServiceFilter(v as "all" | InServiceStatus)}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All in-service statuses</SelectItem>
+                    {IN_SERVICE_STATUS_ORDER.map((s) => (
+                      <SelectItem key={s} value={s}>{IN_SERVICE_STATUS_LABEL[s]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-56">
+                <label className="text-xs text-muted-foreground">Sort by</label>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="in_service">In-service status</SelectItem>
+                    <SelectItem value="period_end">Period end date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {!loading && filteredCaregivers.length > 0 && (
@@ -294,6 +365,26 @@ export default function Caregivers() {
                             </p>
                           )}
                           <ExpiryBadges caregiver={caregiver as any} />
+                          {(() => {
+                            const info = forCaregiver(caregiver.id, (caregiver as any).hire_date);
+                            return (
+                              <div className="mt-2 space-y-0.5 text-xs">
+                                <p className="text-muted-foreground">
+                                  Hired{" "}
+                                  {(caregiver as any).hire_date
+                                    ? formatDateOnly((caregiver as any).hire_date)
+                                    : "—"}
+                                  {info.period && ` · period ends ${formatPeriodDate(info.period.end)}`}
+                                </p>
+                                <p>
+                                  In-service {info.hoursThisPeriod} of {REQUIRED_IN_SERVICE_HOURS} hrs ·{" "}
+                                  <span style={inServiceStatusStyle(info.status)}>
+                                    {IN_SERVICE_STATUS_LABEL[info.status]}
+                                  </span>
+                                </p>
+                              </div>
+                            );
+                          })()}
                           <div className="flex items-center gap-4 mt-3">
                             {caregiver.hourly_rate && (
                               <span className="text-sm font-medium text-primary">

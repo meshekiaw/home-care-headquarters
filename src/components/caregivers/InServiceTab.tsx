@@ -22,7 +22,6 @@ import { friendlyError } from "@/lib/friendlyError";
 import { useInServiceCompletions, useInServiceSessionList } from "@/hooks/useInServiceCompliance";
 import {
   IN_SERVICE_STATUS_LABEL,
-  REQUIRED_IN_SERVICE_HOURS,
   computeInServicePeriod,
   formatPeriodDate,
   inServiceStatusStyle,
@@ -89,7 +88,7 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
               <Input type="date" value={draftDate} onChange={(e) => setDraftDate(e.target.value)} />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Current period</p>
+              <p className="text-sm text-muted-foreground">Current training year</p>
               <p className="font-medium">
                 {info.period
                   ? `${formatPeriodDate(info.period.start)} – ${formatPeriodDate(info.period.end)}`
@@ -99,8 +98,13 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
             <div>
               <p className="text-sm text-muted-foreground">Hours completed</p>
               <p className="font-medium">
-                {info.hoursThisPeriod} of {REQUIRED_IN_SERVICE_HOURS}
+                {info.requiredThisPeriod === 0
+                  ? "None required this period"
+                  : `${info.hoursThisPeriod} of ${info.requiredThisPeriod} hours`}
               </p>
+              {info.prorated && (
+                <p className="text-xs text-muted-foreground">Prorated first period</p>
+              )}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Status</p>
@@ -181,6 +185,26 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
               .map((c) => (
                 <Badge key={`${c.session_number}-${c.completed_at}`} variant="secondary">
                   {c.session_number}. {c.session_title} · {format(new Date(c.completed_at), "MM/dd/yyyy")}
+                </Badge>
+              ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {info.completedBeforeProgram.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              Completed before the program start date (not counted)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {[...info.completedBeforeProgram]
+              .sort((a, b) => a.session_number - b.session_number)
+              .map((c) => (
+                <Badge key={`pre-${c.session_number}-${c.completed_at}`} variant="outline">
+                  {c.session_number}. {c.session_title} ·{" "}
+                  {format(new Date(c.completed_at), "MM/dd/yyyy")}
                 </Badge>
               ))}
           </CardContent>

@@ -1,11 +1,20 @@
 // In-service (annual training) period math, driven by each caregiver's hire date
-// rather than the calendar year.
+// and the agency's in-service program start date.
 
-export const REQUIRED_IN_SERVICE_HOURS = 12;
+export const FULL_IN_SERVICE_HOURS = 12;
+/** Kept for compatibility with older imports. */
+export const REQUIRED_IN_SERVICE_HOURS = FULL_IN_SERVICE_HOURS;
 export const TOTAL_IN_SERVICE_SESSIONS = 12;
 export const DUE_SOON_DAYS = 60;
 
-export type InServiceStatus = "past_due" | "due_soon" | "on_track" | "complete" | "no_hire_date";
+export type InServiceStatus =
+  | "past_due"
+  | "due_soon"
+  | "on_track"
+  | "complete"
+  | "before_program"
+  | "no_program_start"
+  | "no_hire_date";
 
 export interface InServicePeriod {
   /** First day of the current period (most recent hire-date anniversary). */
@@ -62,15 +71,60 @@ export function isWithin(date: string, start: Date, end: Date): boolean {
   return d >= start && d <= end;
 }
 
-export function computeInServiceStatus(
-  period: InServicePeriod | null,
-  hoursThisPeriod: number,
-  hoursPreviousPeriod: number
-): InServiceStatus {
+/** Whole months from `from` to `to`, rounded down (never negative). */
+export function wholeMonthsBetween(from: Date, to: Date): number {
+  let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+  if (to.getDate() < from.getDate()) months -= 1;
+  return Math.max(0, months);
+}
+
+/**
+ * Required hours for a training year running start..end, given the program start date.
+ * - Year ended before the program started: not graded (0 required).
+ * - Year in progress when the program started: prorated by whole months remaining.
+ * - Year starting on/after the program start: the full 12 hours.
+ */
+export function requiredHoursForPeriod(
+  periodStart: Date,
+  periodEnd: Date,
+  programStart: Date | null
+): number {
+  if (!programStart) return FULL_IN_SERVICE_HOURS;
+  if (periodEnd < programStart) return 0;
+  if (periodStart >= programStart) return FULL_IN_SERVICE_HOURS;
+  const months = wholeMonthsBetween(programStart, periodEnd);
+  return Math.min(FULL_IN_SERVICE_HOURS, Math.max(0, months));
+}
+
+export interface StatusInput {
+  period: InServicePeriod | null;
+  programStart: Date | null;
+  hoursThisPeriod: number;
+  requiredThisPeriod: number;
+  hoursPreviousPeriod: number;
+  requiredPreviousPeriod: number;
+  previousGraded: boolean;
+}
+
+export function computeInServiceStatus(input: StatusInput): InServiceStatus {
+  const {
+    period,
+    programStart,
+    hoursThisPeriod,
+    requiredThisPeriod,
+    hoursPreviousPeriod,
+    requiredPreviousPeriod,
+    previousGraded,
+  } = input;
+
   if (!period) return "no_hire_date";
-  if (hoursThisPeriod >= REQUIRED_IN_SERVICE_HOURS) return "complete";
-  // A closed period that ended with fewer than 12 hours is past due.
-  if (period.previousStart && hoursPreviousPeriod < REQUIRED_IN_SERVICE_HOURS) return "past_due";
+  if (!programStart) return "no_program_start";
+  if (period.end < programStart) return "before_program";
+  // A closed, graded period that ended short is past due.
+  if (previousGraded && requiredPreviousPeriod > 0 && hoursPreviousPeriod < requiredPreviousPeriod) {
+    return "past_due";
+  }
+  if (hoursThisPeriod >= requiredThisPeriod) return "complete";
   if (period.daysRemaining <= DUE_SOON_DAYS) return "due_soon";
   return "on_track";
 }
@@ -80,6 +134,8 @@ export const IN_SERVICE_STATUS_LABEL: Record<InServiceStatus, string> = {
   due_soon: "Due soon",
   on_track: "On track",
   complete: "Complete",
+  before_program: "Before program",
+  no_program_start: "Program start date not set",
   no_hire_date: "Hire date missing",
 };
 
@@ -89,6 +145,8 @@ export const IN_SERVICE_STATUS_COLOR: Record<InServiceStatus, string | undefined
   due_soon: "#D97706",
   on_track: undefined,
   complete: "#16A34A",
+  before_program: "#6B7280",
+  no_program_start: "#6B7280",
   no_hire_date: "#DC2626",
 };
 
@@ -105,6 +163,8 @@ export const IN_SERVICE_STATUS_ORDER: InServiceStatus[] = [
   "due_soon",
   "on_track",
   "complete",
+  "before_program",
+  "no_program_start",
 ];
 
 export function formatPeriodDate(d: Date): string {

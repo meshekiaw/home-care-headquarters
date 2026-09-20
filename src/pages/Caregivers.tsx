@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,16 @@ import type { ParsedCaregiver } from "@/utils/csvParser";
 import { downloadCSV, formatCaregiverForExport } from "@/utils/csvExport";
 import { getExpiryStatus, formatDateOnly } from "@/utils/expiryStatus";
 import { friendlyError } from "@/lib/friendlyError";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useInServiceCompletions } from "@/hooks/useInServiceCompliance";
+import {
+  IN_SERVICE_STATUS_LABEL,
+  IN_SERVICE_STATUS_ORDER,
+  REQUIRED_IN_SERVICE_HOURS,
+  formatPeriodDate,
+  inServiceStatusStyle,
+  type InServiceStatus,
+} from "@/utils/inServiceStatus";
 
 const EXPIRY_FIELDS: { key: string; label: string }[] = [
   { key: "maltreatment_expiration_date", label: "Maltreatment" },

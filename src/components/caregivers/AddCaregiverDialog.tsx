@@ -94,6 +94,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
         zip_code: "",
         service_radius_miles: "25",
         date_of_birth: "",
+        hire_date: "",
       });
     } finally {
       setLoading(false);

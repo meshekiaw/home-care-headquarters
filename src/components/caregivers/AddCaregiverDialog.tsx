@@ -194,6 +194,17 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
                 onChange={(e) => setFormData((f) => ({ ...f, date_of_birth: e.target.value }))}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Hire Date *</Label>
+              <Input
+                type="date"
+                value={formData.hire_date}
+                onChange={(e) => setFormData((f) => ({ ...f, hire_date: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Sets the annual in-service year for this employee.
+              </p>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Specializations</Label>
@@ -288,7 +299,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!formData.first_name || !formData.last_name || loading}
+            disabled={!formData.first_name || !formData.last_name || !formData.hire_date || loading}
             loading={loading}
           >
             Add Caregiver

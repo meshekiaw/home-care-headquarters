@@ -191,6 +191,26 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
         </Card>
       )}
 
+      {info.completedBeforeProgram.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              Completed before the program start date (not counted)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {[...info.completedBeforeProgram]
+              .sort((a, b) => a.session_number - b.session_number)
+              .map((c) => (
+                <Badge key={`pre-${c.session_number}-${c.completed_at}`} variant="outline">
+                  {c.session_number}. {c.session_title} ·{" "}
+                  {format(new Date(c.completed_at), "MM/dd/yyyy")}
+                </Badge>
+              ))}
+          </CardContent>
+        </Card>
+      )}
+
       <AlertDialog open={confirmOpen} onOpenChange={(o) => !o && !saving && setConfirmOpen(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>

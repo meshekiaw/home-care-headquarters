@@ -24,6 +24,7 @@ interface AddCaregiverDialogProps {
     zip_code?: string;
     service_radius_miles?: number;
     date_of_birth?: string;
+    hire_date?: string;
   }) => Promise<any>;
 }
 
@@ -56,6 +57,7 @@ export default function AddCaregiverDialog({ open, onOpenChange, onAdd }: AddCar
     zip_code: "",
     service_radius_miles: "25",
     date_of_birth: "",
+    hire_date: "",
   });
 
   const handleSubmit = async () => {

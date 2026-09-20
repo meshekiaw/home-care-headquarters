@@ -183,7 +183,17 @@ export default function Caregivers() {
             <Button 
               variant="outline" 
               onClick={() => {
-                const exportData = caregivers.map(formatCaregiverForExport);
+                const exportData = caregivers.map((c) => {
+                  const info = forCaregiver(c.id, (c as any).hire_date);
+                  return {
+                    ...formatCaregiverForExport(c),
+                    in_service_period_start: info.period ? formatPeriodDate(info.period.start) : "",
+                    in_service_period_end: info.period ? formatPeriodDate(info.period.end) : "",
+                    in_service_hours_completed: info.hoursThisPeriod,
+                    in_service_hours_required: REQUIRED_IN_SERVICE_HOURS,
+                    in_service_status: IN_SERVICE_STATUS_LABEL[info.status],
+                  };
+                });
                 downloadCSV(exportData, `caregivers-${new Date().toISOString().split('T')[0]}`);
                 toast({ title: "Export complete", description: `Exported ${caregivers.length} caregivers` });
               }}
@@ -218,6 +228,35 @@ export default function Caregivers() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="w-56">
+                <label className="text-xs text-muted-foreground">In-service status</label>
+                <Select
+                  value={inServiceFilter}
+                  onValueChange={(v) => setInServiceFilter(v as "all" | InServiceStatus)}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All in-service statuses</SelectItem>
+                    {IN_SERVICE_STATUS_ORDER.map((s) => (
+                      <SelectItem key={s} value={s}>{IN_SERVICE_STATUS_LABEL[s]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-56">
+                <label className="text-xs text-muted-foreground">Sort by</label>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="in_service">In-service status</SelectItem>
+                    <SelectItem value="period_end">Period end date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {!loading && filteredCaregivers.length > 0 && (

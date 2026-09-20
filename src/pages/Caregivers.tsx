@@ -187,10 +187,10 @@ export default function Caregivers() {
                   const info = forCaregiver(c.id, (c as any).hire_date);
                   return {
                     ...formatCaregiverForExport(c),
-                    in_service_period_start: info.period ? formatPeriodDate(info.period.start) : "",
-                    in_service_period_end: info.period ? formatPeriodDate(info.period.end) : "",
+                    training_year_start: info.period ? formatPeriodDate(info.period.start) : "",
+                    training_year_end: info.period ? formatPeriodDate(info.period.end) : "",
+                    in_service_hours_required: info.requiredThisPeriod,
                     in_service_hours_completed: info.hoursThisPeriod,
-                    in_service_hours_required: REQUIRED_IN_SERVICE_HOURS,
                     in_service_status: IN_SERVICE_STATUS_LABEL[info.status],
                   };
                 });
@@ -374,10 +374,16 @@ export default function Caregivers() {
                                   {(caregiver as any).hire_date
                                     ? formatDateOnly((caregiver as any).hire_date)
                                     : "—"}
-                                  {info.period && ` · period ends ${formatPeriodDate(info.period.end)}`}
+                                  {info.period && ` · training year ends ${formatPeriodDate(info.period.end)}`}
                                 </p>
                                 <p>
-                                  In-service {info.hoursThisPeriod} of {REQUIRED_IN_SERVICE_HOURS} hrs ·{" "}
+                                  {info.requiredThisPeriod === 0
+                                    ? "None required this period"
+                                    : `In-service ${info.hoursThisPeriod} of ${info.requiredThisPeriod} hours`}
+                                  {info.prorated && (
+                                    <span className="text-muted-foreground"> · Prorated first period</span>
+                                  )}
+                                  {" · "}
                                   <span style={inServiceStatusStyle(info.status)}>
                                     {IN_SERVICE_STATUS_LABEL[info.status]}
                                   </span>

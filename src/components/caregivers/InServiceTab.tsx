@@ -22,7 +22,6 @@ import { friendlyError } from "@/lib/friendlyError";
 import { useInServiceCompletions, useInServiceSessionList } from "@/hooks/useInServiceCompliance";
 import {
   IN_SERVICE_STATUS_LABEL,
-  REQUIRED_IN_SERVICE_HOURS,
   computeInServicePeriod,
   formatPeriodDate,
   inServiceStatusStyle,

@@ -253,7 +253,7 @@ export default function Caregivers() {
                   <SelectContent>
                     <SelectItem value="name">Name</SelectItem>
                     <SelectItem value="in_service">In-service status</SelectItem>
-                    <SelectItem value="period_end">Period end date</SelectItem>
+                    <SelectItem value="period_end">Training year end date</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

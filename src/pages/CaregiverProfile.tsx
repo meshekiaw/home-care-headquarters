@@ -257,7 +257,7 @@ export default function CaregiverProfile() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-h-0">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="credentials">
               Credentials
@@ -276,6 +276,7 @@ export default function CaregiverProfile() {
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger value="in-service">In-Service</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="application">Application</TabsTrigger>
           </TabsList>
@@ -515,6 +516,15 @@ export default function CaregiverProfile() {
                 />
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="in-service" className="mt-6">
+            <InServiceTab
+              caregiverId={caregiver.id}
+              caregiverName={`${caregiver.first_name} ${caregiver.last_name}`}
+              hireDate={(caregiver as any).hire_date ?? null}
+              onSaved={refetch}
+            />
           </TabsContent>
 
           <TabsContent value="credentials" className="mt-6">

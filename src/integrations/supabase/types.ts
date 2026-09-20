@@ -67,6 +67,7 @@ export type Database = {
           attending_physician: string
           attending_physician_provider_id: string
           id: string
+          in_service_program_start_date: string | null
           mailing_address: string
           projected_end_date_of_service: string
           provider_id_number: string
@@ -82,6 +83,7 @@ export type Database = {
           attending_physician?: string
           attending_physician_provider_id?: string
           id?: string
+          in_service_program_start_date?: string | null
           mailing_address?: string
           projected_end_date_of_service?: string
           provider_id_number?: string
@@ -97,6 +99,7 @@ export type Database = {
           attending_physician?: string
           attending_physician_provider_id?: string
           id?: string
+          in_service_program_start_date?: string | null
           mailing_address?: string
           projected_end_date_of_service?: string
           provider_id_number?: string

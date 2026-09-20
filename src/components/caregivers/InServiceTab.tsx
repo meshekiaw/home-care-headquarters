@@ -88,7 +88,7 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
               <Input type="date" value={draftDate} onChange={(e) => setDraftDate(e.target.value)} />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Current period</p>
+              <p className="text-sm text-muted-foreground">Current training year</p>
               <p className="font-medium">
                 {info.period
                   ? `${formatPeriodDate(info.period.start)} – ${formatPeriodDate(info.period.end)}`
@@ -98,8 +98,13 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
             <div>
               <p className="text-sm text-muted-foreground">Hours completed</p>
               <p className="font-medium">
-                {info.hoursThisPeriod} of {REQUIRED_IN_SERVICE_HOURS}
+                {info.requiredThisPeriod === 0
+                  ? "None required this period"
+                  : `${info.hoursThisPeriod} of ${info.requiredThisPeriod} hours`}
               </p>
+              {info.prorated && (
+                <p className="text-xs text-muted-foreground">Prorated first period</p>
+              )}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Status</p>

@@ -87,14 +87,36 @@ export default function Caregivers() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteTargets, setDeleteTargets] = useState<Tables<"caregivers">[] | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [inServiceFilter, setInServiceFilter] = useState<"all" | InServiceStatus>("all");
+  const [sortBy, setSortBy] = useState<"name" | "in_service" | "period_end">("name");
   const navigate = useNavigate();
+  const { forCaregiver } = useInServiceCompletions();
 
-  const filteredCaregivers = caregivers.filter((caregiver) => {
-    const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
-    const specializations = caregiver.specializations?.join(" ").toLowerCase() || "";
+  const filteredCaregivers = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || specializations.includes(query);
-  });
+    const list = caregivers.filter((caregiver) => {
+      const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
+      const specializations = caregiver.specializations?.join(" ").toLowerCase() || "";
+      const matchesSearch = fullName.includes(query) || specializations.includes(query);
+      if (!matchesSearch) return false;
+      if (inServiceFilter === "all") return true;
+      return forCaregiver(caregiver.id, (caregiver as any).hire_date).status === inServiceFilter;
+    });
+    return [...list].sort((a, b) => {
+      if (sortBy === "in_service") {
+        const ia = forCaregiver(a.id, (a as any).hire_date);
+        const ib = forCaregiver(b.id, (b as any).hire_date);
+        const d =
+          IN_SERVICE_STATUS_ORDER.indexOf(ia.status) - IN_SERVICE_STATUS_ORDER.indexOf(ib.status);
+        if (d !== 0) return d;
+      } else if (sortBy === "period_end") {
+        const ea = forCaregiver(a.id, (a as any).hire_date).period?.end.getTime() ?? Infinity;
+        const eb = forCaregiver(b.id, (b as any).hire_date).period?.end.getTime() ?? Infinity;
+        if (ea !== eb) return ea - eb;
+      }
+      return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
+    });
+  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver]);
 
   const allSelected =
     filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));

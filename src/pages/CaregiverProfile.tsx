@@ -18,6 +18,7 @@ import AvailabilityTab from "@/components/caregivers/AvailabilityTab";
 import SkillsTab from "@/components/caregivers/SkillsTab";
 import CaregiverOverviewTab from "@/components/caregivers/CaregiverOverviewTab";
 import UpcomingCalendarTab from "@/components/caregivers/UpcomingCalendarTab";
+import InServiceTab from "@/components/caregivers/InServiceTab";
 import { ApplicationFormFiller } from "@/components/caregivers/ApplicationFormFiller";
 import {
   ArrowLeft,

@@ -22,3 +22,7 @@
 - [x] Quiz attempt history retained (every attempt, pass/fail, timestamp); completion date = passing attempt
 - [x] Completion tracking admin view filterable by caregiver and session
 - [x] Shareable per-session links into the app with sign-in redirect
+
+## Hire-date in-service tracking
+- [x] Hire-date driven 12-hour annual in-service period, status colours, roster filter/sort, CSV columns
+- [x] Hire date required when adding a caregiver; editable with confirmation on the In-Service tab

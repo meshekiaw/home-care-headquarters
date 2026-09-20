@@ -365,6 +365,26 @@ export default function Caregivers() {
                             </p>
                           )}
                           <ExpiryBadges caregiver={caregiver as any} />
+                          {(() => {
+                            const info = forCaregiver(caregiver.id, (caregiver as any).hire_date);
+                            return (
+                              <div className="mt-2 space-y-0.5 text-xs">
+                                <p className="text-muted-foreground">
+                                  Hired{" "}
+                                  {(caregiver as any).hire_date
+                                    ? formatDateOnly((caregiver as any).hire_date)
+                                    : "—"}
+                                  {info.period && ` · period ends ${formatPeriodDate(info.period.end)}`}
+                                </p>
+                                <p>
+                                  In-service {info.hoursThisPeriod} of {REQUIRED_IN_SERVICE_HOURS} hrs ·{" "}
+                                  <span style={inServiceStatusStyle(info.status)}>
+                                    {IN_SERVICE_STATUS_LABEL[info.status]}
+                                  </span>
+                                </p>
+                              </div>
+                            );
+                          })()}
                           <div className="flex items-center gap-4 mt-3">
                             {caregiver.hourly_rate && (
                               <span className="text-sm font-medium text-primary">

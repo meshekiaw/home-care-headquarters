@@ -1726,6 +1726,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_required: boolean
+          max_attempts: number | null
           passing_score: number | null
           required_for_role: string | null
           session_number: number | null
@@ -1744,6 +1745,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_required?: boolean
+          max_attempts?: number | null
           passing_score?: number | null
           required_for_role?: string | null
           session_number?: number | null
@@ -1762,6 +1764,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_required?: boolean
+          max_attempts?: number | null
           passing_score?: number | null
           required_for_role?: string | null
           session_number?: number | null
@@ -1941,6 +1944,7 @@ export type Database = {
           points: number
           question_text: string
           question_type: string
+          rationale: string | null
           sort_order: number
           user_id: string
         }
@@ -1953,6 +1957,7 @@ export type Database = {
           points?: number
           question_text: string
           question_type?: string
+          rationale?: string | null
           sort_order?: number
           user_id: string
         }
@@ -1965,6 +1970,7 @@ export type Database = {
           points?: number
           question_text?: string
           question_type?: string
+          rationale?: string | null
           sort_order?: number
           user_id?: string
         }

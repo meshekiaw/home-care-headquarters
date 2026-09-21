@@ -17,6 +17,7 @@ interface Question {
   question_text: string;
   options: string[];
   correct_answer: string;
+  rationale: string | null;
   points: number;
   sort_order: number;
 }

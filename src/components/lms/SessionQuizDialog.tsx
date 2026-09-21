@@ -209,6 +209,9 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
                     </li>
                   ))}
                 </ul>
+                {q.rationale && (
+                  <p className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded p-2">{q.rationale}</p>
+                )}
               </div>
             ))}
             <Button variant="outline" onClick={() => startEdit("new")}>

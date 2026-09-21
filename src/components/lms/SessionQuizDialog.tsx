@@ -38,7 +38,9 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
   const [text, setText] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correct, setCorrect] = useState("");
+  const [rationale, setRationale] = useState("");
   const [saving, setSaving] = useState(false);
+
 
   const load = useCallback(async () => {
     if (!session) return;

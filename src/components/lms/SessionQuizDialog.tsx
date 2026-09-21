@@ -47,7 +47,7 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
     setLoading(true);
     const { data, error } = await supabase
       .from("lms_quiz_questions")
-      .select("id, question_text, options, correct_answer, points, sort_order")
+      .select("id, question_text, options, correct_answer, rationale, points, sort_order")
       .eq("course_id", session.id)
       .order("sort_order", { ascending: true });
     if (error) {

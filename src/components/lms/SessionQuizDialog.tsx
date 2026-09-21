@@ -170,6 +170,10 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
                 ))}
               </RadioGroup>
             </div>
+            <div>
+              <Label>Explanation shown after answering</Label>
+              <Input value={rationale} onChange={(e) => setRationale(e.target.value)} placeholder="Why the correct answer is correct" />
+            </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditing(null)} disabled={saving}>Cancel</Button>
               <Button onClick={save} loading={saving}>Save question</Button>

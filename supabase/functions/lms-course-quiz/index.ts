@@ -171,7 +171,8 @@ Deno.serve(async (req) => {
         }).eq("id", assignment_id);
       }
 
-      return json({ score, passed, passingScore, attemptNumber, results });
+      const attemptsRemaining = maxAttempts ? Math.max(0, maxAttempts - attemptNumber) : null;
+      return json({ score, passed, passingScore, attemptNumber, maxAttempts, attemptsRemaining, results });
     }
 
     return json({ error: "Unknown action" }, 400);

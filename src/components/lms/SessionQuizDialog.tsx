@@ -67,13 +67,14 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
   const startEdit = (q: Question | "new") => {
     setEditing(q);
     if (q === "new") {
-      setText(""); setOptions(["", "", "", ""]); setCorrect("");
+      setText(""); setOptions(["", "", "", ""]); setCorrect(""); setRationale("");
     } else {
       setText(q.question_text);
       const o = [...q.options];
       while (o.length < 4) o.push("");
       setOptions(o.slice(0, 4));
       setCorrect(q.correct_answer);
+      setRationale(q.rationale ?? "");
     }
   };
 
@@ -93,6 +94,7 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
       question_text: text.trim(),
       options: opts,
       correct_answer: correct.trim(),
+      rationale: rationale.trim() || null,
       points: 1,
     };
     let error;

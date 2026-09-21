@@ -17,6 +17,7 @@ interface Question {
   question_text: string;
   options: string[];
   correct_answer: string;
+  rationale: string | null;
   points: number;
   sort_order: number;
 }
@@ -37,14 +38,16 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
   const [text, setText] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correct, setCorrect] = useState("");
+  const [rationale, setRationale] = useState("");
   const [saving, setSaving] = useState(false);
+
 
   const load = useCallback(async () => {
     if (!session) return;
     setLoading(true);
     const { data, error } = await supabase
       .from("lms_quiz_questions")
-      .select("id, question_text, options, correct_answer, points, sort_order")
+      .select("id, question_text, options, correct_answer, rationale, points, sort_order")
       .eq("course_id", session.id)
       .order("sort_order", { ascending: true });
     if (error) {
@@ -64,13 +67,14 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
   const startEdit = (q: Question | "new") => {
     setEditing(q);
     if (q === "new") {
-      setText(""); setOptions(["", "", "", ""]); setCorrect("");
+      setText(""); setOptions(["", "", "", ""]); setCorrect(""); setRationale("");
     } else {
       setText(q.question_text);
       const o = [...q.options];
       while (o.length < 4) o.push("");
       setOptions(o.slice(0, 4));
       setCorrect(q.correct_answer);
+      setRationale(q.rationale ?? "");
     }
   };
 
@@ -90,6 +94,7 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
       question_text: text.trim(),
       options: opts,
       correct_answer: correct.trim(),
+      rationale: rationale.trim() || null,
       points: 1,
     };
     let error;
@@ -165,6 +170,10 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
                 ))}
               </RadioGroup>
             </div>
+            <div>
+              <Label>Explanation shown after answering</Label>
+              <Input value={rationale} onChange={(e) => setRationale(e.target.value)} placeholder="Why the correct answer is correct" />
+            </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditing(null)} disabled={saving}>Cancel</Button>
               <Button onClick={save} loading={saving}>Save question</Button>
@@ -200,6 +209,9 @@ export default function SessionQuizDialog({ open, onOpenChange, session, onChang
                     </li>
                   ))}
                 </ul>
+                {q.rationale && (
+                  <p className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded p-2">{q.rationale}</p>
+                )}
               </div>
             ))}
             <Button variant="outline" onClick={() => startEdit("new")}>

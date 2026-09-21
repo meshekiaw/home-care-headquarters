@@ -145,7 +145,13 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [step, setStep] = useState<"content" | "quiz" | "result">("content");
   const [contentRead, setContentRead] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ score: number; passed: boolean; results: Record<string, { correct: boolean; correct_answer: string }> } | null>(null);
+  const [result, setResult] = useState<{
+    score: number;
+    passed: boolean;
+    attemptsRemaining?: number | null;
+    maxAttempts?: number | null;
+    results: Record<string, { correct: boolean; correct_answer: string; rationale?: string | null }>;
+  } | null>(null);
   const [siblings, setSiblings] = useState<SiblingAssignment[]>([]);
   const [videoEnded, setVideoEnded] = useState(false);
   const [sessionVideoId, setSessionVideoId] = useState<string | null>(null);
@@ -548,11 +554,48 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                   <XCircle className="w-14 h-14 sm:w-16 sm:h-16 text-destructive mx-auto" />
                   <h3 className="text-xl sm:text-2xl font-bold">Not Quite There</h3>
                   <p className="text-muted-foreground">You scored <strong>{result.score}%</strong>. You need {course.passing_score ?? 70}% to pass.</p>
+                  {typeof result.attemptsRemaining === "number" && (
+                    <p className="text-sm text-muted-foreground">
+                      {result.attemptsRemaining > 0
+                        ? `${result.attemptsRemaining} retake remaining.`
+                        : "You have used all of your attempts. Please contact your administrator."}
+                    </p>
+                  )}
                   <div className="flex flex-col-reverse sm:flex-row sm:justify-center gap-2">
                     <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" asChild><Link to={backPath}>Back</Link></Button>
-                    <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={retryQuiz}>Review & Retry</Button>
+                    {result.attemptsRemaining !== 0 && (
+                      <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={retryQuiz}>Review &amp; Retry</Button>
+                    )}
                   </div>
                 </>
+              )}
+
+              {questions.length > 0 && (
+                <div className="text-left space-y-4 pt-6 border-t">
+                  <h4 className="font-semibold">Review your answers</h4>
+                  {questions.map((q, idx) => {
+                    const r = result.results?.[q.id];
+                    return (
+                      <div key={q.id} className="space-y-1.5">
+                        <p className="font-medium text-sm">{idx + 1}. {q.question_text}</p>
+                        <p className="text-sm">
+                          Your answer:{" "}
+                          <span className={r?.correct ? "text-success font-medium" : "text-destructive font-medium"}>
+                            {answers[q.id] || "—"}
+                          </span>
+                          {r && !r.correct && (
+                            <>
+                              {" "}· Correct answer: <span className="font-medium">{r.correct_answer}</span>
+                            </>
+                          )}
+                        </p>
+                        {r?.rationale && (
+                          <p className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">{r.rationale}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </CardContent>
           </Card>

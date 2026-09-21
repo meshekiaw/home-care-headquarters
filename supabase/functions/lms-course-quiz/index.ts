@@ -92,35 +92,50 @@ Deno.serve(async (req) => {
 
       const { data: course } = await admin
         .from("lms_courses")
-        .select("passing_score")
+        .select("passing_score, max_attempts")
         .eq("id", assignment.course_id)
         .maybeSingle();
 
+      // Attempt limit (when configured for this session): a failed attempt may be
+      // retaken only while attempts remain. Passing attempts are never blocked.
+      const maxAttempts = course?.max_attempts ?? null;
+      const { count: priorCount } = await admin
+        .from("lms_quiz_attempts")
+        .select("id", { count: "exact", head: true })
+        .eq("assignment_id", assignment_id);
+      const priorAttempts = priorCount ?? 0;
+      if (maxAttempts && priorAttempts >= maxAttempts && assignment.status !== "completed") {
+        return json(
+          {
+            error: `You have used all ${maxAttempts} attempts for this session. Please contact your administrator.`,
+            attempts_used: priorAttempts,
+            max_attempts: maxAttempts,
+          },
+          403,
+        );
+      }
+
       const { data: qs, error } = await admin
         .from("lms_quiz_questions")
-        .select("id, correct_answer, points")
+        .select("id, correct_answer, points, rationale")
         .eq("course_id", assignment.course_id);
       if (error) return json({ error: error.message }, 500);
       if (!qs || qs.length === 0) return json({ error: "No quiz questions for this course" }, 404);
 
       const total = qs.reduce((s, q) => s + (q.points || 1), 0);
       let earned = 0;
-      const results: Record<string, { correct: boolean; correct_answer: string }> = {};
+      const results: Record<string, { correct: boolean; correct_answer: string; rationale: string | null }> = {};
       for (const q of qs) {
         const correct = answers[q.id] === q.correct_answer;
         if (correct) earned += q.points || 1;
-        results[q.id] = { correct, correct_answer: q.correct_answer };
+        results[q.id] = { correct, correct_answer: q.correct_answer, rationale: (q as any).rationale ?? null };
       }
       const score = total > 0 ? Math.round((earned / total) * 100) : 0;
       const passingScore = course?.passing_score ?? DEFAULT_PASSING_SCORE;
       const passed = score >= passingScore;
 
       // Every attempt is retained, pass or fail.
-      const { count } = await admin
-        .from("lms_quiz_attempts")
-        .select("id", { count: "exact", head: true })
-        .eq("assignment_id", assignment_id);
-      const attemptNumber = (count ?? 0) + 1;
+      const attemptNumber = priorAttempts + 1;
       const attemptedAt = new Date().toISOString();
 
       await admin.from("lms_quiz_attempts").insert({
@@ -156,7 +171,8 @@ Deno.serve(async (req) => {
         }).eq("id", assignment_id);
       }
 
-      return json({ score, passed, passingScore, attemptNumber, results });
+      const attemptsRemaining = maxAttempts ? Math.max(0, maxAttempts - attemptNumber) : null;
+      return json({ score, passed, passingScore, attemptNumber, maxAttempts, attemptsRemaining, results });
     }
 
     return json({ error: "Unknown action" }, 400);

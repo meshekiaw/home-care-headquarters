@@ -26,9 +26,9 @@ const COLORS = [
 ];
 
 const recentFeedback = [
-  { client: "Eleanor Thompson", rating: 5, comment: "Maria is wonderful! Always on time and so caring.", caregiver: "Maria Santos", date: "2 days ago" },
-  { client: "Robert Chen", rating: 5, comment: "David goes above and beyond. Highly recommend.", caregiver: "David Wilson", date: "3 days ago" },
-  { client: "Patricia Williams", rating: 4, comment: "Good service overall, just a few scheduling hiccups.", caregiver: "Sarah Johnson", date: "5 days ago" },
+  { client: "Agnes Pennywhistle", rating: 5, comment: "Rosalind is wonderful! Always on time and so caring.", caregiver: "Rosalind Okonkwo", date: "2 days ago" },
+  { client: "Horace Brightwater", rating: 5, comment: "Thaddeus goes above and beyond. Highly recommend.", caregiver: "Thaddeus Vance", date: "3 days ago" },
+  { client: "Delphine Marchetti", rating: 4, comment: "Good service overall, just a few scheduling hiccups.", caregiver: "Winifred Castellano", date: "5 days ago" },
 ];
 
 interface CustomTooltipProps {

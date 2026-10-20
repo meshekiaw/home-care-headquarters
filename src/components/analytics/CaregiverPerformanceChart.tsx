@@ -14,9 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 const caregiverData = [
-  { name: "Maria S.", fullName: "Maria Santos", score: 98, visits: 45, onTime: 96, satisfaction: 4.9, trend: 3 },
-  { name: "David W.", fullName: "David Wilson", score: 95, visits: 38, onTime: 94, satisfaction: 4.8, trend: 2 },
-  { name: "Sarah J.", fullName: "Sarah Johnson", score: 94, visits: 42, onTime: 92, satisfaction: 4.7, trend: -1 },
+  { name: "Rosalind O.", fullName: "Rosalind Okonkwo", score: 98, visits: 45, onTime: 96, satisfaction: 4.9, trend: 3 },
+  { name: "Thaddeus V.", fullName: "Thaddeus Vance", score: 95, visits: 38, onTime: 94, satisfaction: 4.8, trend: 2 },
+  { name: "Winifred C.", fullName: "Winifred Castellano", score: 94, visits: 42, onTime: 92, satisfaction: 4.7, trend: -1 },
   { name: "Michael B.", fullName: "Michael Brown", score: 91, visits: 28, onTime: 88, satisfaction: 4.6, trend: 5 },
   { name: "Emily D.", fullName: "Emily Davis", score: 89, visits: 35, onTime: 90, satisfaction: 4.5, trend: 1 },
 ];

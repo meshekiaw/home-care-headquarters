@@ -6,10 +6,10 @@ import { MessageSquare, Search, Send, Phone, Video, MoreVertical } from "lucide-
 
 export default function Communications() {
   const conversations = [
-    { name: "Maria Santos", message: "Visit completed for Mrs. Thompson", time: "2 min ago", unread: true },
-    { name: "David Wilson", message: "Need to reschedule tomorrow's appointment", time: "15 min ago", unread: true },
-    { name: "Sarah Johnson", message: "Client care plan updated", time: "1 hour ago", unread: false },
-    { name: "Robert Chen (Client)", message: "Thank you for the great care!", time: "2 hours ago", unread: false },
+    { name: "Rosalind Okonkwo", message: "Visit completed for Mrs. Pennywhistle", time: "2 min ago", unread: true },
+    { name: "Thaddeus Vance", message: "Need to reschedule tomorrow's appointment", time: "15 min ago", unread: true },
+    { name: "Winifred Castellano", message: "Client care plan updated", time: "1 hour ago", unread: false },
+    { name: "Horace Brightwater (Client)", message: "Thank you for the great care!", time: "2 hours ago", unread: false },
   ];
 
   return (
@@ -65,10 +65,10 @@ export default function Communications() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-medium">MS</span>
+                    <span className="text-primary font-medium">RO</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold">Maria Santos</h3>
+                    <h3 className="font-semibold">Rosalind Okonkwo</h3>
                     <p className="text-xs text-muted-foreground">Caregiver • Online</p>
                   </div>
                 </div>
@@ -89,7 +89,7 @@ export default function Communications() {
               <div className="space-y-4">
                 <div className="flex justify-start">
                   <div className="max-w-[70%] bg-secondary rounded-2xl rounded-tl-sm px-4 py-2">
-                    <p className="text-sm">Visit completed for Mrs. Thompson. She's doing well today!</p>
+                    <p className="text-sm">Visit completed for Mrs. Pennywhistle. She's doing well today!</p>
                     <span className="text-xs text-muted-foreground">2:30 PM</span>
                   </div>
                 </div>

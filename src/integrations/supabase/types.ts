@@ -1087,6 +1087,7 @@ export type Database = {
           adult_maltreatment_expiration_date: string | null
           auth_user_id: string | null
           background_check_date: string | null
+          background_check_expiration_date: string | null
           child_maltreatment_check_date: string | null
           child_maltreatment_expiration_date: string | null
           city: string | null
@@ -1129,6 +1130,7 @@ export type Database = {
           adult_maltreatment_expiration_date?: string | null
           auth_user_id?: string | null
           background_check_date?: string | null
+          background_check_expiration_date?: string | null
           child_maltreatment_check_date?: string | null
           child_maltreatment_expiration_date?: string | null
           city?: string | null
@@ -1171,6 +1173,7 @@ export type Database = {
           adult_maltreatment_expiration_date?: string | null
           auth_user_id?: string | null
           background_check_date?: string | null
+          background_check_expiration_date?: string | null
           child_maltreatment_check_date?: string | null
           child_maltreatment_expiration_date?: string | null
           city?: string | null

@@ -18,6 +18,7 @@ const DATE_FIELDS: { key: string; label: string; tracksExpiry?: boolean }[] = [
   { key: "hire_date", label: "Hire Date" },
   { key: "termination_date", label: "Termination Date" },
   { key: "background_check_date", label: "Background Check Date" },
+  { key: "background_check_expiration_date", label: "Background check expiration", tracksExpiry: true },
   { key: "child_maltreatment_check_date", label: "Child Maltreatment Check Date" },
   { key: "child_maltreatment_expiration_date", label: "Child Maltreatment Expiration", tracksExpiry: true },
   { key: "adult_maltreatment_check_date", label: "Adult Maltreatment Check Date" },

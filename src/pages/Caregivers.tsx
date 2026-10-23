@@ -44,6 +44,7 @@ import {
 } from "@/utils/inServiceStatus";
 
 const EXPIRY_FIELDS: { key: string; label: string }[] = [
+  { key: "background_check_expiration_date", label: "Background check" },
   { key: "child_maltreatment_expiration_date", label: "Child maltreatment" },
   { key: "adult_maltreatment_expiration_date", label: "Adult maltreatment" },
   { key: "tmu_expiration_date", label: "TMU" },
@@ -366,6 +367,16 @@ export default function Caregivers() {
                             </p>
                           )}
                           <ExpiryBadges caregiver={caregiver as any} />
+                          <dl className="mt-2 space-y-1 text-xs">
+                            <div>
+                              <dt className="text-muted-foreground">Background Check Date</dt>
+                              <dd>{formatDateOnly(caregiver.background_check_date)}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-muted-foreground">Background check expiration</dt>
+                              <dd>{formatDateOnly(caregiver.background_check_expiration_date)}</dd>
+                            </div>
+                          </dl>
                           {(() => {
                             const info = forCaregiver(caregiver.id, (caregiver as any).hire_date);
                             return (

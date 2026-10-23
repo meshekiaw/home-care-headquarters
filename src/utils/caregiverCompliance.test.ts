@@ -1,9 +1,48 @@
 import { describe, expect, it, vi } from "vitest";
-import { maltreatmentExpiration } from "./caregiverCompliance";
+import { backgroundCheckExpiration, maltreatmentExpiration } from "./caregiverCompliance";
 import { parseCSV, validateAndTransform } from "./csvParser";
 import { formatCaregiverForExport } from "./csvExport";
 import { getExpiryStatus } from "./expiryStatus";
 import { canArchive, canRead, canUpload, canUseDocuments, ACCESS_TICKET_SECONDS } from "../../supabase/functions/caregiver-documents/access";
+
+describe("Caregiver background check expiration", () => {
+  it("expires exactly five calendar years after the existing check date", () => {
+    expect(backgroundCheckExpiration("2026-10-23")).toBe("2031-10-23");
+    expect(backgroundCheckExpiration("2024-02-29")).toBe("2029-02-28");
+  });
+  it("leaves expiration blank when the check date is blank", () => {
+    expect(backgroundCheckExpiration(null)).toBeNull();
+    expect(backgroundCheckExpiration("")).toBeNull();
+    expect(backgroundCheckExpiration(undefined)).toBeNull();
+  });
+  it("rejects invalid check dates", () => {
+    expect(backgroundCheckExpiration("2026-02-30")).toBeNull();
+  });
+  it("exports the existing date and its stored expiration together", () => {
+    const record = formatCaregiverForExport({ first_name: "Test", last_name: "Caregiver", status: "active", created_at: "2026-10-23", background_check_date: "2026-10-23", background_check_expiration_date: "2031-10-23" });
+    expect(record.background_check_date).toBe("2026-10-23");
+    expect(record.background_check_expiration_date).toBe("2031-10-23");
+    expect(formatCaregiverForExport({ first_name: "Test", last_name: "Caregiver", status: "active", created_at: "2026-10-23", background_check_date: null, background_check_expiration_date: null }).background_check_expiration_date).toBe("");
+  });
+  it("does not import a manually supplied expiration", () => {
+    const result = validateAndTransform(parseCSV("first_name,last_name,background_check_date,background_check_expiration_date\nTest,Caregiver,2026-10-23,2099-01-01"));
+    expect(result.caregivers[0].background_check_date).toBe("2026-10-23");
+    expect(result.caregivers[0]).not.toHaveProperty("background_check_expiration_date");
+  });
+  it("uses the existing expiration warning thresholds", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date("2026-10-23T12:00:00"));
+      expect(getExpiryStatus(backgroundCheckExpiration("2021-10-22"))).toBe("expired");
+      expect(getExpiryStatus(backgroundCheckExpiration("2021-10-23"))).toBe("expiring");
+      expect(getExpiryStatus(backgroundCheckExpiration("2021-11-22"))).toBe("expiring");
+      expect(getExpiryStatus(backgroundCheckExpiration("2021-11-23"))).toBe("ok");
+      expect(getExpiryStatus(backgroundCheckExpiration(null))).toBe("ok");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
 
 describe("Caregiver maltreatment dates", () => {
   it("expires exactly two calendar years after a check", () => {

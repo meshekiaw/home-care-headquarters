@@ -1,10 +1,12 @@
 # Roadmap
 
 ## Caregiver portal onboarding
-- [ ] Caregiver-only page/menu for onboarding-required records, seven visible steps with progress and statuses
-- [ ] Personal/emergency contact save; read existing application, policy acknowledgment and orientation results without changing their workflows
-- [ ] Private ID/SS card/certificate uploads: PDF/JPG/PNG/HEIC, 10 MB, two files, camera, resubmission and approved locks
-- [ ] Verify rule tests and actual portal flow only as test-caregiver@example.invalid (Test Caregiver)
+- [x] Caregiver-only page/menu for onboarding-required records, seven visible steps with progress and statuses
+- [x] Personal/emergency contact save; one-way application/policy receipt sync and existing automatic orientation approval; source workflows unchanged
+- [x] Private ID/SS card/certificate uploads: PDF/JPG/PNG/HEIC, 10 MB, two files, camera, resubmission and approved locks
+- [x] 27 rule tests and actual Test Caregiver portal save/readback, two-file upload/download, server rejection of third file, certificate exemption, approved-save denial, sent-back replacement and phone fit verified; no real staff sign-in/record changes
+- [ ] Application submission cannot be exercised: existing My Application has only Save/Download, and user explicitly prohibited modifying it. The submission receipt sync is ready for an existing or future submission source.
+- [ ] Policy acknowledgment end-to-end check awaits a published policy (none currently published); do not publish synthetic agency-wide policy for testing
 
 ## Background check expiration
 - [x] Add automatic read-only five-year expiration without changing existing background check dates

@@ -974,6 +974,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          certificate_name: string | null
           file_paths: string[]
           id: string
           no_certificate: boolean
@@ -990,6 +991,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          certificate_name?: string | null
           file_paths?: string[]
           id?: string
           no_certificate?: boolean
@@ -1006,6 +1008,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          certificate_name?: string | null
           file_paths?: string[]
           id?: string
           no_certificate?: boolean
@@ -3369,6 +3372,10 @@ export type Database = {
       }
     }
     Functions: {
+      acknowledge_onboarding_policy: {
+        Args: { p_policy_id: string }
+        Returns: boolean
+      }
       add_618_signature:
         | {
             Args: {
@@ -3427,6 +3434,7 @@ export type Database = {
         Returns: {
           approved_at: string | null
           approved_by: string | null
+          certificate_name: string | null
           file_paths: string[]
           id: string
           no_certificate: boolean
@@ -3573,6 +3581,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      refresh_my_onboarding_receipts: { Args: never; Returns: boolean }
       register_caregiver_document: {
         Args: {
           p_actor_id: string
@@ -3612,11 +3621,17 @@ export type Database = {
         Returns: Json
       }
       reset_nurse_visit_form: { Args: { p_form_id: string }; Returns: Json }
+      save_onboarding_certificate: {
+        Args: { p_name: string; p_no_certificate: boolean }
+        Returns: boolean
+      }
+      save_onboarding_contact: { Args: { p_contact: Json }; Returns: boolean }
       start_618_form: { Args: { p_assessment_id: string }; Returns: string }
       start_nurse_visit_form: {
         Args: { p_assessment_id: string }
         Returns: string
       }
+      submit_onboarding_policy_signoffs: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user" | "caregiver" | "nurse"

@@ -1,5 +1,12 @@
 # Roadmap
 
+## Caregiver onboarding foundation
+- [ ] Separate private caregiver document store, controlled file access and immutable admin view log
+- [ ] Twelve ordered onboarding steps with status history and file links; no new screens
+- [ ] Emergency contact fields and new/existing caregiver onboarding requirement defaults
+- [ ] Preserve child/adult maltreatment check dates, derive two-year expirations, update existing date displays/import/export/warnings
+- [ ] Verify access restrictions and report before/after date counts
+
 ## 618 Assessment Form
 - [x] Form record structure attached to an assessment: draft/signed/amended, versioning, autosave
 - [x] Multi-party signatures: nurse, client, client representative, witness — each with name, role, attestation, audit trail

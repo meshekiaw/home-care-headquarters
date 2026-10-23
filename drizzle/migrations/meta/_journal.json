@@ -190,6 +190,13 @@
       "when": 1792787434050,
       "tag": "0026_caregiver_document_atomic_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1792787546737,
+      "tag": "0027_tighten_onboarding_explicit_grants",
+      "breakpoints": true
     }
   ]
 }

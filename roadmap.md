@@ -1,5 +1,10 @@
 # Roadmap
 
+## Background check expiration
+- [ ] Add automatic read-only five-year expiration without changing existing background check dates
+- [ ] Show expiration on caregiver records, Caregivers list/warnings, and CSV export
+- [ ] Verify unchanged check-date count/fingerprint and matching expiration count; run rule tests and Test Caregiver-only UI verification
+
 ## Caregiver onboarding foundation
 - [x] Separate private caregiver document store, controlled file access and immutable admin view log
 - [x] Twelve ordered onboarding steps with status history and file links; no new screens

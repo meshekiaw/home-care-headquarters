@@ -12,6 +12,9 @@ export interface CaregiverCSVRow {
   zip_code?: string;
   service_radius_miles?: string;
   background_check_date?: string;
+  child_maltreatment_check_date?: string;
+  adult_maltreatment_check_date?: string;
+  // Legacy columns retain their historical check-date meanings on import.
   maltreatment_check_date?: string;
   maltreatment_expiration_date?: string;
   tmu_date?: string;
@@ -36,8 +39,8 @@ export interface ParsedCaregiver {
   zip_code: string | null;
   service_radius_miles: number | null;
   background_check_date: string | null;
-  maltreatment_check_date: string | null;
-  maltreatment_expiration_date: string | null;
+  child_maltreatment_check_date: string | null;
+  adult_maltreatment_check_date: string | null;
   tmu_date: string | null;
   tmu_expiration_date: string | null;
   tb_test_date: string | null;
@@ -157,8 +160,8 @@ export function validateAndTransform(rows: CaregiverCSVRow[]): ParseResult {
       return parsed;
     };
     const backgroundCheckDate = dateField(row.background_check_date, 'background_check_date');
-    const maltreatmentCheckDate = dateField(row.maltreatment_check_date, 'maltreatment_check_date');
-    const maltreatmentExpirationDate = dateField(row.maltreatment_expiration_date, 'maltreatment_expiration_date');
+    const childMaltreatmentCheckDate = dateField(row.child_maltreatment_check_date ?? row.maltreatment_check_date, 'child_maltreatment_check_date');
+    const adultMaltreatmentCheckDate = dateField(row.adult_maltreatment_check_date ?? row.maltreatment_expiration_date, 'adult_maltreatment_check_date');
     const tmuDate = dateField(row.tmu_date, 'tmu_date');
     const tmuExpirationDate = dateField(row.tmu_expiration_date, 'tmu_expiration_date');
     const tbTestDate = dateField(row.tb_test_date, 'tb_test_date');
@@ -194,8 +197,8 @@ export function validateAndTransform(rows: CaregiverCSVRow[]): ParseResult {
         zip_code: row.zip_code?.trim() || null,
         service_radius_miles: serviceRadius,
         background_check_date: backgroundCheckDate,
-        maltreatment_check_date: maltreatmentCheckDate,
-        maltreatment_expiration_date: maltreatmentExpirationDate,
+        child_maltreatment_check_date: childMaltreatmentCheckDate,
+        adult_maltreatment_check_date: adultMaltreatmentCheckDate,
         tmu_date: tmuDate,
         tmu_expiration_date: tmuExpirationDate,
         tb_test_date: tbTestDate,
@@ -238,7 +241,7 @@ function parseDateString(value: string): string | null {
 }
 
 export function generateSampleCSV(): string {
-  return `first_name,last_name,email,phone,status,hourly_rate,specializations,address,city,state,zip_code,service_radius_miles,background_check_date,maltreatment_check_date,maltreatment_expiration_date,tmu_date,tmu_expiration_date,tb_test_date,tb_test_expiration_date,hire_date,termination_date
+  return `first_name,last_name,email,phone,status,hourly_rate,specializations,address,city,state,zip_code,service_radius_miles,background_check_date,child_maltreatment_check_date,adult_maltreatment_check_date,tmu_date,tmu_expiration_date,tb_test_date,tb_test_expiration_date,hire_date,termination_date
 John,Doe,john.doe@email.com,(555) 123-4567,active,25.00,Elder Care|Dementia Care,123 Main St,Springfield,IL,62701,15,2026-01-10,2026-01-12,2027-01-11,2026-01-15,2027-01-14,2026-02-01,2027-01-31,2026-02-05,
 Jane,Smith,jane.smith@email.com,(555) 987-6543,active,28.50,Pediatric Care|Physical Therapy,456 Oak Ave,Chicago,IL,60601,20,2025-11-03,2025-11-05,2026-11-04,2025-11-10,2026-11-09,2025-12-01,2026-11-30,2025-12-08,`;
 }

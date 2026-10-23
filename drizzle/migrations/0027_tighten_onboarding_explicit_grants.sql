@@ -1,0 +1,4 @@
+REVOKE ALL ON public.caregiver_onboarding, public.caregiver_onboarding_steps, public.caregiver_onboarding_admin_notes, public.caregiver_onboarding_step_history, public.caregiver_documents, public.caregiver_document_view_log, public.caregiver_document_access_tickets FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT ON public.caregiver_onboarding, public.caregiver_onboarding_steps, public.caregiver_onboarding_admin_notes, public.caregiver_onboarding_step_history, public.caregiver_documents, public.caregiver_document_view_log TO authenticated;
+GRANT ALL ON public.caregiver_onboarding, public.caregiver_onboarding_steps, public.caregiver_onboarding_admin_notes, public.caregiver_documents, public.caregiver_document_access_tickets TO service_role;
+GRANT SELECT, INSERT ON public.caregiver_onboarding_step_history, public.caregiver_document_view_log TO service_role;

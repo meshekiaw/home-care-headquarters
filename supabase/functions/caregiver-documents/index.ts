@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.118.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.118.0/cors";
 import { z } from "npm:zod@3";
 import { ACCESS_TICKET_SECONDS, canArchive, canRead, canUpload, canUseDocuments } from "./access.ts";
+import { validateUpload, hasValidFileHeader } from "./upload-rules.ts";
 
 const bucket = "caregiver-documents";
 const Body = z.discriminatedUnion("action", [
@@ -36,7 +37,7 @@ Deno.serve(async (req) => {
     const isAdmin = roles.includes("admin");
 
     async function caregiverAccess(caregiverId: string) {
-      const { data, error } = await service.from("caregivers").select("id,auth_user_id,status").eq("id", caregiverId).maybeSingle();
+      const { data, error } = await service.from("caregivers").select("id,auth_user_id,status,onboarding_required").eq("id", caregiverId).maybeSingle();
       if (error) throw error;
       if (!data || (!isAdmin && (data.auth_user_id !== user?.id || data.status === "inactive"))) return null;
       return data;
@@ -57,8 +58,11 @@ Deno.serve(async (req) => {
       const file = form.get("file");
       if (!parsed.success || !(file instanceof File) || !file.size) return json({ error: "Choose a file and an onboarding step." }, 400);
       const { caregiver_id, step_key } = parsed.data;
+      const fileError = validateUpload(file);
+      if (fileError || !(await hasValidFileHeader(file, file.name))) return json({ error: fileError || "This file does not match its file type. Choose a PDF, JPG, PNG, or HEIC file." }, 400);
       const caregiver = await caregiverAccess(caregiver_id);
       if (!caregiver) return json({ error: "You do not have access to this caregiver." }, 403);
+      if (!isAdmin && !caregiver.onboarding_required) return json({ error: "Onboarding is not required for your record." }, 403);
       const { data: onboarding, error: onboardingError } = await service.from("caregiver_onboarding").select("id").eq("caregiver_id", caregiver_id).is("archived_at", null).maybeSingle();
       if (onboardingError) throw onboardingError;
       if (!onboarding) return json({ error: "Onboarding is unavailable." }, 404);
@@ -77,9 +81,10 @@ Deno.serve(async (req) => {
       });
       if (registerError) {
         await service.storage.from(bucket).remove([path]);
-        return json({ error: "The file was not saved. This step may have been approved; refresh and try again." }, 409);
+        return json({ error: "The file was not saved. Each step allows two files and approved steps are locked. Refresh and try again." }, 409);
       }
-      return json({ document: doc }, 201);
+      // Return metadata only, never a storage path or storage URL.
+      return json({ document: { id: doc.id, step_id: doc.step_id, file_name: doc.file_name, mime_type: doc.mime_type, file_size: doc.file_size, uploaded_at: doc.uploaded_at } }, 201);
     }
 
     const parsed = Body.safeParse(await req.json().catch(() => null));

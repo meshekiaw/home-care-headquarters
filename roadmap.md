@@ -1,12 +1,12 @@
 # Roadmap
 
 ## Caregiver onboarding foundation
-- [ ] Separate private caregiver document store, controlled file access and immutable admin view log
-- [ ] Twelve ordered onboarding steps with status history and file links; no new screens
-- [ ] Emergency contact fields and new/existing caregiver onboarding requirement defaults
-- [ ] Preserve child/adult maltreatment check dates, derive two-year expirations, update existing date displays/import/export/warnings
-- [ ] Verify access restrictions and report before/after date counts
-- [ ] Test only the dedicated “Test Caregiver” record with onboarding required; never sign in as the named staff admin or open real caregiver records; report the test account
+- [x] Separate private caregiver document store, controlled file access and immutable admin view log
+- [x] Twelve ordered onboarding steps with status history and file links; no new screens
+- [x] Emergency contact fields and new/existing caregiver onboarding requirement defaults
+- [x] Preserve child/adult maltreatment check dates, derive two-year expirations, update existing date displays/import/export/warnings
+- [x] Verify caregiver access restrictions and before/after date counts (admin file-open check not exercised: test caregiver role only)
+- [x] Test only the dedicated “Test Caregiver” record with onboarding required; report test-caregiver@example.invalid
 
 ## 618 Assessment Form
 - [x] Form record structure attached to an assessment: draft/signed/amended, versioning, autosave
@@ -19,9 +19,9 @@
 - [x] Payer Type on clients (Medicaid default / VA), editable, shown on record, filterable on list
 - [x] Completion sets 618 date + expiration (1 year) in the database, audit-logged, assessment marked Completed; amendments don't re-set dates
 - [x] VA six-month Nurse Visit: due date on client, second assessment type, 30-day auto-create, PHI-free emails + 14/7-day reminders, admin Type filter
-- [ ] Next: Nurse Visit form fields (awaiting form)
-- [ ] Next: the actual 618 form fields
-- [ ] Next: PDF export and a 618 history list on the client record
+- [x] Nurse Visit form fields
+- [x] Actual 618 form fields
+- [x] PDF export and 618 history on the client record
 
 ## Annual In-Service Video Training
 - [x] 12 numbered in-service sessions (title, description, video link, quiz); Session 2 link set

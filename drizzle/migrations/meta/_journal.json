@@ -183,6 +183,13 @@
       "when": 1792787318033,
       "tag": "0025_caregiver_onboarding_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792787434050,
+      "tag": "0026_caregiver_document_atomic_operations",
+      "breakpoints": true
     }
   ]
 }

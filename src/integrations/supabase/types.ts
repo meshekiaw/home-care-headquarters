@@ -3405,6 +3405,14 @@ export type Database = {
         }
         Returns: string
       }
+      archive_caregiver_document: {
+        Args: { p_actor_id: string; p_document_id: string }
+        Returns: boolean
+      }
+      archive_caregiver_onboarding: {
+        Args: { p_onboarding_id: string }
+        Returns: boolean
+      }
       change_caregiver_onboarding_step: {
         Args: {
           p_admin_note?: string
@@ -3561,6 +3569,36 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      register_caregiver_document: {
+        Args: {
+          p_actor_id: string
+          p_caregiver_id: string
+          p_document_id: string
+          p_file_name: string
+          p_file_size: number
+          p_mime_type: string
+          p_object_path: string
+          p_step_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          caregiver_id: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          object_path: string
+          step_id: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "caregiver_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       reschedule_nurse_assessment: {
         Args: {

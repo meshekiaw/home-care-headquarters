@@ -1,0 +1,2 @@
+REVOKE ALL ON FUNCTION public.guard_caregiver_onboarding_fields(), public.initialize_new_caregiver_onboarding(), public.record_onboarding_status_history(), public.sync_onboarding_orientation(), public.reject_onboarding_audit_mutation() FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.guard_caregiver_onboarding_fields(), public.initialize_new_caregiver_onboarding(), public.record_onboarding_status_history(), public.sync_onboarding_orientation(), public.reject_onboarding_audit_mutation() TO service_role;

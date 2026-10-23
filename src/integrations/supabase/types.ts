@@ -3631,6 +3631,7 @@ export type Database = {
         Args: { p_assessment_id: string }
         Returns: string
       }
+      submit_onboarding_application: { Args: never; Returns: boolean }
       submit_onboarding_policy_signoffs: { Args: never; Returns: boolean }
     }
     Enums: {

@@ -56,8 +56,10 @@ export function formatCaregiverForExport(caregiver: {
   state?: string | null;
   zip_code?: string | null;
   background_check_date?: string | null;
-  maltreatment_check_date?: string | null;
-  maltreatment_expiration_date?: string | null;
+  child_maltreatment_check_date?: string | null;
+  child_maltreatment_expiration_date?: string | null;
+  adult_maltreatment_check_date?: string | null;
+  adult_maltreatment_expiration_date?: string | null;
   tmu_date?: string | null;
   tmu_expiration_date?: string | null;
   tb_test_date?: string | null;
@@ -79,8 +81,10 @@ export function formatCaregiverForExport(caregiver: {
     state: caregiver.state || '',
     zip_code: caregiver.zip_code || '',
     background_check_date: caregiver.background_check_date || '',
-    maltreatment_check_date: caregiver.maltreatment_check_date || '',
-    maltreatment_expiration_date: caregiver.maltreatment_expiration_date || '',
+    child_maltreatment_check_date: caregiver.child_maltreatment_check_date || '',
+    child_maltreatment_expiration_date: caregiver.child_maltreatment_expiration_date || '',
+    adult_maltreatment_check_date: caregiver.adult_maltreatment_check_date || '',
+    adult_maltreatment_expiration_date: caregiver.adult_maltreatment_expiration_date || '',
     tmu_date: caregiver.tmu_date || '',
     tmu_expiration_date: caregiver.tmu_expiration_date || '',
     tb_test_date: caregiver.tb_test_date || '',

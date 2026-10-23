@@ -44,7 +44,8 @@ import {
 } from "@/utils/inServiceStatus";
 
 const EXPIRY_FIELDS: { key: string; label: string }[] = [
-  { key: "maltreatment_expiration_date", label: "Maltreatment" },
+  { key: "child_maltreatment_expiration_date", label: "Child maltreatment" },
+  { key: "adult_maltreatment_expiration_date", label: "Adult maltreatment" },
   { key: "tmu_expiration_date", label: "TMU" },
   { key: "tb_test_expiration_date", label: "TB Test" },
 ];

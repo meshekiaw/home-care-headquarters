@@ -176,6 +176,13 @@
       "when": 1790002612902,
       "tag": "0024_quiz_rationale_and_attempt_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792787318033,
+      "tag": "0025_caregiver_onboarding_foundation",
+      "breakpoints": true
     }
   ]
 }

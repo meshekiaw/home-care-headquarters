@@ -740,6 +740,302 @@ export type Database = {
           },
         ]
       }
+      caregiver_document_access_tickets: {
+        Row: {
+          created_at: string
+          document_id: string
+          expires_at: string
+          id: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_document_access_tickets_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_document_view_log: {
+        Row: {
+          admin_id: string
+          caregiver_id: string
+          document_id: string
+          file_name: string
+          id: string
+          object_path: string
+          viewed_at: string
+        }
+        Insert: {
+          admin_id: string
+          caregiver_id: string
+          document_id: string
+          file_name: string
+          id?: string
+          object_path: string
+          viewed_at?: string
+        }
+        Update: {
+          admin_id?: string
+          caregiver_id?: string
+          document_id?: string
+          file_name?: string
+          id?: string
+          object_path?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_document_view_log_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caregiver_document_view_log_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_documents: {
+        Row: {
+          archived_at: string | null
+          caregiver_id: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          object_path: string
+          step_id: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          archived_at?: string | null
+          caregiver_id: string
+          file_name: string
+          file_size: number
+          id?: string
+          mime_type: string
+          object_path: string
+          step_id: string
+          uploaded_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          archived_at?: string | null
+          caregiver_id?: string
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          object_path?: string
+          step_id?: string
+          uploaded_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_documents_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caregiver_documents_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_onboarding: {
+        Row: {
+          archived_at: string | null
+          caregiver_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          caregiver_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          archived_at?: string | null
+          caregiver_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_onboarding_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: true
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_onboarding_admin_notes: {
+        Row: {
+          admin_note: string
+          step_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          admin_note?: string
+          step_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          admin_note?: string
+          step_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_onboarding_admin_notes_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: true
+            referencedRelation: "caregiver_onboarding_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_onboarding_step_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_status: string
+          note: string | null
+          old_status: string | null
+          step_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_status: string
+          note?: string | null
+          old_status?: string | null
+          step_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_status?: string
+          note?: string | null
+          old_status?: string | null
+          step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_onboarding_step_history_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_onboarding_steps: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          file_paths: string[]
+          id: string
+          no_certificate: boolean
+          onboarding_id: string
+          sent_back_at: string | null
+          sent_back_reason: string | null
+          status: string
+          step_key: string
+          step_label: string
+          step_number: number
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          file_paths?: string[]
+          id?: string
+          no_certificate?: boolean
+          onboarding_id: string
+          sent_back_at?: string | null
+          sent_back_reason?: string | null
+          status?: string
+          step_key: string
+          step_label: string
+          step_number: number
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          file_paths?: string[]
+          id?: string
+          no_certificate?: boolean
+          onboarding_id?: string
+          sent_back_at?: string | null
+          sent_back_reason?: string | null
+          status?: string
+          step_key?: string
+          step_label?: string
+          step_number?: number
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_onboarding_steps_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caregiver_onboarding_steps_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding_summary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caregiver_skills: {
         Row: {
           caregiver_id: string
@@ -787,13 +1083,20 @@ export type Database = {
       caregivers: {
         Row: {
           address: string | null
+          adult_maltreatment_check_date: string | null
+          adult_maltreatment_expiration_date: string | null
           auth_user_id: string | null
           background_check_date: string | null
+          child_maltreatment_check_date: string | null
+          child_maltreatment_expiration_date: string | null
           city: string | null
           cleared_to_schedule: boolean
           created_at: string
           date_of_birth: string | null
           email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
           first_name: string
           first_shift_at: string | null
           hire_date: string | null
@@ -802,6 +1105,7 @@ export type Database = {
           last_name: string
           maltreatment_check_date: string | null
           maltreatment_expiration_date: string | null
+          onboarding_required: boolean
           orientation_deadline: string | null
           phone: string | null
           service_radius_miles: number | null
@@ -821,13 +1125,20 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          adult_maltreatment_check_date?: string | null
+          adult_maltreatment_expiration_date?: string | null
           auth_user_id?: string | null
           background_check_date?: string | null
+          child_maltreatment_check_date?: string | null
+          child_maltreatment_expiration_date?: string | null
           city?: string | null
           cleared_to_schedule?: boolean
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           first_name: string
           first_shift_at?: string | null
           hire_date?: string | null
@@ -836,6 +1147,7 @@ export type Database = {
           last_name: string
           maltreatment_check_date?: string | null
           maltreatment_expiration_date?: string | null
+          onboarding_required?: boolean
           orientation_deadline?: string | null
           phone?: string | null
           service_radius_miles?: number | null
@@ -855,13 +1167,20 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          adult_maltreatment_check_date?: string | null
+          adult_maltreatment_expiration_date?: string | null
           auth_user_id?: string | null
           background_check_date?: string | null
+          child_maltreatment_check_date?: string | null
+          child_maltreatment_expiration_date?: string | null
           city?: string | null
           cleared_to_schedule?: boolean
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           first_name?: string
           first_shift_at?: string | null
           hire_date?: string | null
@@ -870,6 +1189,7 @@ export type Database = {
           last_name?: string
           maltreatment_check_date?: string | null
           maltreatment_expiration_date?: string | null
+          onboarding_required?: boolean
           orientation_deadline?: string | null
           phone?: string | null
           service_radius_miles?: number | null
@@ -2991,6 +3311,26 @@ export type Database = {
       }
     }
     Views: {
+      caregiver_onboarding_summary: {
+        Row: {
+          archived_at: string | null
+          caregiver_id: string | null
+          completed_steps: number | null
+          id: string | null
+          onboarding_required: boolean | null
+          status: string | null
+          total_steps: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_onboarding_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: true
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orientation_quizzes_public: {
         Row: {
           created_at: string | null
@@ -3065,6 +3405,37 @@ export type Database = {
         }
         Returns: string
       }
+      change_caregiver_onboarding_step: {
+        Args: {
+          p_admin_note?: string
+          p_no_certificate?: boolean
+          p_sent_back_reason?: string
+          p_status: string
+          p_step_id: string
+        }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          file_paths: string[]
+          id: string
+          no_certificate: boolean
+          onboarding_id: string
+          sent_back_at: string | null
+          sent_back_reason: string | null
+          status: string
+          step_key: string
+          step_label: string
+          step_number: number
+          submitted_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "caregiver_onboarding_steps"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       claim_nurse_assessment: {
         Args: {
           p_assessment_id: string
@@ -3121,6 +3492,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      initialize_caregiver_onboarding: {
+        Args: { p_caregiver_id: string }
+        Returns: string
+      }
+      is_onboarding_caregiver: {
+        Args: { p_caregiver_id: string }
         Returns: boolean
       }
       move_to_dlq: {

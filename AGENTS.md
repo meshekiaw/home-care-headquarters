@@ -6,3 +6,4 @@
 - Keep onboarding history and document view logs append-only, retain records with history, and keep office notes admin-only.
 - Preserve deprecated maltreatment date columns and synchronize them with the corrected check-date columns; generated expiration columns are the authoritative warning dates and cannot be manually written.
 - Initialize caregiver onboarding atomically on caregiver creation, with existing caregivers exempt; onboarding must not change cleared-to-schedule enforcement.
+- Run pure caregiver date and document-access rules with `bunx vitest run --config vitest.rules.config.ts`; these rules do not need a browser or the optional native canvas dependency.

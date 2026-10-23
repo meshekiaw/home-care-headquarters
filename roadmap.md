@@ -6,6 +6,7 @@
 - [ ] Emergency contact fields and new/existing caregiver onboarding requirement defaults
 - [ ] Preserve child/adult maltreatment check dates, derive two-year expirations, update existing date displays/import/export/warnings
 - [ ] Verify access restrictions and report before/after date counts
+- [ ] Test only the dedicated “Test Caregiver” record with onboarding required; never sign in as the named staff admin or open real caregiver records; report the test account
 
 ## 618 Assessment Form
 - [x] Form record structure attached to an assessment: draft/signed/amended, versioning, autosave

@@ -48,6 +48,8 @@ export default {
         },
         "status-outstanding": "hsl(var(--status-outstanding))",
         "status-complete": "hsl(var(--status-complete))",
+        "onboarding-approved": "hsl(var(--onboarding-approved))",
+        "onboarding-returned": "hsl(var(--onboarding-returned))",
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",

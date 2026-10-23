@@ -36,6 +36,8 @@
     /* Bright, readable status text shades */
     --status-outstanding: 0 74% 51%;
     --status-complete: 142 71% 40%;
+    --onboarding-approved: 142.1 76.2% 36.3%;
+    --onboarding-returned: 0 72.2% 50.6%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;

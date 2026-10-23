@@ -8,3 +8,5 @@
 - Keep background check expiration as a database-generated column; displays and exports read the stored value, while CSV example dates mirror the calculation and imports never write it.
 - Initialize caregiver onboarding atomically on caregiver creation, with existing caregivers exempt; onboarding must not change cleared-to-schedule enforcement.
 - Run pure caregiver date and document-access rules with `bunx vitest run --config vitest.rules.config.ts`; these rules do not need a browser or the optional native canvas dependency.
+- Resolve portal caregivers by the authenticated user and share that query between navigation and onboarding; exempt caregivers never receive onboarding controls.
+- Onboarding reads application/policy receipts through one-way synchronization; personal/certificate saves use ownership-checked atomic RPCs and private uploads enforce file limits under the step lock without changing source workflows.

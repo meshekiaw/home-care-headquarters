@@ -218,6 +218,13 @@
       "when": 1792791063014,
       "tag": "0030_caregiver_portal_onboarding",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792793434976,
+      "tag": "0031_onboarding_application_finish_and_no_policies",
+      "breakpoints": true
     }
   ]
 }

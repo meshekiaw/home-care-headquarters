@@ -13,6 +13,42 @@ import {
   ArrowRight
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useOnboardingRoster } from "@/hooks/useOnboardingRoster";
+import { onboardingRosterSummary } from "@/utils/caregiverOnboarding";
+
+function OnboardingQueue() {
+  const roster = useOnboardingRoster();
+  const required = useQuery({
+    queryKey: ["onboarding-required-caregivers"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("caregivers").select("id").eq("onboarding_required", true);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const loading = roster.isLoading || required.isLoading;
+  const counts = { waiting_review: 0, waiting_office: 0 };
+  for (const c of required.data ?? []) {
+    const s = onboardingRosterSummary(true, roster.data?.get(c.id) ?? []).status;
+    if (s === "waiting_review" || s === "waiting_office") counts[s]++;
+  }
+  const item = (key: keyof typeof counts, label: string, tone: string) => (
+    <Link to={`/caregivers?onboarding=${key}`} className="flex-1 rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={`text-2xl font-bold ${tone}`}>{loading ? "..." : roster.isError || required.isError ? "—" : counts[key]}</p>
+    </Link>
+  );
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-lg font-semibold">Caregiver onboarding</CardTitle></CardHeader>
+      <CardContent className="flex flex-col sm:flex-row gap-3">
+        {item("waiting_review", "Waiting on review", "text-primary")}
+        {item("waiting_office", "Waiting on office", "text-onboarding-office")}
+      </CardContent>
+    </Card>
+  );
+}
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, addDays, format } from "date-fns";
  import ShiftRemindersWidget from "@/components/dashboard/ShiftRemindersWidget";
@@ -202,6 +238,8 @@ export default function Dashboard() {
             icon={AlertTriangle}
           />
         </div>
+
+        <OnboardingQueue />
 
         {/* Needs Action Now */}
         <NeedsActionNow />

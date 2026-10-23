@@ -50,6 +50,7 @@ export default {
         "status-complete": "hsl(var(--status-complete))",
         "onboarding-approved": "hsl(var(--onboarding-approved))",
         "onboarding-returned": "hsl(var(--onboarding-returned))",
+        "onboarding-office": "hsl(var(--onboarding-office))",
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",

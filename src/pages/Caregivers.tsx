@@ -26,7 +26,9 @@ import CreateLoginDialog from "@/components/caregivers/CreateLoginDialog";
 import OrientationTracker from "@/components/caregivers/OrientationTracker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCheck, Plus, Search, Phone, Mail, Upload, Download, KeyRound, Trash2, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useOnboardingRoster } from "@/hooks/useOnboardingRoster";
+import { onboardingRosterSummary, ONBOARDING_ROSTER_LABEL, ONBOARDING_ROSTER_ORDER, type OnboardingRosterStatus } from "@/utils/caregiverOnboarding";
 import type { Tables } from "@/integrations/supabase/types";
 import type { ParsedCaregiver } from "@/utils/csvParser";
 import { downloadCSV, formatCaregiverForExport } from "@/utils/csvExport";
@@ -78,6 +80,18 @@ function ExpiryBadges({ caregiver }: { caregiver: Record<string, any> }) {
   );
 }
 
+function OnboardingCell({ summary }: { summary: ReturnType<typeof onboardingRosterSummary> | null }) {
+  if (!summary) return <span className="text-muted-foreground">Loading…</span>;
+  switch (summary.status) {
+    case "not_required": return <span className="text-muted-foreground">Not required</span>;
+    case "complete": return <span className="font-medium text-onboarding-approved">Complete{summary.completedAt && ` · ${new Date(summary.completedAt).toLocaleDateString()}`}</span>;
+    case "waiting_review": return <span className="font-medium text-primary">Waiting on review · {summary.done} of 12</span>;
+    case "waiting_office": return <span className="font-medium text-onboarding-office">Waiting on office · {summary.done} of 12</span>;
+    case "in_progress": return <span>{summary.done} of 12</span>;
+    default: return <span>Not started</span>;
+  }
+}
+
 export default function Caregivers() {
   const { caregivers, loading, createCaregiver, refetch } = useCaregivers();
   const { user } = useAuth();
@@ -90,9 +104,21 @@ export default function Caregivers() {
   const [deleteTargets, setDeleteTargets] = useState<Tables<"caregivers">[] | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [inServiceFilter, setInServiceFilter] = useState<"all" | InServiceStatus>("all");
-  const [sortBy, setSortBy] = useState<"name" | "in_service" | "period_end">("name");
+  const [sortBy, setSortBy] = useState<"name" | "in_service" | "period_end" | "onboarding">("name");
   const navigate = useNavigate();
   const { forCaregiver } = useInServiceCompletions();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const onboardingParam = searchParams.get("onboarding");
+  const onboardingFilter: "all" | OnboardingRosterStatus =
+    onboardingParam && onboardingParam in ONBOARDING_ROSTER_LABEL ? (onboardingParam as OnboardingRosterStatus) : "all";
+  const setOnboardingFilter = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (v === "all") next.delete("onboarding"); else next.set("onboarding", v);
+    setSearchParams(next, { replace: true });
+  };
+  const onboardingRoster = useOnboardingRoster();
+  const onboardingFor = (c: { id: string; onboarding_required?: boolean | null }) =>
+    onboardingRosterSummary(c.onboarding_required === true, onboardingRoster.data?.get(c.id) ?? []);
 
   const filteredCaregivers = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -101,11 +127,17 @@ export default function Caregivers() {
       const specializations = caregiver.specializations?.join(" ").toLowerCase() || "";
       const matchesSearch = fullName.includes(query) || specializations.includes(query);
       if (!matchesSearch) return false;
+      if (onboardingFilter !== "all" && onboardingFor(caregiver).status !== onboardingFilter) return false;
       if (inServiceFilter === "all") return true;
       return forCaregiver(caregiver.id, (caregiver as any).hire_date).status === inServiceFilter;
     });
     return [...list].sort((a, b) => {
-      if (sortBy === "in_service") {
+      if (sortBy === "onboarding") {
+        const oa = onboardingFor(a), ob = onboardingFor(b);
+        const d = ONBOARDING_ROSTER_ORDER.indexOf(oa.status) - ONBOARDING_ROSTER_ORDER.indexOf(ob.status);
+        if (d !== 0) return d;
+        if (oa.done !== ob.done) return ob.done - oa.done;
+      } else if (sortBy === "in_service") {
         const ia = forCaregiver(a.id, (a as any).hire_date);
         const ib = forCaregiver(b.id, (b as any).hire_date);
         const d =
@@ -118,7 +150,8 @@ export default function Caregivers() {
       }
       return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
     });
-  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver, onboardingFilter, onboardingRoster.data]);
 
   const allSelected =
     filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));
@@ -194,12 +227,20 @@ export default function Caregivers() {
                     in_service_hours_required: info.requiredThisPeriod,
                     in_service_hours_completed: info.hoursThisPeriod,
                     in_service_status: IN_SERVICE_STATUS_LABEL[info.status],
+                    ...(() => {
+                      const ob = onboardingFor(c);
+                      return {
+                        onboarding_status: ONBOARDING_ROSTER_LABEL[ob.status],
+                        onboarding_steps_done: `${ob.done} of 12`,
+                        onboarding_completed_date: ob.completedAt ? new Date(ob.completedAt).toLocaleDateString("en-CA") : "",
+                      };
+                    })(),
                   };
                 });
                 downloadCSV(exportData, `caregivers-${new Date().toISOString().split('T')[0]}`);
                 toast({ title: "Export complete", description: `Exported ${caregivers.length} caregivers` });
               }}
-              disabled={caregivers.length === 0}
+              disabled={caregivers.length === 0 || onboardingRoster.isLoading}
             >
               <Download className="w-4 h-4 mr-2" />
               Export CSV
@@ -249,6 +290,18 @@ export default function Caregivers() {
                 </Select>
               </div>
               <div className="w-56">
+                <label className="text-xs text-muted-foreground">Onboarding</label>
+                <Select value={onboardingFilter} onValueChange={setOnboardingFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All onboarding statuses</SelectItem>
+                    {ONBOARDING_ROSTER_ORDER.map((s) => (
+                      <SelectItem key={s} value={s}>{ONBOARDING_ROSTER_LABEL[s]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-56">
                 <label className="text-xs text-muted-foreground">Sort by</label>
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -256,6 +309,7 @@ export default function Caregivers() {
                     <SelectItem value="name">Name</SelectItem>
                     <SelectItem value="in_service">In-service status</SelectItem>
                     <SelectItem value="period_end">Training year end date</SelectItem>
+                    <SelectItem value="onboarding">Onboarding</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -375,6 +429,10 @@ export default function Caregivers() {
                             <div>
                               <dt className="text-muted-foreground">Background check expiration</dt>
                               <dd>{formatDateOnly(caregiver.background_check_expiration_date)}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-muted-foreground">Onboarding</dt>
+                              <dd><OnboardingCell summary={onboardingRoster.isLoading ? null : onboardingFor(caregiver)} /></dd>
                             </div>
                           </dl>
                           {(() => {

@@ -50,3 +50,33 @@ describe("caregiver onboarding rules", () => {
     expect(await hasValidFileHeader(new Blob([new Uint8Array([0,0,0,24]),"ftypheic"]),"id.heic")).toBe(true);
   });
 });
+import { onboardingRosterSummary } from "./caregiverOnboarding";
+const all = (status: string) => Array.from({ length: 12 }, (_, i) => ({ step_number: i + 1, status, approved_at: `2026-10-${String(i + 1).padStart(2, "0")}T00:00:00Z` }));
+describe("onboarding roster status", () => {
+  it("is Not required when onboarding is off, even if steps are done", () => {
+    expect(onboardingRosterSummary(false, all("approved")).status).toBe("not_required");
+  });
+  it("is Complete when all 12 are approved or not applicable, dated by the last step", () => {
+    const steps = all("approved"); steps[5].status = "not_applicable";
+    const r = onboardingRosterSummary(true, steps);
+    expect(r.status).toBe("complete");
+    expect(r.completedAt).toBe("2026-10-12T00:00:00Z");
+  });
+  it("is Waiting on review when a caregiver step is submitted", () => {
+    const steps = all("not_started"); steps[3].status = "submitted";
+    expect(onboardingRosterSummary(true, steps).status).toBe("waiting_review");
+  });
+  it("ignores submitted office steps for Waiting on review", () => {
+    const steps = all("not_started"); steps[7].status = "submitted";
+    expect(onboardingRosterSummary(true, steps).status).toBe("in_progress");
+  });
+  it("is Waiting on office when caregiver steps are done but an office step is not", () => {
+    const steps = all("approved"); steps[8].status = "not_started";
+    expect(onboardingRosterSummary(true, steps)).toMatchObject({ status: "waiting_office", done: 11 });
+  });
+  it("is In progress with a count, or Not started when nothing is submitted", () => {
+    const steps = all("not_started"); steps[0].status = "approved"; steps[1].status = "sent_back";
+    expect(onboardingRosterSummary(true, steps)).toMatchObject({ status: "in_progress", done: 1 });
+    expect(onboardingRosterSummary(true, all("not_started")).status).toBe("not_started");
+  });
+});

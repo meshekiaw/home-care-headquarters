@@ -1,5 +1,11 @@
 # Roadmap
 
+## Caregiver portal onboarding
+- [ ] Caregiver-only page/menu for onboarding-required records, seven visible steps with progress and statuses
+- [ ] Personal/emergency contact save; read existing application, policy acknowledgment and orientation results without changing their workflows
+- [ ] Private ID/SS card/certificate uploads: PDF/JPG/PNG/HEIC, 10 MB, two files, camera, resubmission and approved locks
+- [ ] Verify rule tests and actual portal flow only as test-caregiver@example.invalid (Test Caregiver)
+
 ## Background check expiration
 - [x] Add automatic read-only five-year expiration without changing existing background check dates
 - [x] Show expiration on caregiver records, Caregivers list/warnings, and CSV export

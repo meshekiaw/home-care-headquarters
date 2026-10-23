@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,6 +38,15 @@ export default function CaregiverOnboarding() {
   const [consent,setConsent]=useState(false);
   const [acknowledging,setAcknowledging]=useState(false);
   const [ackError,setAckError]=useState<string | null>(null);
+  const [confirmApp,setConfirmApp]=useState(false);
+  const [submittingApp,setSubmittingApp]=useState(false);
+  const finishApplication=async()=>{
+    setSubmittingApp(true);
+    try {const {error}=await supabase.rpc("submit_onboarding_application");if(error)throw error;await onboarding.refresh();setConfirmApp(false);toast({title:"Application marked as finished"});}
+    catch(error){toast({title:"Could not submit application",description:friendlyError(error),variant:"destructive"});}
+    finally{setSubmittingApp(false);}
+  };
+
 
   const acknowledge=async () => {
     if(!policy || !consent) return;
@@ -79,12 +89,16 @@ export default function CaregiverOnboarding() {
               {locked && <LockKeyhole className="h-4 w-4 shrink-0 text-muted-foreground" />}
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-6 sm:pl-11">
-              {step.step_key === "hiring_application" && (locked ? <Button variant="outline" disabled>Application approved</Button> : <Button asChild variant="outline" className="gap-2"><Link to="/my-application">Open My Application<ArrowUpRight className="h-4 w-4" /></Link></Button>)}
+              {step.step_key === "hiring_application" && <div className="space-y-3">
+                {locked ? <Button variant="outline" disabled>Application approved</Button> : <Button asChild variant="outline" className="gap-2"><Link to="/my-application">Open My Application<ArrowUpRight className="h-4 w-4" /></Link></Button>}
+                {step.status === "submitted" && step.submitted_at && <p className="text-sm text-muted-foreground">Submitted on {new Date(step.submitted_at).toLocaleDateString()}</p>}
+                {["not_started","sent_back"].includes(step.status) && <div><Button onClick={()=>setConfirmApp(true)}>I’ve finished my application</Button></div>}
+              </div>}
               {step.step_key === "personal_information" && <OnboardingContactForm values={caregiver.data} locked={locked} onSaved={onboarding.refresh} />}
               {step.step_key === "policy_signoffs" && <>
-                {outstanding.length === 0 ? <p className="text-sm text-muted-foreground">All published policies acknowledged.</p> :
+                {policies.length === 0 ? <p className="text-sm text-muted-foreground">No policies to sign yet</p> : outstanding.length === 0 ? <p className="text-sm text-muted-foreground">All published policies acknowledged.</p> :
                   <ul className="divide-y">{outstanding.map((p)=><li key={p.id} className="flex items-center gap-3 py-3"><FileText className="h-4 w-4 text-muted-foreground shrink-0" /><span className="flex-1 min-w-0 break-words">{p.title}</span><Button size="sm" variant="outline" disabled={locked} onClick={()=>{setPolicy(p);setConsent(false);setAckError(null);}}>Review</Button></li>)}</ul>}
-                {!locked && outstanding.length === 0 && step.status !== "submitted" && <Button onClick={async()=>{
+                {!locked && policies.length > 0 && outstanding.length === 0 && step.status !== "submitted" && <Button onClick={async()=>{
                   setAcknowledging(true);
                   try {const {error}=await supabase.rpc("submit_onboarding_policy_signoffs");if(error)throw error;await onboarding.refresh();toast({title:"Policy sign-offs submitted"});}
                   catch(error){toast({title:"Could not submit sign-offs",description:friendlyError(error),variant:"destructive"});}
@@ -98,6 +112,12 @@ export default function CaregiverOnboarding() {
         })}
       </Accordion>
     </div>
+    <AlertDialog open={confirmApp} onOpenChange={(o)=>{if(!submittingApp)setConfirmApp(o);}}>
+      <AlertDialogContent>
+        <AlertDialogHeader><AlertDialogTitle>Finished your application?</AlertDialogTitle><AlertDialogDescription>This tells the office your hiring application is ready for review.</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogFooter><AlertDialogCancel disabled={submittingApp}>Cancel</AlertDialogCancel><Button disabled={submittingApp} className="gap-2" onClick={()=>void finishApplication()}>{submittingApp && <Loader2 className="h-4 w-4 animate-spin" />}{submittingApp?"Submitting…":"Yes, I’m finished"}</Button></AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Dialog open={Boolean(policy)} onOpenChange={(open)=>{if(!open && !acknowledging)setPolicy(null);}}>
       <DialogContent className="max-w-2xl max-h-[90dvh] flex flex-col">
         <DialogHeader><DialogTitle className="break-words">{policy?.title}</DialogTitle><p className="text-sm text-muted-foreground">Version {policy?.version}</p></DialogHeader>

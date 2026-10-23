@@ -34,3 +34,29 @@ export const contactSchema = z.object({
   emergency_contact_phone: phone,
 }).strict();
 export type OnboardingContact = z.infer<typeof contactSchema>;
+export const OFFICE_ONBOARDING_STEPS = [7, 8, 9, 10, 11] as const;
+export type OnboardingRosterStatus = "not_required" | "complete" | "waiting_review" | "waiting_office" | "in_progress" | "not_started";
+export const ONBOARDING_ROSTER_LABEL: Record<OnboardingRosterStatus, string> = {
+  not_required: "Not required", complete: "Complete", waiting_review: "Waiting on review",
+  waiting_office: "Waiting on office", in_progress: "In progress", not_started: "Not started",
+};
+export const ONBOARDING_ROSTER_ORDER: OnboardingRosterStatus[] = ["waiting_review", "waiting_office", "in_progress", "not_started", "complete", "not_required"];
+export type RosterStep = { step_number: number; status: string; submitted_at?: string | null; approved_at?: string | null; updated_at?: string | null };
+export interface OnboardingRosterSummary { status: OnboardingRosterStatus; done: number; completedAt: string | null }
+
+const isDone = (s: RosterStep) => s.status === "approved" || s.status === "not_applicable";
+
+/** Checks the roster rules in order and returns the first that applies. */
+export function onboardingRosterSummary(required: boolean, steps: RosterStep[]): OnboardingRosterSummary {
+  const done = steps.filter(isDone).length;
+  if (!required) return { status: "not_required", done, completedAt: null };
+  if (steps.length === 12 && done === 12) {
+    const completedAt = steps.map((s) => s.approved_at ?? s.updated_at ?? s.submitted_at ?? "").sort().pop() || null;
+    return { status: "complete", done, completedAt };
+  }
+  const caregiverSteps = steps.filter((s) => VISIBLE_ONBOARDING_STEPS.some((n) => n === s.step_number));
+  if (caregiverSteps.some((s) => s.status === "submitted")) return { status: "waiting_review", done, completedAt: null };
+  if (caregiverSteps.length === VISIBLE_ONBOARDING_STEPS.length && caregiverSteps.every(isDone)) return { status: "waiting_office", done, completedAt: null };
+  const started = done > 0 || steps.some((s) => s.status !== "not_started");
+  return { status: started ? "in_progress" : "not_started", done, completedAt: null };
+}

@@ -53,6 +53,7 @@ import Assessment618Form from "./pages/Assessment618Form";
 import NurseVisitForm from "./pages/NurseVisitForm";
 import NursePortal from "./pages/NursePortal";
 import NurseInvite from "./pages/NurseInvite";
+import CaregiverOnboarding from "./pages/CaregiverOnboarding";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +119,7 @@ const App = () => (
             <Route path="/caregiver-availability" element={<ProtectedRoute allowedRoles={["admin"]}><CaregiverAvailability /></ProtectedRoute>} />
             
             {/* Caregiver routes */}
+            <Route path="/my-onboarding" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverOnboarding /></ProtectedRoute>} />
             <Route path="/my-dashboard" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverDashboard /></ProtectedRoute>} />
             <Route path="/my-application" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverApplication /></ProtectedRoute>} />
             <Route path="/my-orientation" element={<ProtectedRoute allowedRoles={["caregiver"]}><CaregiverOrientation /></ProtectedRoute>} />

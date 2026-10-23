@@ -14,9 +14,12 @@ import {
   Menu,
 } from "lucide-react";
 import LegalFooter from "@/components/layout/LegalFooter";
+import { usePortalCaregiver } from "@/hooks/usePortalCaregiver";
+import { ClipboardCheck } from "lucide-react";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/my-dashboard" },
+  { label: "Onboarding", icon: ClipboardCheck, path: "/my-onboarding" },
   { label: "My Application", icon: ClipboardList, path: "/my-application" },
   { label: "My Orientation", icon: BookOpen, path: "/my-orientation" },
   { label: "My Training", icon: GraduationCap, path: "/my-training" },
@@ -26,6 +29,7 @@ const navItems = [
 
 export default function CaregiverLayout({ children }: { children: ReactNode }) {
   const { signOut } = useAuth();
+  const { data: caregiver } = usePortalCaregiver();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,7 +41,7 @@ export default function CaregiverLayout({ children }: { children: ReactNode }) {
 
   const NavList = ({ onNavigate }: { onNavigate?: () => void }) => (
     <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
-      {navItems.map((item) => {
+      {navItems.filter((item) => item.path !== "/my-onboarding" || (caregiver?.onboarding_required === true && caregiver.status !== "inactive")).map((item) => {
         const isActive = location.pathname === item.path;
         return (
           <Link

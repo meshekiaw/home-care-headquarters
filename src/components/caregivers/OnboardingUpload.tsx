@@ -78,7 +78,6 @@ export default function OnboardingUpload({ caregiverId, stepKey, locked, certifi
       const blob=await caregiverDocumentRequest<Blob>({action:"open",ticket:ticket.ticket});
       if (!(blob instanceof Blob)) throw new Error("The file could not be downloaded. Please try again.");
       const url=URL.createObjectURL(blob);
-      const link=document.createElement ? null : null;
       const anchor=window.document.createElement("a");
       anchor.href=url;anchor.download=document.file_name;window.document.body.appendChild(anchor);anchor.click();anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url),1000);

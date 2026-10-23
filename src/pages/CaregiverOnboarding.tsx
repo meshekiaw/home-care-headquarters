@@ -79,7 +79,7 @@ export default function CaregiverOnboarding() {
               {locked && <LockKeyhole className="h-4 w-4 shrink-0 text-muted-foreground" />}
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-6 sm:pl-11">
-              {step.step_key === "hiring_application" && <Button asChild variant="outline" className="gap-2"><Link to="/my-application">Open My Application<ArrowUpRight className="h-4 w-4" /></Link></Button>}
+              {step.step_key === "hiring_application" && (locked ? <Button variant="outline" disabled>Application approved</Button> : <Button asChild variant="outline" className="gap-2"><Link to="/my-application">Open My Application<ArrowUpRight className="h-4 w-4" /></Link></Button>)}
               {step.step_key === "personal_information" && <OnboardingContactForm values={caregiver.data} locked={locked} onSaved={onboarding.refresh} />}
               {step.step_key === "policy_signoffs" && <>
                 {outstanding.length === 0 ? <p className="text-sm text-muted-foreground">All published policies acknowledged.</p> :
@@ -91,7 +91,7 @@ export default function CaregiverOnboarding() {
                   finally{setAcknowledging(false);}
                 }} disabled={acknowledging}>{acknowledging?"Submitting…":"Submit sign-offs"}</Button>}
               </>}
-              {["photo_id","social_security_card","certificate"].includes(step.step_key) && <OnboardingUpload key={`${step.id}-${step.updated_at ?? step.status}-${step.no_certificate}`} caregiverId={caregiver.data.id} stepKey={step.step_key} locked={locked} certificateName={step.certificate_name} noCertificate={step.no_certificate} documents={documents.filter((d)=>d.step_id === step.id)} onSaved={onboarding.refresh} />}
+              {["photo_id","social_security_card","certificate"].includes(step.step_key) && <OnboardingUpload key={`${step.id}-${step.status}-${step.no_certificate}-${step.certificate_name}`} caregiverId={caregiver.data.id} stepKey={step.step_key} locked={locked} certificateName={step.certificate_name} noCertificate={step.no_certificate} documents={documents.filter((d)=>d.step_id === step.id)} onSaved={onboarding.refresh} />}
               {step.step_key === "orientation" && <Button asChild variant="outline" className="gap-2"><Link to="/my-orientation">Open Orientation<ArrowUpRight className="h-4 w-4" /></Link></Button>}
             </AccordionContent>
           </AccordionItem>;

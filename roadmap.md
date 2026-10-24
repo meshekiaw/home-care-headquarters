@@ -1,17 +1,18 @@
 # Roadmap
 
 ## Admin caregiver onboarding tab
-- [ ] Admin-only tab with twelve grouped steps, dates, approver, logged in-app file viewer and history
-- [ ] Approve/send-back/paper approval, original-seen date and optional linked certificate credential
-- [ ] Office uploads/date save+approval, noted file replacement, onboarding-required switch
-- [ ] Rule tests and caregiver-side checks only as Test Caregiver; admin screens reserved for user testing
+- [x] Admin-only tab with twelve grouped steps, dates, approver, logged in-app file viewer and history
+- [x] Approve/send-back/paper approval, original-seen date and optional linked certificate credential
+- [x] Office uploads/date save+approval, noted file replacement, onboarding-required switch (retains existing steps and history)
+- [x] 43 rule tests passed without any sign-in or caregiver record changes
+- [ ] Admin approval/upload/view end-to-end checks reserved for the user's testing; no admin sign-in permitted
 
 ## Caregiver portal onboarding
 - [x] Caregiver-only page/menu for onboarding-required records, seven visible steps with progress and statuses
 - [x] Personal/emergency contact save; one-way application/policy receipt sync and existing automatic orientation approval; source workflows unchanged
 - [x] Private ID/SS card/certificate uploads: PDF/JPG/PNG/HEIC, 10 MB, two files, camera, resubmission and approved locks
 - [x] 27 rule tests and actual Test Caregiver portal save/readback, two-file upload/download, server rejection of third file, certificate exemption, approved-save denial, sent-back replacement and phone fit verified; no real staff sign-in/record changes
-- [ ] Application submission cannot be exercised: existing My Application has only Save/Download, and user explicitly prohibited modifying it. The submission receipt sync is ready for an existing or future submission source.
+- [x] Application-finished confirmation submits step 1 without changing My Application; prior Test Caregiver verification completed
 - [ ] Policy acknowledgment end-to-end check awaits a published policy (none currently published); do not publish synthetic agency-wide policy for testing
 
 ## Background check expiration

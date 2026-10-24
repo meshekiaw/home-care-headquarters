@@ -1,5 +1,10 @@
 # Roadmap
 
+## Caregiver temporary password
+- [ ] Add admin-only Set temporary password on an existing caregiver's record, without an email reset
+- [ ] Validate linked caregiver accounts server-side, confirm the change and keep passwords out of logs
+- [ ] Run isolated tests without signing in or changing any caregiver login/password; show the location
+
 ## Admin caregiver onboarding tab
 - [x] Admin-only tab with twelve grouped steps, dates, approver, logged in-app file viewer and history
 - [x] Approve/send-back/paper approval, original-seen date and optional linked certificate credential

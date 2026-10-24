@@ -20,6 +20,8 @@ import CaregiverOverviewTab from "@/components/caregivers/CaregiverOverviewTab";
 import UpcomingCalendarTab from "@/components/caregivers/UpcomingCalendarTab";
 import InServiceTab from "@/components/caregivers/InServiceTab";
 import { ApplicationFormFiller } from "@/components/caregivers/ApplicationFormFiller";
+import AdminOnboardingTab from "@/components/caregivers/AdminOnboardingTab";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   ArrowLeft,
   UserCheck,
@@ -46,6 +48,7 @@ export default function CaregiverProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -257,7 +260,7 @@ export default function CaregiverProfile() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-h-0">
-          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 lg:w-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="credentials">
               Credentials
@@ -279,6 +282,7 @@ export default function CaregiverProfile() {
             <TabsTrigger value="in-service">In-Service</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="application">Application</TabsTrigger>
+            {isAdmin && <TabsTrigger value="onboarding">Onboarding</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -561,6 +565,8 @@ export default function CaregiverProfile() {
               />
             )}
           </TabsContent>
+
+          {isAdmin && <TabsContent value="onboarding" className="mt-6"><AdminOnboardingTab caregiver={caregiver} onSaved={refetch} /></TabsContent>}
 
            <TabsContent value="application" className="mt-6 overflow-hidden">
             {caregiver && id && (

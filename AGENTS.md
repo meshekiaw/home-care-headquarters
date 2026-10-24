@@ -10,3 +10,6 @@
 - Run pure caregiver date and document-access rules with `bunx vitest run --config vitest.rules.config.ts`; these rules do not need a browser or the optional native canvas dependency.
 - Resolve portal caregivers by the authenticated user and share that query between navigation and onboarding; exempt caregivers never receive onboarding controls.
 - Onboarding reads application/policy receipts through one-way synchronization; personal/certificate saves use ownership-checked atomic RPCs and private uploads enforce file limits under the step lock without changing source workflows.
+- Admin onboarding review and office date/approval changes use atomic admin-only RPCs with an append-only private event ledger so evidence changes retain their actor and note.
+- Certificate credentials reference private document IDs with server-side link validation; all previews use logged gateway bytes and revocable browser blob URLs, never stored Storage links.
+- Office replacements archive the predecessor and record the required note atomically; approval is retained until the admin explicitly saves and reapproves the step.

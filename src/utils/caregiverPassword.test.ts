@@ -89,17 +89,18 @@ describe("admin-only caregiver password changes (mock accounts only)", () => {
     expect(deps.updatePassword).not.toHaveBeenCalled();
   });
   it("resets only the server-resolved linked account and audits no password", async () => {
-    const deps = dependencies();
+    const audit = vi.fn(async () => true);
+    const deps = dependencies({ audit });
     const result = await handlePasswordReset(request(), deps);
     expect(result).toEqual({ status: 200, body: { success: true } });
     expect(deps.caregiverLogin).toHaveBeenCalledWith(caregiverId);
     expect(deps.updatePassword).toHaveBeenCalledExactlyOnceWith("test-caregiver-id", input.password);
-    expect(deps.audit.mock.calls).toEqual([
+    expect(audit.mock.calls).toEqual([
       ["test-admin-id", caregiverId, "requested"],
       ["test-admin-id", caregiverId, "succeeded"],
     ]);
     expect(JSON.stringify(result)).not.toContain(input.password);
-    expect(JSON.stringify(deps.audit.mock.calls)).not.toContain(input.password);
+    expect(JSON.stringify(audit.mock.calls)).not.toContain(input.password);
   });
   it("does not report a failed authentication update as success", async () => {
     const deps = dependencies({ updatePassword: vi.fn(async () => false) });

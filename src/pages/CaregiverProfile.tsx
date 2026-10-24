@@ -21,6 +21,7 @@ import UpcomingCalendarTab from "@/components/caregivers/UpcomingCalendarTab";
 import InServiceTab from "@/components/caregivers/InServiceTab";
 import { ApplicationFormFiller } from "@/components/caregivers/ApplicationFormFiller";
 import AdminOnboardingTab from "@/components/caregivers/AdminOnboardingTab";
+import CaregiverPasswordControl from "@/components/caregivers/CaregiverPasswordControl";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
   ArrowLeft,
@@ -237,7 +238,14 @@ export default function CaregiverProfile() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {isAdmin && caregiver.auth_user_id && !isEditing && (
+              <CaregiverPasswordControl
+                key={caregiver.id}
+                caregiverId={caregiver.id}
+                caregiverName={`${caregiver.first_name} ${caregiver.last_name}`}
+              />
+            )}
             {isEditing ? (
               <>
                 <Button variant="outline" onClick={handleCancel} disabled={saving}>

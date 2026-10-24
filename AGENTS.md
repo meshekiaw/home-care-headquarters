@@ -1,5 +1,6 @@
 # Architecture rules
 
+- Caregiver-record password changes use a dedicated authenticated admin-only Edge Function that resolves the linked caregiver-only login server-side and audits outcomes without passwords; existing email, roles and links remain unchanged, and the admin session is never replaced.
 - Keep caregiver onboarding independent of applications, policy acknowledgments, orientation and scheduling; read existing orientation completion without changing its lifecycle.
 - Route all caregiver-document file operations through the authenticated caregiver-documents Edge Function; deny direct Storage access so every read rechecks roles and ownership and admin reads cannot bypass the view log.
 - Use single-use, user-bound, 60-second document access tickets rather than transferable Storage signed URLs; never return storage URLs or paths as public links.

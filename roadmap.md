@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Caregiver temporary password
-- [ ] Add admin-only Set temporary password on an existing caregiver's record, without an email reset
-- [ ] Validate linked caregiver accounts server-side, confirm the change and keep passwords out of logs
-- [ ] Run isolated tests without signing in or changing any caregiver login/password; show the location
+- [x] Admin-only Set temporary password beside Edit Profile on the caregiver record, shown only for linked logins; no email reset
+- [x] Server-resolved caregiver-only target, protected admin/nurse logins, explicit confirmation, password-free outcome auditing
+- [x] 68 tests passed including 25 new isolated password tests; deployed endpoint rejects unsigned requests (401); no sign-in or live caregiver account changes
+- [ ] Live admin password-reset check not performed: user prohibits all sign-ins and real login/password changes
 
 ## Admin caregiver onboarding tab
 - [x] Admin-only tab with twelve grouped steps, dates, approver, logged in-app file viewer and history

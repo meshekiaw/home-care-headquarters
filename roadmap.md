@@ -1,5 +1,11 @@
 # Roadmap
 
+## Admin caregiver onboarding tab
+- [ ] Admin-only tab with twelve grouped steps, dates, approver, logged in-app file viewer and history
+- [ ] Approve/send-back/paper approval, original-seen date and optional linked certificate credential
+- [ ] Office uploads/date save+approval, noted file replacement, onboarding-required switch
+- [ ] Rule tests and caregiver-side checks only as Test Caregiver; admin screens reserved for user testing
+
 ## Caregiver portal onboarding
 - [x] Caregiver-only page/menu for onboarding-required records, seven visible steps with progress and statuses
 - [x] Personal/emergency contact save; one-way application/policy receipt sync and existing automatic orientation approval; source workflows unchanged

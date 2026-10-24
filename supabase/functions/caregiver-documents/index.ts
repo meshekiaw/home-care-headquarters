@@ -11,7 +11,7 @@ const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("open"), ticket: z.string().uuid() }),
   z.object({ action: z.literal("archive"), document_id: z.string().uuid() }),
 ]);
-const Upload = z.object({ caregiver_id: z.string().uuid(), step_key: z.string().min(1).max(60) });
+const Upload = z.object({ caregiver_id: z.string().uuid(), step_key: z.string().min(1).max(60), replace_document_id: z.string().uuid().optional(), replacement_note: z.string().trim().min(1).max(2000).optional() });
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), {
   status, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
 });
@@ -54,10 +54,15 @@ Deno.serve(async (req) => {
 
     if (req.headers.get("Content-Type")?.includes("multipart/form-data")) {
       const form = await req.formData();
-      const parsed = Upload.safeParse({ caregiver_id: form.get("caregiver_id"), step_key: form.get("step_key") });
+      const parsed = Upload.safeParse({ caregiver_id: form.get("caregiver_id"), step_key: form.get("step_key"), replace_document_id: form.get("replace_document_id") || undefined, replacement_note: form.get("replacement_note") || undefined });
       const file = form.get("file");
       if (!parsed.success || !(file instanceof File) || !file.size) return json({ error: "Choose a file and an onboarding step." }, 400);
-      const { caregiver_id, step_key } = parsed.data;
+      const { caregiver_id, step_key, replace_document_id, replacement_note } = parsed.data;
+      if (replace_document_id && (!isAdmin || !replacement_note)) return json({ error: "Only an admin can replace a file, with a replacement note." }, 403);
+      if (replace_document_id) {
+        const previous = await documentAccess(replace_document_id);
+        if (!previous || previous.doc.caregiver_id !== caregiver_id || !["tax_payroll_forms", "background_check", "adult_maltreatment_check", "child_maltreatment_check", "tmu"].includes(step_key)) return json({ error: "Choose this caregiver’s office document." }, 403);
+      }
       const fileError = validateUpload(file);
       if (fileError || !(await hasValidFileHeader(file, file.name))) return json({ error: fileError || "This file does not match its file type. Choose a PDF, JPG, PNG, or HEIC file." }, 400);
       const caregiver = await caregiverAccess(caregiver_id);
@@ -69,16 +74,24 @@ Deno.serve(async (req) => {
       const { data: step, error: stepError } = await service.from("caregiver_onboarding_steps").select("id,status").eq("onboarding_id", onboarding.id).eq("step_key", step_key).maybeSingle();
       if (stepError) throw stepError;
       if (!step || !canUpload(roles, caregiver.auth_user_id === user.id, step_key, step.status === "approved")) return json({ error: "You cannot upload or replace a file for this step." }, 403);
+      if (replace_document_id) {
+        const previous = await documentAccess(replace_document_id);
+        if (!previous || previous.doc.step_id !== step.id) return json({ error: "Choose a document from this step." }, 400);
+      }
       const fileName = file.name.replace(/[\r\n\x00/\\]/g, "_").slice(0, 200) || "document";
       const documentId = crypto.randomUUID();
       const path = `${caregiver_id}/${step_key}/${documentId}/${fileName}`;
       // Unique objects only; never overwrite approved or historical files.
       const { error: uploadError } = await service.storage.from(bucket).upload(path, file, { upsert: false, contentType: file.type || "application/octet-stream" });
       if (uploadError) return json({ error: "The file could not be uploaded. Check its size and try again." }, 400);
-      const { data: doc, error: registerError } = await service.rpc("register_caregiver_document", {
+      const registration = replace_document_id ? service.rpc("replace_caregiver_document", {
+        p_actor_id: user.id, p_old_document_id: replace_document_id, p_new_document_id: documentId,
+        p_object_path: path, p_file_name: fileName, p_mime_type: file.type || "application/octet-stream", p_file_size: file.size, p_note: replacement_note,
+      }) : service.rpc("register_caregiver_document", {
         p_actor_id: user.id, p_caregiver_id: caregiver_id, p_step_id: step.id, p_document_id: documentId,
         p_object_path: path, p_file_name: fileName, p_mime_type: file.type || "application/octet-stream", p_file_size: file.size,
       });
+      const { data: doc, error: registerError } = await registration;
       if (registerError) {
         await service.storage.from(bucket).remove([path]);
         return json({ error: "The file was not saved. Each step allows two files and approved steps are locked. Refresh and try again." }, 409);

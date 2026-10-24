@@ -13,7 +13,8 @@ const dataSchema = z.object({ id: z.string(), steps: z.array(stepSchema), histor
   id: z.string(), step_id: z.string().nullable(), old_status: z.string().nullable(), new_status: z.string().nullable(),
   changed_at: z.string(), actor_name: z.string(), note: z.string().nullable(), event_type: z.string(),
 })) });
-export type AdminOnboardingStep = z.infer<typeof stepSchema>;
+export type AdminOnboardingStep = Required<z.infer<typeof stepSchema>>;
+type AdminOnboardingData = { id: string; steps: AdminOnboardingStep[]; history: Required<z.infer<typeof dataSchema>["history"][number]>[] };
 export function useAdminCaregiverOnboarding(caregiverId: string, enabled: boolean) {
   const client = useQueryClient();
   const query = useQuery({
@@ -25,7 +26,8 @@ export function useAdminCaregiverOnboarding(caregiverId: string, enabled: boolea
       ]);
       if (record.error) throw record.error;
       if (!record.data) return null;
-      return { ...dataSchema.parse(record.data), documents: files.documents };
+      const validated = dataSchema.parse(record.data) as AdminOnboardingData;
+      return { ...validated, documents: files.documents };
     },
   });
   const refresh = () => Promise.all([

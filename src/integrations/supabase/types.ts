@@ -683,6 +683,7 @@ export type Database = {
       }
       caregiver_credentials: {
         Row: {
+          caregiver_document_id: string | null
           caregiver_id: string
           created_at: string
           credential_name: string
@@ -699,6 +700,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          caregiver_document_id?: string | null
           caregiver_id: string
           created_at?: string
           credential_name: string
@@ -715,6 +717,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          caregiver_document_id?: string | null
           caregiver_id?: string
           created_at?: string
           credential_name?: string
@@ -731,6 +734,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "caregiver_credentials_caregiver_document_id_fkey"
+            columns: ["caregiver_document_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "caregiver_credentials_caregiver_id_fkey"
             columns: ["caregiver_id"]
@@ -903,21 +913,79 @@ export type Database = {
           },
         ]
       }
+      caregiver_onboarding_admin_events: {
+        Row: {
+          actor_id: string
+          actor_name: string
+          created_at: string
+          event_type: string
+          id: string
+          note: string | null
+          onboarding_id: string
+          step_id: string | null
+        }
+        Insert: {
+          actor_id: string
+          actor_name: string
+          created_at?: string
+          event_type: string
+          id?: string
+          note?: string | null
+          onboarding_id: string
+          step_id?: string | null
+        }
+        Update: {
+          actor_id?: string
+          actor_name?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          note?: string | null
+          onboarding_id?: string
+          step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_onboarding_admin_events_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caregiver_onboarding_admin_events_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caregiver_onboarding_admin_events_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "caregiver_onboarding_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caregiver_onboarding_admin_notes: {
         Row: {
           admin_note: string
+          original_seen_date: string | null
           step_id: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           admin_note?: string
+          original_seen_date?: string | null
           step_id: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           admin_note?: string
+          original_seen_date?: string | null
           step_id?: string
           updated_at?: string
           updated_by?: string | null
@@ -3415,6 +3483,10 @@ export type Database = {
         }
         Returns: string
       }
+      admin_caregiver_onboarding: {
+        Args: { p_caregiver_id: string }
+        Returns: Json
+      }
       archive_caregiver_document: {
         Args: { p_actor_id: string; p_document_id: string }
         Returns: boolean
@@ -3573,6 +3645,7 @@ export type Database = {
         Args: { p_form_id: string }
         Returns: boolean
       }
+      onboarding_actor_name: { Args: { p_actor: string }; Returns: string }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -3612,6 +3685,36 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      replace_caregiver_document: {
+        Args: {
+          p_actor_id: string
+          p_file_name: string
+          p_file_size: number
+          p_mime_type: string
+          p_new_document_id: string
+          p_note: string
+          p_object_path: string
+          p_old_document_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          caregiver_id: string
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          object_path: string
+          step_id: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "caregiver_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       reschedule_nurse_assessment: {
         Args: {
           p_assessment_id: string
@@ -3621,11 +3724,34 @@ export type Database = {
         Returns: Json
       }
       reset_nurse_visit_form: { Args: { p_form_id: string }; Returns: Json }
+      review_caregiver_onboarding: {
+        Args: {
+          p_action: string
+          p_credential?: Json
+          p_note?: string
+          p_original_seen_date?: string
+          p_step_id: string
+        }
+        Returns: boolean
+      }
+      save_office_onboarding: {
+        Args: {
+          p_check_date?: string
+          p_note?: string
+          p_step_id: string
+          p_tmu_expiration_date?: string
+        }
+        Returns: boolean
+      }
       save_onboarding_certificate: {
         Args: { p_name: string; p_no_certificate: boolean }
         Returns: boolean
       }
       save_onboarding_contact: { Args: { p_contact: Json }; Returns: boolean }
+      set_caregiver_onboarding_required: {
+        Args: { p_caregiver_id: string; p_required: boolean }
+        Returns: boolean
+      }
       start_618_form: { Args: { p_assessment_id: string }; Returns: string }
       start_nurse_visit_form: {
         Args: { p_assessment_id: string }

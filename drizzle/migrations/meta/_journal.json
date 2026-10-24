@@ -225,6 +225,13 @@
       "when": 1792793434976,
       "tag": "0031_onboarding_application_finish_and_no_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792803591161,
+      "tag": "0032_admin_caregiver_onboarding",
+      "breakpoints": true
     }
   ]
 }

@@ -1,39 +1,31 @@
 project_id = "iljmedelpqwzwyecvksa"
- 
- [functions.generate-policy]
- verify_jwt = false
- 
- [functions.send-assessment-notifications]
- verify_jwt = false
- 
- [functions.send-handoff-notification]
- verify_jwt = false
- 
- [functions.resend-notification]
- verify_jwt = false
 
- [functions.generate-orientation-audio]
- verify_jwt = false
-
- [functions.manage-ssn]
- verify_jwt = false
-
- [functions.check-quiz-answers]
- verify_jwt = false
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.send-sms]
-verify_jwt = false
-
-[functions.send-transactional-email]
-verify_jwt = true
-
-[functions.preview-transactional-email]
-verify_jwt = false
-
-[functions.handle-email-unsubscribe]
-verify_jwt = false
-
-[functions.handle-email-suppression]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-quiz-answers]
+    verify_jwt = false
+  [functions.generate-orientation-audio]
+    verify_jwt = false
+  [functions.generate-policy]
+    verify_jwt = false
+  [functions.handle-email-suppression]
+    verify_jwt = false
+  [functions.handle-email-unsubscribe]
+    verify_jwt = false
+  [functions.manage-ssn]
+    verify_jwt = false
+  [functions.preview-transactional-email]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.resend-notification]
+    verify_jwt = false
+  [functions.send-assessment-notifications]
+    verify_jwt = false
+  [functions.send-handoff-notification]
+    verify_jwt = false
+  [functions.send-sms]
+    verify_jwt = false
+  [functions.send-transactional-email]
+    verify_jwt = true

@@ -3546,6 +3546,10 @@ export type Database = {
         Args: { p_form_id: string }
         Returns: string
       }
+      connect_training_caregiver: {
+        Args: { p_caregiver_id: string; p_email: string; p_user_id: string }
+        Returns: boolean
+      }
       current_nurse_id: { Args: never; Returns: string }
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
       delete_email: {
@@ -3593,6 +3597,7 @@ export type Database = {
         Args: { p_caregiver_id: string }
         Returns: boolean
       }
+      lookup_training_caregiver: { Args: { p_email: string }; Returns: Json }
       move_to_dlq: {
         Args: {
           dlq_name: string

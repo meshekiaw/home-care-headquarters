@@ -56,9 +56,9 @@ export default function AuthMagicLink() {
       });
       if (error) throw error;
       navigate(next, { replace: true });
-    } catch (e: any) {
+    } catch {
       setStatus("error");
-      setErrorMsg(e?.message || "This sign-in link is no longer valid.");
+      setErrorMsg("This sign-in link has expired or has already been used. Please request a new link on the training sign-in page.");
     }
   };
 
@@ -106,8 +106,8 @@ export default function AuthMagicLink() {
                 </p>
               </div>
             </div>
-            <Button variant="outline" onClick={() => navigate("/login")} className="w-full">
-              Go to login
+            <Button variant="outline" onClick={() => navigate("/caregiver-training")} className="w-full">
+              Request a new sign-in link
             </Button>
           </div>
         ) : (

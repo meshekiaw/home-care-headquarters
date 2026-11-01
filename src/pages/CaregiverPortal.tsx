@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { format, isPast, differenceInDays } from "date-fns";
 import { downloadLmsCertificate } from "@/utils/lmsCertificatePdf";
-import { caregiverPortalUrl } from "@/lib/publicOrigin";
+import { requestTrainingLink } from "@/utils/trainingSignIn";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { friendlyError } from "@/lib/friendlyError";
 
@@ -79,6 +79,7 @@ export default function CaregiverPortal() {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!user) {
@@ -111,18 +112,14 @@ export default function CaregiverPortal() {
 
   const sendLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sending) return;
     setSending(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: caregiverPortalUrl(),
-        shouldCreateUser: false,
-      },
-    });
-
+    setSignInError(null);
+    const error = await requestTrainingLink(email);
     setSending(false);
     if (error) {
-      toast({ title: "Could not send link", description: friendlyError(error), variant: "destructive" });
+      setSignInError(error);
+      toast({ title: "Could not send link", description: error, variant: "destructive" });
       return;
     }
     setSent(true);
@@ -173,10 +170,13 @@ export default function CaregiverPortal() {
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={sending}
+                    aria-describedby={signInError ? "portal-sign-in-error" : undefined}
+                    onChange={(e) => { setEmail(e.target.value); setSignInError(null); }}
                     placeholder="you@example.com"
                   />
                 </div>
+                {signInError && <p id="portal-sign-in-error" role="alert" className="text-sm text-destructive">{signInError}</p>}
                 <Button type="submit" className="w-full" loading={sending}>
                   Email me a sign-in link
                 </Button>

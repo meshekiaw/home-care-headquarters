@@ -239,6 +239,13 @@
       "when": 1792803927239,
       "tag": "0033_tighten_onboarding_admin_event_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793576463750,
+      "tag": "0034_caregiver_training_sign_in",
+      "breakpoints": true
     }
   ]
 }

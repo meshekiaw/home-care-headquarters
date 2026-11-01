@@ -19,7 +19,7 @@ const corsHeaders = {
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Confirm your email',
   invite: "You've been invited",
-  magiclink: 'Your login link',
+  magiclink: 'Your Home Care Headquarters sign-in link',
   recovery: 'Reset your password',
   email_change: 'Confirm your new email',
   reauthentication: 'Your verification code',
@@ -36,10 +36,10 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Home Care Headquaters"
+const SITE_NAME = "Home Care Headquarters"
 const SENDER_DOMAIN = "notify.homecareheadquarters.org"
 const ROOT_DOMAIN = "homecareheadquarters.org"
-const FROM_DOMAIN = "homecareheadquarters.org" // Domain shown in From address (may be root or sender subdomain)
+const FROM_DOMAIN = "notify.homecareheadquarters.org" // Domain shown in From address (may be root or sender subdomain)
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'

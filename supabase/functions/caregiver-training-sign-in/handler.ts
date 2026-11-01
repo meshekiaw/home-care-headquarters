@@ -13,6 +13,8 @@ export interface SignInDependencies {
   sendLink: (email: string) => Promise<void>;
 }
 
+type SignInResult = { status: number; body: { success?: boolean; code?: string; error?: string } };
+
 export function isEmailRateLimit(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
   const value = error as { status?: number; code?: string; message?: string };
@@ -21,7 +23,7 @@ export function isEmailRateLimit(error: unknown): boolean {
 
 // Public by design: mailbox ownership is proven by redeeming the emailed link,
 // never by the request. Return no caregiver IDs, roles, tokens or account details.
-export async function handleTrainingSignIn(req: Request, deps: SignInDependencies) {
+export async function handleTrainingSignIn(req: Request, deps: SignInDependencies): Promise<SignInResult> {
   const fail = (status: number, code: string, error: string) => ({ status, body: { code, error } });
   if (req.method !== "POST") return fail(405, "unavailable", UNAVAILABLE);
   let body: unknown;

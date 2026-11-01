@@ -1,5 +1,8 @@
 # Architecture rules
 
+- Training magic-link requests use the public caregiver-training-sign-in gateway with service-only email lookup and atomic link/role RPCs; mailbox verification gates sessions, duplicate/conflicting links fail closed, and protected admin/nurse roles remain unchanged.
+- Custom authentication email templates are scaffolded by Lovable and delivered through the managed auth-email-hook; preserve its signature validation and queue contract when changing sender or brand styling.
+
 - Caregiver-record password changes use a dedicated authenticated admin-only Edge Function that resolves the linked caregiver-only login server-side and audits outcomes without passwords; existing email, roles and links remain unchanged, and the admin session is never replaced.
 - Keep caregiver onboarding independent of applications, policy acknowledgments, orientation and scheduling; read existing orientation completion without changing its lifecycle.
 - Route all caregiver-document file operations through the authenticated caregiver-documents Edge Function; deny direct Storage access so every read rechecks roles and ownership and admin reads cannot bypass the view log.

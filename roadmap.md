@@ -1,5 +1,11 @@
 # Roadmap
 
+## Caregiver training sign-in
+- [ ] Server-checked active caregiver email matching and on-request login/link/role repair with admin/nurse protection
+- [ ] Training sign-in plain unmatched-email and email-rate-limit messages
+- [ ] Verified-domain auth email sending and exact hourly-limit settings instructions
+- [ ] Focused rules tests and Test Caregiver-only end-to-end verification; no real account creation or admin sign-in
+
 ## Caregiver temporary password
 - [x] Admin-only Set temporary password beside Edit Profile on the caregiver record, shown only for linked logins; no email reset
 - [x] Server-resolved caregiver-only target, protected admin/nurse logins, explicit confirmation, password-free outcome auditing

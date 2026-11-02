@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { handleTrainingSignIn, normalizeEmail, type SignInDependencies } from "../../supabase/functions/caregiver-training-sign-in/handler";
+import { sendTrainingEmail } from "../../supabase/functions/caregiver-training-sign-in/email";
 
 const email = "test-caregiver@example.invalid";
 const caregiverId = "test-caregiver-record";
@@ -101,5 +102,27 @@ describe("caregiver training sign-in (mock accounts only)", () => {
   });
   it("does not expose the matched account, record or tokens", async () => {
     expect(await handleTrainingSignIn(request(), dependencies())).toEqual({ status: 200, body: { success: true } });
+  });
+});
+
+describe("email confirmation is retained with public signup disabled", () => {
+  it("uses a confirmation resend for an unconfirmed new or existing account", async () => {
+    const deps = { confirmed: vi.fn(async () => false), magicLink: vi.fn(async () => undefined), confirmationLink: vi.fn(async () => undefined) };
+    await sendTrainingEmail(email, userId, deps);
+    expect(deps.confirmed).toHaveBeenCalledExactlyOnceWith(userId, email);
+    expect(deps.magicLink).not.toHaveBeenCalled();
+    expect(deps.confirmationLink).toHaveBeenCalledExactlyOnceWith(email);
+  });
+  it("uses an existing-user magic link only after checking confirmation", async () => {
+    const deps = { confirmed: vi.fn(async () => true), magicLink: vi.fn(async () => undefined), confirmationLink: vi.fn(async () => undefined) };
+    await sendTrainingEmail(email, userId, deps);
+    expect(deps.magicLink).toHaveBeenCalledExactlyOnceWith(email);
+    expect(deps.confirmationLink).not.toHaveBeenCalled();
+  });
+  it("sends nothing if the auth identity check fails", async () => {
+    const deps = { confirmed: vi.fn(async () => { throw new Error("identity changed"); }), magicLink: vi.fn(async () => undefined), confirmationLink: vi.fn(async () => undefined) };
+    await expect(sendTrainingEmail(email, userId, deps)).rejects.toThrow();
+    expect(deps.magicLink).not.toHaveBeenCalled();
+    expect(deps.confirmationLink).not.toHaveBeenCalled();
   });
 });

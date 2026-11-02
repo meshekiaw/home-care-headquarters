@@ -3,7 +3,8 @@
 ## Email update
 - [x] Inventory all legacy email surfaces, retained-table writes and constraints; no provider conflicts or unmappable app behavior
 - [x] Re-render authentication emails, preserve template copy, convert notification sends and add retry-safe outcome recording; 105 isolated tests passed and replacement functions checked
-- [ ] Verify replacements, deploy affected functions, remove old email files from source only, and leave unpublished for review
+- [x] Verify replacements, deploy thirteen affected functions, remove old email files from source only, and leave unpublished for review; build OK, public pages checked without sign-in, actual adapters exercised with intercepted synthetic sends
+- [ ] Real email delivery/redemption awaits a deliverable Test Caregiver mailbox; no live email was sent and no account was signed in during this update
 
 ## Caregiver training sign-in
 - [x] Server-checked active caregiver email matching and on-request login/link/role repair with admin/nurse protection; deployed service-only atomic helpers

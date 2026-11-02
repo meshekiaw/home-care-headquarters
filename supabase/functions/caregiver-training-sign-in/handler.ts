@@ -10,7 +10,7 @@ export interface SignInDependencies {
   lookup: (email: string) => Promise<{ caregiver_id: string; user_id: string | null } | null>;
   createAccount: (email: string) => Promise<string>;
   connect: (caregiverId: string, userId: string, email: string) => Promise<void>;
-  sendLink: (email: string) => Promise<void>;
+  sendLink: (email: string, userId: string) => Promise<void>;
 }
 
 type SignInResult = { status: number; body: { success?: boolean; code?: string; error?: string } };
@@ -43,14 +43,15 @@ export async function handleTrainingSignIn(req: Request, deps: SignInDependencie
       } catch (error) {
         // Another request may have just created the same account. Re-read instead
         // of creating a second login or changing an existing account's email.
-        if (isEmailRateLimit(error)) throw error;
+        const code = error && typeof error === "object" && "code" in error ? error.code : null;
+        if (code !== "email_exists" && code !== "user_already_exists") throw error;
         match = await deps.lookup(email);
         if (!match?.user_id) throw error;
         userId = match.user_id;
       }
     }
     await deps.connect(match.caregiver_id, userId, email);
-    await deps.sendLink(email);
+    await deps.sendLink(email, userId);
     return { status: 200, body: { success: true } };
   } catch (error) {
     if (isEmailRateLimit(error)) return fail(429, "email_rate_limit", BUSY);

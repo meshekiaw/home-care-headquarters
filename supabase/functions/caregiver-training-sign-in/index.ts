@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { handleTrainingSignIn, UNAVAILABLE } from "./handler.ts";
+import { handleTrainingSignIn, normalizeEmail, UNAVAILABLE } from "./handler.ts";
+import { sendTrainingEmail } from "./email.ts";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -27,12 +28,27 @@ Deno.serve(async (req: Request) => {
       const { error } = await client.rpc("connect_training_caregiver", { p_caregiver_id: caregiverId, p_user_id: userId, p_email: email });
       if (error) throw error;
     },
-    async sendLink(email) {
-      const { error } = await client.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false, emailRedirectTo: "https://homecareheadquarters.org/caregiver-training" },
+    async sendLink(email, userId) {
+      const emailRedirectTo = "https://homecareheadquarters.org/caregiver-training";
+      // Public signup remains disabled. Unconfirmed admin-created accounts need
+      // a confirmation resend, not an OTP request that GoTrue treats as signup.
+      // Neither path creates an account or bypasses the recipient's email click.
+      await sendTrainingEmail(email, userId, {
+        async confirmed(id, address) {
+          const { data, error } = await client.auth.admin.getUserById(id);
+          if (error) throw error;
+          if (!data.user?.email || normalizeEmail(data.user.email) !== address) throw new Error("Account identity changed");
+          return Boolean(data.user.email_confirmed_at);
+        },
+        async magicLink(address) {
+          const { error } = await client.auth.signInWithOtp({ email: address, options: { shouldCreateUser: false, emailRedirectTo } });
+          if (error) throw error;
+        },
+        async confirmationLink(address) {
+          const { error } = await client.auth.resend({ type: "signup", email: address, options: { emailRedirectTo } });
+          if (error) throw error;
+        },
       });
-      if (error) throw error;
     },
   });
   return new Response(JSON.stringify(result.body), { status: result.status, headers });

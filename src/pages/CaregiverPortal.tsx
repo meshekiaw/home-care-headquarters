@@ -172,7 +172,7 @@ export default function CaregiverPortal() {
                     value={email}
                     disabled={sending}
                     aria-describedby={signInError ? "portal-sign-in-error" : undefined}
-                    onChange={(e) => { setEmail(e.target.value); setSignInError(null); }}
+                    onChange={(e) => { setEmail(e.target.value.replace(/\s/g, "")); setSignInError(null); }}
                     placeholder="you@example.com"
                   />
                 </div>

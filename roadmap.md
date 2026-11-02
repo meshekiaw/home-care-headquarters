@@ -1,10 +1,11 @@
 # Roadmap
 
 ## Training phone playback
-- [ ] Identify inactivity and phone-sleep causes without accessing real caregiver accounts
-- [ ] Keep visible playing training awake/active only; pause/save and release protection on pause/end/leave
-- [ ] Privacy-enhanced YouTube with same-channel related videos and exact portal-only credit notice; preserve training rules
-- [ ] Focused tests and Test Caregiver-only phone flow; report any physical-phone or YouTube verification limitations
+- [x] Confirmed app warns at 13 minutes/signs out at 15; playback was not activity and no wake lock existed. Shorter phone sleep is plausible, not proven without the reporting phone; no real accounts accessed
+- [x] Visible playing training gets race-safe wake lock and activity heartbeat only; pause/end/leave stop protection, leave saves before pause, returning requires Play; existing timeout elsewhere unchanged
+- [x] Both YouTube course paths use privacy-enhanced host and rel=0 with exact portal-only credit notice, no branding covers; native/other course playback protected without changing completion semantics
+- [x] All 176 isolated tests passed; Test Caregiver-only phone/desktop simulated player switch/pause/new Play and actual server 0:12 save/readback verified, synthetic watch seconds restored to zero; build OK
+- [ ] Physical-phone sleep behavior and real YouTube playback remain unverified: actual embed loaded with intact logo, but YouTube blocked automated playback with its bot-verification screen
 
 ## 618 witness-name correction
 - [x] Second-witness name opens empty; client same-person name reuse and all other forms unchanged

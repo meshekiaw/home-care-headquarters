@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { TRAINING_PLAYBACK_ACTIVITY_EVENT } from "@/utils/trainingPlayback";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,12 +37,17 @@ export function SessionTimeoutProvider({ children }: { children: React.ReactNode
 
     const events = ["mousedown", "keydown", "touchstart", "scroll", "mousemove"];
     const handler = () => resetTimers();
+    const onTrainingPlayback = () => {
+      if (document.visibilityState === "visible") resetTimers();
+    };
 
     events.forEach((e) => window.addEventListener(e, handler, { passive: true }));
+    window.addEventListener(TRAINING_PLAYBACK_ACTIVITY_EVENT, onTrainingPlayback);
     resetTimers();
 
     return () => {
       events.forEach((e) => window.removeEventListener(e, handler));
+      window.removeEventListener(TRAINING_PLAYBACK_ACTIVITY_EVENT, onTrainingPlayback);
       clearTimeout(timeoutRef.current);
       clearTimeout(warningRef.current);
     };

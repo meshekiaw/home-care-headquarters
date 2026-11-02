@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Lock, Pause, Play, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createResumeTransport, playbackTime, resumePosition, SEEK_TOLERANCE, VIDEO_GATE_PERCENT, VIDEO_SAVE_INTERVAL_MS } from "@/utils/trainingResume";
+import { createTrainingPlaybackProtection, YOUTUBE_EMBED_HOST } from "@/utils/trainingPlayback";
 export { VIDEO_GATE_PERCENT } from "@/utils/trainingResume";
 
 let apiPromise: Promise<any> | null = null;
@@ -49,6 +50,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
   const [retry, setRetry] = useState(0);
   const saveRef = useRef<(() => Promise<void>) | null>(null);
   const restartRef = useRef<(() => void) | null>(null);
+  const playRef = useRef<(() => void) | null>(null);
 
   const report = useCallback((value: number) => {
     setPercent(value);
@@ -67,7 +69,9 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
     let lastTime = 0;
     let seekTarget: number | null = null;
     let saveSequence = 0;
+    let leftPage = false;
     const transport = createResumeTransport();
+    const protection = createTrainingPlaybackProtection(() => !leftPage && player?.getPlayerState?.() === 1);
     setStatus("loading"); setLoadError(false); setPlayerReady(false); setWelcome(null); setPlaying(false);
     report(0);
 
@@ -94,14 +98,15 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
         if (sequence === saveSequence) {
           pending = true;
           player?.pauseVideo?.();
-          if (!destroyed) setStatus("error");
+          protection.stop();
+          if (!destroyed) { setPlaying(false); setStatus("error"); }
         }
       }
     };
     saveRef.current = save;
 
     const sample = () => {
-      if (!player?.getCurrentTime) return;
+      if (leftPage || !player?.getCurrentTime) return;
       const now = performance.now();
       const elapsed = Math.min(2, Math.max(0, (now - lastTick) / 1000));
       lastTick = now;
@@ -121,14 +126,18 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
       if (player.getPlayerState?.() === 1 && t > watched) watched = t;
       lastTime = t;
     };
-    const onHide = () => { sample(); void save(); };
+    const onLeave = () => {
+      sample(); void save();
+      leftPage = true; protection.stop(); player?.pauseVideo?.();
+      if (!destroyed) setPlaying(false);
+    };
+    const onVisibility = () => { if (document.visibilityState === "hidden") onLeave(); };
     const onOnline = () => { if (pending) void save(); };
-    const onOffline = () => { sample(); void save(); player?.pauseVideo?.(); };
-    document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("pagehide", onHide);
-    window.addEventListener("beforeunload", onHide);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onLeave);
+    window.addEventListener("beforeunload", onLeave);
     window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
+    window.addEventListener("offline", onLeave);
 
     const init = async () => {
       try {
@@ -152,6 +161,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
         readyTimeout = window.setTimeout(() => { if (!destroyed) setLoadError(true); }, 15000);
         player = new YT.Player(target, {
           videoId,
+          host: YOUTUBE_EMBED_HOST,
           playerVars: { controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, fs: 0, playsinline: 1, origin: window.location.origin },
           events: {
             onReady: (e: any) => {
@@ -166,36 +176,45 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
             onPlaybackRateChange: (e: any) => { if (e.target.getPlaybackRate() > 1) e.target.setPlaybackRate(1); },
             onStateChange: (e: any) => {
               if (destroyed) return;
+              if (e.data === 1 && (leftPage || document.visibilityState !== "visible")) { onLeave(); return; }
               sample(); setPlaying(e.data === 1);
+              if (e.data === 1) protection.start(); else protection.stop();
               if (e.data === 0 && duration - watched <= SEEK_TOLERANCE) { watched = duration; position = duration; }
-              if (e.data === 2 || e.data === 0) void save();
+              if (e.data !== 1) void save();
               lastTick = performance.now(); lastTime = position;
             },
-            onError: () => { if (!destroyed) setLoadError(true); },
+            onError: () => { if (!destroyed) { onLeave(); setLoadError(true); } },
           },
         });
         playerRef.current = player;
+        playRef.current = () => {
+          if (document.visibilityState !== "visible") return;
+          leftPage = false; lastTick = performance.now(); lastTime = position;
+          player.playVideo();
+        };
         restartRef.current = () => {
           player.pauseVideo(); seekTarget = 0; player.seekTo(0, true); position = 0; lastTime = 0;
           setWelcome(null); void save();
         };
         interval = window.setInterval(() => {
           sample();
-          if ((player.getPlayerState?.() === 1 || pending) && Date.now() - lastSave >= VIDEO_SAVE_INTERVAL_MS) void save();
+          if (((!leftPage && player.getPlayerState?.() === 1) || pending) && Date.now() - lastSave >= VIDEO_SAVE_INTERVAL_MS) void save();
         }, 500);
       } catch { if (!destroyed) { setLoadError(true); setStatus("error"); } }
     };
     void init();
     return () => {
       sample(); void save(); destroyed = true;
+      protection.stop();
+      player?.pauseVideo?.();
       if (interval) window.clearInterval(interval);
       window.clearTimeout(readyTimeout);
-      document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("pagehide", onHide); window.removeEventListener("beforeunload", onHide);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onLeave); window.removeEventListener("beforeunload", onLeave);
       window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("offline", onLeave);
       try { player?.destroy?.(); } catch { /* already destroyed */ }
-      playerRef.current = null; transport.dispose();
+      playerRef.current = null; playRef.current = null; transport.dispose();
     };
   }, [assignmentId, videoId, report, retry]);
 
@@ -210,6 +229,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
           </Button>
         </div>
       )}
+      <p className="text-sm text-muted-foreground">Watch here in the portal. Time watched on YouTube doesn’t count toward your training.</p>
       <div className="w-full rounded-lg overflow-hidden border bg-foreground aspect-video [&_iframe]:w-full [&_iframe]:h-full">
         <div ref={holderRef} className="w-full h-full" />
       </div>
@@ -221,7 +241,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button variant="outline" size="sm" disabled={!playerReady} loading={status === "loading"} onClick={() => {
-            if (playing) playerRef.current?.pauseVideo(); else playerRef.current?.playVideo();
+            if (playing) playerRef.current?.pauseVideo(); else playRef.current?.();
           }}>
             {playing ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
             {playing ? "Pause" : "Play"}

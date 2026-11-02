@@ -2,8 +2,8 @@
 
 ## One-time caregiver account connection
 - [x] Inventory active email matches, explicit skips and unmatched accounts: 173 active, 128 new accounts needed, six existing connections needed, 37 explicit skips; no eligible protected-role conflicts
-- [ ] Create confirmed passwordless accounts without email, connect matching accounts and add caregiver roles; confirm Johneise only among existing accounts
-- [ ] Verify final counts and unchanged caregiver details, training/onboarding records and sign-in activity; report skipped names and untouched accounts
+- [x] Created 128 confirmed passwordless accounts without email, connected six existing matching accounts and added caregiver roles; Johneise was already confirmed and left confirmed
+- [x] Verified 136 of 173 active caregivers connected with caregiver role; 37 explicit skips and 11 unmatched accounts unchanged; all existing auth rows/passwords/sign-in activity, caregiver details and protected training/onboarding records unchanged; temporary endpoint removed, 111 isolated tests passed
 
 ## Email update
 - [x] Inventory all legacy email surfaces, retained-table writes and constraints; no provider conflicts or unmappable app behavior

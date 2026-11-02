@@ -1,10 +1,11 @@
 # Roadmap
 
 ## Caregiver training sign-in
-- [ ] Server-checked active caregiver email matching and on-request login/link/role repair with admin/nurse protection
-- [ ] Training sign-in plain unmatched-email and email-rate-limit messages
-- [ ] Verified-domain auth email sending and exact hourly-limit settings instructions
-- [ ] Focused rules tests and Test Caregiver-only end-to-end verification; no real account creation or admin sign-in
+- [x] Server-checked active caregiver email matching and on-request login/link/role repair with admin/nurse protection; deployed service-only atomic helpers
+- [x] Training sign-in plain unmatched-email and email-rate-limit messages; both verified on the public sign-in page
+- [x] Verified-domain auth email sending enabled as noreply@notify.homecareheadquarters.org; exact hourly-limit settings instructions delivered without changing unknown global auth settings
+- [x] 95 isolated rule tests passed, including database role/link rules; Test Caregiver-only authenticated portal verified, no real account creation or admin sign-in
+- [ ] Email-link redemption/new-login end-to-end check awaits a deliverable Test Caregiver mailbox and available email quota; existing test address is example.invalid, and Test Caregiver has no training assignments
 
 ## Caregiver temporary password
 - [x] Admin-only Set temporary password beside Edit Profile on the caregiver record, shown only for linked logins; no email reset

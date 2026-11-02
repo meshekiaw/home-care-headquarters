@@ -23,7 +23,7 @@ describe("caregiver training sign-in (mock accounts only)", () => {
     const result = await handleTrainingSignIn(request({ email: "  Test-Caregiver @ EXAMPLE.invalid  " }), deps);
     expect(result.status).toBe(200);
     expect(deps.lookup).toHaveBeenCalledExactlyOnceWith(email);
-    expect(deps.sendLink).toHaveBeenCalledExactlyOnceWith(email);
+    expect(deps.sendLink).toHaveBeenCalledExactlyOnceWith(email, userId);
     expect(normalizeEmail("  TEST-CAREGIVER@example.invalid\t")).toBe(email);
   });
   it("creates an account only after an active caregiver match and connects before sending", async () => {
@@ -44,7 +44,7 @@ describe("caregiver training sign-in (mock accounts only)", () => {
     expect((await handleTrainingSignIn(request(), deps)).status).toBe(200);
     expect(deps.createAccount).not.toHaveBeenCalled();
     expect(deps.connect).toHaveBeenCalledExactlyOnceWith(caregiverId, userId, email);
-    expect(deps.sendLink).toHaveBeenCalledExactlyOnceWith(email);
+    expect(deps.sendLink).toHaveBeenCalledExactlyOnceWith(email, userId);
   });
   it("unmatched or inactive caregiver emails create no account and send no link", async () => {
     const deps = dependencies({ lookup: vi.fn(async () => null) });
@@ -81,6 +81,16 @@ describe("caregiver training sign-in (mock accounts only)", () => {
     expect(result.status).toBe(429);
     expect(result.body.code).toBe("email_rate_limit");
     expect(result.body.success).toBeUndefined();
+  });
+  it("does not disguise an unrelated creation failure as a duplicate account race", async () => {
+    const deps = dependencies({
+      lookup: vi.fn(async () => ({ caregiver_id: caregiverId, user_id: null })),
+      createAccount: vi.fn(async () => { throw { code: "unexpected_failure" }; }),
+    });
+    expect((await handleTrainingSignIn(request(), deps)).status).toBe(503);
+    expect(deps.lookup).toHaveBeenCalledTimes(1);
+    expect(deps.connect).not.toHaveBeenCalled();
+    expect(deps.sendLink).not.toHaveBeenCalled();
   });
   it("hides auth and server details on other failures", async () => {
     const deps = dependencies({ sendLink: vi.fn(async () => { throw new Error("Signups not allowed for otp."); }) });

@@ -62,7 +62,9 @@ export function useTrainingQuizDraft(assignmentId: string | undefined, enabled: 
     const queue = queueRef.current;
     if (!queue) return;
     setAnswers(previous => ({ ...previous, [id]: answer })); setStatus("saving");
-    void queue.pick(id, answer).then(() => setStatus("saved")).catch(() => setStatus("error"));
+    void queue.pick(id, answer).then(() => {
+      if (queueRef.current === queue) setStatus(queue.pending ? "saving" : "saved");
+    }).catch(() => { if (queueRef.current === queue) setStatus("error"); });
   }, []);
   const begin = async () => {
     if (!beginRef.current) throw new Error("Please wait for saved answers to load.");

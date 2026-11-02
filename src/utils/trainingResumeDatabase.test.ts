@@ -15,6 +15,7 @@ beforeAll(async () => {
   await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;
     CREATE SCHEMA auth; CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$SELECT nullif(current_setting('test.uid',true),'')::uuid$$;
     CREATE TABLE public.caregivers(id uuid PRIMARY KEY,auth_user_id uuid);
+    GRANT SELECT ON public.caregivers TO authenticated;
     CREATE TABLE public.lms_courses(id uuid PRIMARY KEY);
     CREATE TABLE public.lms_assignments(id uuid PRIMARY KEY,caregiver_id uuid,course_id uuid,status text,score integer,completed_at timestamptz);
     CREATE TABLE public.lms_quiz_questions(id uuid PRIMARY KEY,course_id uuid,options jsonb);
@@ -25,7 +26,7 @@ beforeAll(async () => {
   await db.exec(sql);
 }, 20000);
 beforeEach(async () => {
-  await db.exec("TRUNCATE lms_quiz_drafts,lms_video_progress,lms_quiz_attempts,lms_quiz_questions,lms_assignments,lms_courses,caregivers CASCADE");
+  await db.exec("RESET ROLE; TRUNCATE lms_quiz_drafts,lms_video_progress,lms_quiz_attempts,lms_quiz_questions,lms_assignments,lms_courses,caregivers CASCADE");
   await db.query("select set_config('test.uid',$1,false)", [user]);
   await db.query("insert into caregivers values($1,$2)", [cg, user]);
   await db.query("insert into lms_courses values($1)", [course]);
@@ -62,7 +63,7 @@ describe("server training drafts and video resume (isolated database)", () => {
     await draft(); await db.query("select set_config('test.uid',$1,false)", [course]);
     await expect(draft()).rejects.toThrow(); await expect(video(1, 1)).rejects.toThrow();
     await db.exec("SET ROLE authenticated");
-    expect((await db.query("select * from lms_quiz_drafts")).rows).toEqual([]); await db.exec("RESET ROLE");
+    try { expect((await db.query("select * from lms_quiz_drafts")).rows).toEqual([]); } finally { await db.exec("RESET ROLE"); }
   });
   it("saves rewound position separately without reducing watched credit", async () => {
     await video(70, 70); const r = (await video(12, 12, "2026-01-01T12:00:10Z")).rows[0];

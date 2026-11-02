@@ -61,6 +61,8 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
     let pending = false;
     let lastTick = performance.now();
     let lastTime = 0;
+    let seekTarget: number | null = null;
+    let saveSequence = 0;
     const transport = createResumeTransport();
     setStatus("loading"); setLoadError(false); setPlayerReady(false); setWelcome(null); setPlaying(false);
     report(0);
@@ -69,6 +71,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
     // rewind a newer saved position or reduce previously earned watch credit.
     const save = async () => {
       if (!duration) return;
+      const sequence = ++saveSequence;
       const snapshot = {
         p_assignment_id: assignmentId,
         p_position: Math.min(position, duration, watched),
@@ -79,11 +82,16 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
       lastSave = Date.now();
       try {
         const stored = await transport.rpc<{ percent_complete: number }>("save_training_video_progress", snapshot);
-        pending = false;
-        if (!destroyed) { setStatus("saved"); report(stored.percent_complete); }
+        if (sequence === saveSequence) {
+          pending = false;
+          if (!destroyed) { setStatus("saved"); report(stored.percent_complete); }
+        }
       } catch {
-        pending = true;
-        if (!destroyed) setStatus("error");
+        if (sequence === saveSequence) {
+          pending = true;
+          player?.pauseVideo?.();
+          if (!destroyed) setStatus("error");
+        }
       }
     };
     saveRef.current = save;
@@ -95,6 +103,11 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
       lastTick = now;
       duration = player.getDuration?.() || duration;
       const t = Math.max(0, Math.min(player.getCurrentTime(), duration || Infinity));
+      if (seekTarget !== null) {
+        if (Math.abs(t - seekTarget) > SEEK_TOLERANCE) return;
+        position = t; lastTime = t; seekTarget = null;
+        return;
+      }
       if (player.getPlaybackRate?.() > 1) player.setPlaybackRate(1);
       // Reject forward jumps; a reported end alone is never watch credit.
       if (t > watched + SEEK_TOLERANCE || (t > watched && t - lastTime > elapsed + SEEK_TOLERANCE)) {
@@ -106,10 +119,12 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
     };
     const onHide = () => { sample(); void save(); };
     const onOnline = () => { if (pending) void save(); };
+    const onOffline = () => { sample(); void save(); player?.pauseVideo?.(); };
     document.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", onHide);
     window.addEventListener("beforeunload", onHide);
     window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
 
     const init = async () => {
       try {
@@ -139,7 +154,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
               duration = e.target.getDuration() || duration;
               position = resumePosition(position, watched, duration);
               lastTime = position; lastTick = performance.now();
-              if (position > 0) e.target.seekTo(position, true);
+              if (position > 0) { seekTarget = position; e.target.seekTo(position, true); }
               setPlayerReady(true);
             },
             onPlaybackRateChange: (e: any) => { if (e.target.getPlaybackRate() > 1) e.target.setPlaybackRate(1); },
@@ -155,7 +170,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
         });
         playerRef.current = player;
         restartRef.current = () => {
-          player.pauseVideo(); player.seekTo(0, true); position = 0; lastTime = 0;
+          player.pauseVideo(); seekTarget = 0; player.seekTo(0, true); position = 0; lastTime = 0;
           setWelcome(null); void save();
         };
         interval = window.setInterval(() => {
@@ -171,6 +186,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
       document.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", onHide); window.removeEventListener("beforeunload", onHide);
       window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
       try { player?.destroy?.(); } catch { /* already destroyed */ }
       playerRef.current = null; transport.dispose();
     };

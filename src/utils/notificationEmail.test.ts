@@ -27,7 +27,7 @@ function harness(rows: Record<string, any[]> = {}) {
         lt: (c: string, v: any) => { data = data.filter(r => r[c] < v); return query },
         lte: (c: string, v: any) => { data = data.filter(r => r[c] <= v); return query },
         not: () => query,
-        like: (c: string, v: string) => { data = data.filter(r => new RegExp(`^${v.replaceAll('%', '.*')}$`).test(r[c])); return query },
+        like: (c: string, v: string) => { data = data.filter(r => new RegExp(`^${v.replace(/%/g, '.*')}$`).test(r[c])); return query },
         limit: (n: number) => { data = data.slice(0, n); return query },
         single: () => { single = true; return query },
         maybeSingle: () => { single = true; return query },

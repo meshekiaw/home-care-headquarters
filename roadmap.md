@@ -1,5 +1,10 @@
 # Roadmap
 
+## One-time caregiver account connection
+- [ ] Inventory active email matches, explicit skips and unmatched accounts; preserve protected roles
+- [ ] Create confirmed passwordless accounts without email, connect matching accounts and add caregiver roles; confirm Johneise only among existing accounts
+- [ ] Verify final counts and unchanged caregiver details, training/onboarding records and sign-in activity; report skipped names and untouched accounts
+
 ## Email update
 - [x] Inventory all legacy email surfaces, retained-table writes and constraints; no provider conflicts or unmappable app behavior
 - [x] Re-render authentication emails, preserve template copy, convert notification sends and add retry-safe outcome recording; 105 isolated tests passed and replacement functions checked

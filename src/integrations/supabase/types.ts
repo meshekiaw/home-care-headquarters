@@ -2328,6 +2328,51 @@ export type Database = {
           },
         ]
       }
+      lms_quiz_drafts: {
+        Row: {
+          answers: Json
+          assignment_id: string
+          attempt_count: number
+          caregiver_id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          assignment_id: string
+          attempt_count?: number
+          caregiver_id: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          assignment_id?: string
+          attempt_count?: number
+          caregiver_id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_quiz_drafts_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: true
+            referencedRelation: "lms_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_quiz_drafts_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lms_quiz_questions: {
         Row: {
           correct_answer: string
@@ -2427,6 +2472,7 @@ export type Database = {
           created_at: string
           duration_seconds: number
           id: string
+          last_position_saved_at: string | null
           last_position_seconds: number
           percent_complete: number
           updated_at: string
@@ -2441,6 +2487,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          last_position_saved_at?: string | null
           last_position_seconds?: number
           percent_complete?: number
           updated_at?: string
@@ -2455,6 +2502,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          last_position_saved_at?: string | null
           last_position_seconds?: number
           percent_complete?: number
           updated_at?: string
@@ -3727,6 +3775,59 @@ export type Database = {
         Returns: boolean
       }
       save_onboarding_contact: { Args: { p_contact: Json }; Returns: boolean }
+      save_training_quiz_draft: {
+        Args: {
+          p_answer?: string
+          p_assignment_id: string
+          p_attempt_count: number
+          p_question_id?: string
+        }
+        Returns: {
+          answers: Json
+          assignment_id: string
+          attempt_count: number
+          caregiver_id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lms_quiz_drafts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      save_training_video_progress: {
+        Args: {
+          p_assignment_id: string
+          p_duration: number
+          p_position: number
+          p_recorded_at: string
+          p_watched: number
+        }
+        Returns: {
+          assignment_id: string
+          caregiver_id: string
+          course_id: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          last_position_saved_at: string | null
+          last_position_seconds: number
+          percent_complete: number
+          updated_at: string
+          user_id: string
+          video_completed_at: string | null
+          watched_seconds: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lms_video_progress"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_caregiver_onboarding_required: {
         Args: { p_caregiver_id: string; p_required: boolean }
         Returns: boolean

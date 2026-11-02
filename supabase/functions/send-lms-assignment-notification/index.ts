@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supa
 import { EmailAPIError } from 'npm:@lovable.dev/email-js@0.4.0';
 import { sendTemplateEmail } from '../_shared/transactional-email-templates/send-email.ts';
 import { sendWithEmailAudit } from '../_shared/email-outcomes.ts';
+import { NOTIFICATION_EMAIL_CUTOVER } from '../_shared/notification-email-policy.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -129,7 +130,8 @@ serve(async (req) => {
       .select(
         "id, due_date, course_id, caregiver_id, lms_courses(title), caregivers(id, first_name, last_name, email, phone, auth_user_id)",
       )
-      .in("id", assignment_ids);
+      .in("id", assignment_ids)
+      .gte("created_at", NOTIFICATION_EMAIL_CUTOVER);
     if (aErr) throw aErr;
     console.log(`[lms-notify] loaded ${assignments?.length ?? 0} assignments`);
 

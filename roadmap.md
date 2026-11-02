@@ -1,5 +1,11 @@
 # Roadmap
 
+## 618 witness-name correction
+- [ ] Clear second-witness identity on device handoff without changing client handoff or other forms
+- [ ] Prevent completion with matching Section IV witness names and show the requested message
+- [ ] Read-only audit completed 618 forms and report matching-witness records without changes
+- [ ] Verify using synthetic data only, without any sign-in
+
 ## Notification sender correction
 - [x] Whole-project sender and attempt audit: no remaining placeholder senders; retained ledger has one failed LMS assignment notice, one failed magic link, and one unclassified system bounce; named notification types have no recorded email-not-sent rows; provider logs cannot establish inbox delivery
 - [x] All visible From headers use noreply@notify.homecareheadquarters.org; block pre-request historical resends, manual appointment replays, LMS assignment notices and stale creation-notice backlog without changing recurring reminder windows, recipients or message content

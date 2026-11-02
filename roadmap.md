@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Admin caregiver sign-in access
-- [ ] Add admin-only record access status, confirmation and change history, plus roster access filter
-- [ ] Add server-authorized silent confirmed/passwordless provisioning and atomic role/link/training/audit repair with nurse and conflicting-caregiver protection
-- [ ] Verify isolated rules and UI, deploy and test authorization using only Test Caregiver; no admin sign-ins or real caregiver changes
+- [x] Added admin-only record access status beside profile controls, exact name/email confirmation and append-only access history, plus all four roster filter states
+- [x] Deployed dedicated admin-authenticated gateway; confirmed/passwordless creation without email, service-only atomic role/link/12-session/audit repair preserves admin roles and refuses nurse/conflicting caregiver links
+- [x] 216 isolated tests passed, build OK; synthetic desktop/phone confirmation, cancel, Ready/history and disabled nurse conflict verified; deployed unsigned requests return 401 and only test-caregiver@example.invalid used for signed-in 403/status-read denial; zero live access events and no real caregiver changes
 - [ ] Actual signed-in admin provisioning awaits the user's check; admin sign-in is prohibited for testing
 
 ## Training phone playback

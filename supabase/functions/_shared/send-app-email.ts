@@ -7,7 +7,7 @@ import { sendWithEmailAudit } from './email-outcomes.ts'
 // envelope intact; only the transport changes. Never expose this to browsers.
 const SITE_NAME = 'Home Care Headquarters'
 const SENDER_DOMAIN = 'notify.homecareheadquarters.org'
-const FROM_DOMAIN = 'homecareheadquarters.org'
+const FROM_DOMAIN = SENDER_DOMAIN
 
 function escapeHtml(value: string): string {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;')

@@ -1,5 +1,10 @@
 # Roadmap
 
+## Notification sender correction
+- [x] Whole-project sender and attempt audit: no remaining placeholder senders; retained ledger has one failed LMS assignment notice, one failed magic link, and one unclassified system bounce; named notification types have no recorded email-not-sent rows; provider logs cannot establish inbox delivery
+- [x] All visible From headers use noreply@notify.homecareheadquarters.org; block pre-request historical resends, manual appointment replays, LMS assignment notices and stale creation-notice backlog without changing recurring reminder windows, recipients or message content
+- [x] 148 isolated tests passed; deployed twelve affected functions including shared-helper consumers and preview; unsigned live old-record request returned skipped before any send/write; notification and nurse-assessment fingerprints unchanged; build OK; no sign-in, live send, retry job, or historical data modification
+
 ## Training resume
 - [x] Ownership-checked server saves for separate current/furthest video positions and ungraded quiz drafts; grading, hour accounting and completion lifecycle unchanged
 - [x] Restored video welcome/restart and quiz first-unanswered focus; graded drafts clear atomically, retakes blank, existing In progress/Continue retained and My Training link corrected

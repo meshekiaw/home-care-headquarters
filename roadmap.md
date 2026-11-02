@@ -1,5 +1,10 @@
 # Roadmap
 
+## Training resume
+- [ ] Add ownership-checked server saves for video current/furthest positions and ungraded quiz drafts; preserve grading and completion lifecycle
+- [ ] Restore video position and quiz answers, clear graded drafts for retakes, and show Continue for unfinished sessions
+- [ ] Run focused rules/security tests and Test Caregiver-only cross-device save/readback checks; verify protected workflows remain unchanged
+
 ## One-time caregiver account connection
 - [x] Inventory active email matches, explicit skips and unmatched accounts: 173 active, 128 new accounts needed, six existing connections needed, 37 explicit skips; no eligible protected-role conflicts
 - [x] Created 128 confirmed passwordless accounts without email, connected six existing matching accounts and added caregiver roles; Johneise was already confirmed and left confirmed

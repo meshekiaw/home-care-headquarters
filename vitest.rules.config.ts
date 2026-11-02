@@ -4,5 +4,5 @@ import path from "node:path";
 export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   esbuild: { jsx: "automatic" },
-  test: { environment: "node", include: ["src/utils/emailOutcomes.test.ts", "src/utils/caregiverCompliance.test.ts", "src/utils/caregiverOnboarding.test.ts", "src/utils/adminOnboarding.test.ts", "src/utils/caregiverPassword.test.ts", "src/utils/trainingSignIn.test.ts", "src/utils/trainingSignInDatabase.test.ts", "src/components/caregivers/CaregiverPasswordControl.test.tsx"] },
+  test: { environment: "node", include: ["src/utils/caregiverAccountMaintenance.test.ts", "src/utils/emailOutcomes.test.ts", "src/utils/caregiverCompliance.test.ts", "src/utils/caregiverOnboarding.test.ts", "src/utils/adminOnboarding.test.ts", "src/utils/caregiverPassword.test.ts", "src/utils/trainingSignIn.test.ts", "src/utils/trainingSignInDatabase.test.ts", "src/components/caregivers/CaregiverPasswordControl.test.tsx"] },
 });

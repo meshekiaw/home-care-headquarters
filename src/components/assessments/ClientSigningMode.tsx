@@ -12,6 +12,8 @@ export interface SigningStep {
   attestation: string;
   askRelationship?: boolean;
   namePrompt?: string;
+  /** Opt out of same-person name reuse for a step signed by a different person. */
+  reusePreviousName?: boolean;
   /** Short label used when telling the nurse what is still outstanding. */
   outstandingLabel: string;
 }
@@ -113,7 +115,7 @@ export function ClientSigningMode({
               <SignatureCapture
                 key={step.key}
                 attestation={step.attestation}
-                defaultName={lastName}
+                defaultName={step.reusePreviousName === false ? "" : lastName}
                 askRelationship={step.askRelationship}
                 namePrompt={step.namePrompt}
                 submitLabel={

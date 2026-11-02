@@ -1,5 +1,11 @@
 # Roadmap
 
+## 618 witness-name correction
+- [x] Second-witness name opens empty; client same-person name reuse and all other forms unchanged
+- [x] Case/whitespace-normalized Section IV witness match blocks UI completion and draft-to-signed database transitions with the exact requested message
+- [x] Read-only audit: zero matching-witness forms across three completed versions (two signed, one superseded); all five forms and fifteen signatures have unchanged fingerprints
+- [x] Twelve focused tests and all 160 isolated regression tests passed; synthetic browser handoff, separate saved names, successful distinct-witness completion and exact matching-witness error verified; no account/sign-in or live data writes; build OK
+
 ## Notification sender correction
 - [x] Whole-project sender and attempt audit: no remaining placeholder senders; retained ledger has one failed LMS assignment notice, one failed magic link, and one unclassified system bounce; named notification types have no recorded email-not-sent rows; provider logs cannot establish inbox delivery
 - [x] All visible From headers use noreply@notify.homecareheadquarters.org; block pre-request historical resends, manual appointment replays, LMS assignment notices and stale creation-notice backlog without changing recurring reminder windows, recipients or message content

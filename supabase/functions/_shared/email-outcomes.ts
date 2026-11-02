@@ -27,6 +27,22 @@ export async function recordEmailSend(
   }
 }
 
+export async function sendWithEmailAudit(
+  store: EmailStore,
+  templateName: string,
+  recipient: string,
+  send: () => Promise<{ sent: true } | { sent: false; reason: 'recipient_suppressed' }>,
+): Promise<{ sent: true } | { sent: false; reason: 'recipient_suppressed' }> {
+  try {
+    const result = await send()
+    await recordEmailSend(store, templateName, recipient, result.sent ? 'sent' : 'suppressed')
+    return result
+  } catch (error) {
+    await recordEmailSend(store, templateName, recipient, 'failed', error instanceof Error ? error.message : String(error))
+    throw error
+  }
+}
+
 const OUTCOMES = {
   'email.bounced': { reason: 'bounce', status: 'bounced', message: 'Permanent bounce — email address is invalid or rejected' },
   'email.complaint': { reason: 'complaint', status: 'complained', message: 'Spam complaint — recipient marked email as spam' },
@@ -52,11 +68,9 @@ async function eventLogId(eventId: string): Promise<string> {
 export async function recordTerminalEmailEvent(store: EmailStore, type: TerminalEmailType, event: TerminalEmailEvent): Promise<void> {
   const outcome = OUTCOMES[type]
   const recipient = event.data.recipient.toLowerCase()
-  const writes = [
-    await store.from('suppressed_emails').upsert({ email: recipient, reason: outcome.reason, metadata: null }, { onConflict: 'email' }),
-  ]
-  if (writes[0].error) {
-    const error = writes[0].error
+  const { error: suppressError } = await store.from('suppressed_emails').upsert({ email: recipient, reason: outcome.reason, metadata: null }, { onConflict: 'email' })
+  if (suppressError) {
+    const error = suppressError
     console.error('Email event write failed', { event_id: event.event_id, code: error.code, message: error.message })
     throw new Error('Email event write failed')
   }

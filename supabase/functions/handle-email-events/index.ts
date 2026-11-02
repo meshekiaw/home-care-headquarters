@@ -1,18 +1,25 @@
 import { createEmailWebhookHandler } from 'npm:@lovable.dev/email-js@0.4.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { recordTerminalEmailEvent, type TerminalEmailEvent, type TerminalEmailType } from '../_shared/email-outcomes.ts'
+
+async function recordEvent(type: TerminalEmailType, event: TerminalEmailEvent) {
+  const url = Deno.env.get('SUPABASE_URL')
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!url || !serviceKey) throw new Error('Email event storage unavailable')
+  await recordTerminalEmailEvent(createClient(url, serviceKey), type, event)
+}
 
 const handler = createEmailWebhookHandler({
   apiKey: Deno.env.get('LOVABLE_API_KEY')!,
   on: {
-    // Placeholder handlers — replace each log with the feature's reaction.
-    // Throw on failure so the delivery is retried.
     'email.bounced': async (event) => {
-      console.log('Email bounced', { event_id: event.event_id })
+      await recordEvent('email.bounced', event)
     },
     'email.complaint': async (event) => {
-      console.log('Email complaint', { event_id: event.event_id })
+      await recordEvent('email.complaint', event)
     },
     'email.unsubscribed': async (event) => {
-      console.log('Email unsubscribed', { event_id: event.event_id })
+      await recordEvent('email.unsubscribed', event)
     },
   },
 })

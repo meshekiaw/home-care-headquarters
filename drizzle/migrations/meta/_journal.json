@@ -253,6 +253,13 @@
       "when": 1793604788516,
       "tag": "0035_training_resume",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793622549428,
+      "tag": "0036_training_session_auto_assign",
+      "breakpoints": true
     }
   ]
 }

@@ -3543,6 +3543,10 @@ export type Database = {
         Args: { p_onboarding_id: string }
         Returns: boolean
       }
+      assign_training_sessions: {
+        Args: { p_assigned_by: string; p_caregiver_id: string }
+        Returns: number
+      }
       change_caregiver_onboarding_step: {
         Args: {
           p_admin_note?: string
@@ -3681,6 +3685,10 @@ export type Database = {
         Returns: boolean
       }
       onboarding_actor_name: { Args: { p_actor: string }; Returns: string }
+      open_training_session: {
+        Args: { p_session_number: number }
+        Returns: string
+      }
       refresh_my_onboarding_receipts: { Args: never; Returns: boolean }
       register_caregiver_document: {
         Args: {

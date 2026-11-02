@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import Assessment618Form from "./Assessment618Form";
+import { ClientSigningMode } from "@/components/assessments/ClientSigningMode";
 
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), from: vi.fn(), signatures: [] as Record<string, unknown>[] }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { rpc: mocks.rpc, from: mocks.from } }));
@@ -19,6 +20,7 @@ const form = {
   id: "test-form", nurse_assessment_id: "test-assessment", status: "draft", version: 1,
   client_signs_by_mark: true, client_signature_status: "pending", form_data: { details: {
     medicaidId: "TEST", dateOfBirth: "01/01/2000", planStatus: "Initial", currentAssessmentDate: "11/02/2026",
+    startOfCareOriginal: "11/01/2026", assessingRn: "Test Nurse",
   } },
 };
 function signature(slot: string, name: string, type = "witness") {
@@ -80,5 +82,15 @@ describe("618 witness handoff without an account or live data", () => {
     expect((complete as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(complete);
     await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith("complete_618_form", { p_form_id: "test-form" }));
+  });
+  it("preserves same-person name carry-forward for client signatures", async () => {
+    render(<ClientSigningMode clientName="Test Client" nurseEmail="" instructions="" onExit={() => {}} onSubmit={async () => true}
+      steps={[
+        { key: "sec4_client", heading: "Client first statement", attestation: "Test statement", outstandingLabel: "First", askRelationship: true },
+        { key: "sec13_client", heading: "Client second statement", attestation: "Test statement", outstandingLabel: "Second", askRelationship: true },
+      ]} />);
+    await submitWitness("Test Client", "Submit and go to the next statement");
+    await screen.findByRole("heading", { name: "Client second statement" });
+    expect((screen.getByLabelText("Full legal name *") as HTMLInputElement).value).toBe("Test Client");
   });
 });

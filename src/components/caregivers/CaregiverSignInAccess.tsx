@@ -54,7 +54,7 @@ export default function CaregiverSignInAccess({ isAdmin, caregiverId, profileEma
       <div className="min-w-0 space-y-1">
         <h2 className="font-semibold flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" />Sign-in access</h2>
         {query.isLoading ? <p role="status" className="text-sm text-muted-foreground">Checking sign-in access…</p> : access && <div className="flex flex-wrap items-center gap-2 text-sm">
-          <Badge variant={access.state === "ready" ? "success" : "secondary"}>{ACCESS_LABELS[access.state]}</Badge>
+          <Badge variant={access.state === "ready" ? "onboardingApproved" : "secondary"}>{ACCESS_LABELS[access.state]}</Badge>
           <span className="break-all">{access.state === "ready" ? access.account_email : access.email}</span>
         </div>}
       </div>

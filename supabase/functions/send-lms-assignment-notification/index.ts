@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
+import { EmailAPIError } from 'npm:@lovable.dev/email-js@0.4.0';
+import { sendTemplateEmail } from '../_shared/transactional-email-templates/send-email.ts';
+import { sendWithEmailAudit } from '../_shared/email-outcomes.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +30,7 @@ async function sendSms(to: string, body: string) {
   return { ok: r.ok, status: r.status };
 }
 
-async function findAuthUserByEmail(admin: ReturnType<typeof createClient>, email: string): Promise<string | null> {
+async function findAuthUserByEmail(admin: SupabaseClient, email: string): Promise<string | null> {
   const target = email.toLowerCase();
   let page = 1;
   while (page < 50) {
@@ -42,7 +45,7 @@ async function findAuthUserByEmail(admin: ReturnType<typeof createClient>, email
 }
 
 async function buildMagicLink(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient,
   email: string,
 ): Promise<{ url: string; hashed_token: string }> {
   // Generate a magic-link token. We deliberately do NOT use properties.action_link,
@@ -81,9 +84,10 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !serviceKey || !anonKey) throw new Error("Missing account configuration");
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -161,7 +165,11 @@ serve(async (req) => {
             continue;
           }
         } else {
-          authUserId = created.user!.id;
+          if (!created.user) {
+            results.push({ caregiver_id: caregiverId, error: "Account creation returned no user" });
+            continue;
+          }
+          authUserId = created.user.id;
         }
         await admin.from("caregivers").update({ auth_user_id: authUserId }).eq("id", caregiverId);
       }
@@ -188,7 +196,7 @@ serve(async (req) => {
         continue;
       }
 
-      // 4. Enqueue branded email through the Lovable Emails queue.
+      // 4. Send the existing branded email through managed delivery.
       const courses = items.map((i: any) => ({
         title: i.lms_courses?.title || "Course",
         dueDate: i.due_date ?? null,
@@ -202,16 +210,8 @@ serve(async (req) => {
       let emailed = false;
       let emailError: string | null = null;
       try {
-        const resp = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${serviceKey}`,
-            apikey: serviceKey,
-          },
-          body: JSON.stringify({
-            templateName: "lms-assignment-notification",
-            recipientEmail: cg.email,
+        const result = await sendWithEmailAudit(admin, 'lms-assignment-notification', cg.email, () =>
+          sendTemplateEmail('lms-assignment-notification', cg.email, {
             idempotencyKey,
             templateData: {
               firstName: cg.first_name || "there",
@@ -220,17 +220,14 @@ serve(async (req) => {
               supportEmail: SUPPORT_EMAIL,
             },
           }),
-        });
-        const respText = await resp.text();
-        console.log(`[lms-notify] send-transactional-email status=${resp.status} body=${respText.slice(0, 400)}`);
-        if (!resp.ok) {
-          emailError = `send-transactional-email ${resp.status}: ${respText.slice(0, 300)}`;
-        } else {
-          emailed = true;
+        );
+        emailed = result.sent;
+        if (!result.sent) emailError = result.reason;
+      } catch (e) {
+        emailError = e instanceof Error ? e.message : String(e);
+        if (e instanceof EmailAPIError && e.status === 429) {
+          await new Promise(resolve => setTimeout(resolve, (e.retryAfterSeconds ?? 60) * 1000));
         }
-      } catch (e: any) {
-        emailError = e.message || String(e);
-        console.error(`[lms-notify] email exception:`, e);
       }
 
       // 5. Optional SMS (still supports Gmail/personal emails via the button link).

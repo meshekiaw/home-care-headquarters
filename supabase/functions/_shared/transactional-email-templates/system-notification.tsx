@@ -16,14 +16,14 @@ import type { TemplateEntry } from './registry.ts'
 interface Props {
   subject?: string
   heading?: string
-  bodyHtml?: string
+  bodyText?: string
   supportEmail?: string
 }
 
 const Email = ({
   subject = 'Notification',
   heading = 'Notification',
-  bodyHtml = '',
+  bodyText = '',
   supportEmail = 'support@homecareheadquarters.org',
 }: Props) => (
   <Html lang="en" dir="ltr">
@@ -35,7 +35,7 @@ const Email = ({
           <Heading style={h1}>{heading}</Heading>
         </Section>
         <Section style={card}>
-          <div style={content} dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          <Text style={content}>{bodyText}</Text>
           <Hr style={hr} />
           <Text style={fine}>
             Home Care Headquarters &middot;{' '}
@@ -56,7 +56,7 @@ export const template = {
   previewData: {
     subject: 'Clock Out Reminder: Shift ending in 10 minutes',
     heading: 'Clock Out Reminder',
-    bodyHtml: '<p>Hi Alex,</p><p>Your shift ends in 10 minutes. Please remember to clock out.</p>',
+    bodyText: 'Hi Alex, your shift ends in 10 minutes. Please remember to clock out.',
     supportEmail: 'support@homecareheadquarters.org',
   },
 } satisfies TemplateEntry

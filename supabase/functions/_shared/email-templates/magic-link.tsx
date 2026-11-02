@@ -14,24 +14,24 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 
 interface MagicLinkEmailProps {
-  siteName: string
+  siteName?: string
   confirmationUrl: string
 }
 
 export const MagicLinkEmail = ({
-  siteName,
+  siteName = "Home Care Headquarters",
   confirmationUrl,
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head>
       <style>{darkModeCss}</style>
     </Head>
-    <Preview>Your sign-in link for {siteName}</Preview>
+    <Preview>Your sign-in link for {siteName === "Home Care Headquaters" ? "Home Care Headquarters" : siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>Your training sign-in link</Heading>
         <Text style={text}>
-          Open the link below to sign in to {siteName}. No password is needed.
+          Open the link below to sign in to {siteName === "Home Care Headquaters" ? "Home Care Headquarters" : siteName}. No password is needed.
         </Text>
         <Button className="dm-btn" style={button} href={confirmationUrl}>
           Continue to my training

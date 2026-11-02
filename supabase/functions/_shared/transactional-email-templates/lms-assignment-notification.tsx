@@ -104,7 +104,8 @@ export const template = {
   component: Email,
   subject: (d: Props) => {
     const first = d?.courses?.[0]?.title || 'a new course'
-    const extra = (d?.courses?.length || 0) > 1 ? ` (+${(d!.courses!.length) - 1} more)` : ''
+    const courseCount = d?.courses?.length ?? 0
+    const extra = courseCount > 1 ? ` (+${courseCount - 1} more)` : ''
     return `New training assigned: ${first}${extra}`
   },
   displayName: 'LMS Assignment Notification',

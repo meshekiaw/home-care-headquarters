@@ -14,24 +14,24 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 
 interface RecoveryEmailProps {
-  siteName: string
+  siteName?: string
   confirmationUrl: string
 }
 
 export const RecoveryEmail = ({
-  siteName,
+  siteName = "Home Care Headquarters",
   confirmationUrl,
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head>
       <style>{darkModeCss}</style>
     </Head>
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Reset your password for {siteName === "Home Care Headquaters" ? "Home Care Headquarters" : siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
+          We received a request to reset your password for {siteName === "Home Care Headquaters" ? "Home Care Headquarters" : siteName}. Click
           the button below to choose a new password.
         </Text>
         <Button className="dm-btn" style={button} href={confirmationUrl}>

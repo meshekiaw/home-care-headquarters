@@ -15,13 +15,13 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 
 interface InviteEmailProps {
-  siteName: string
+  siteName?: string
   siteUrl: string
   confirmationUrl: string
 }
 
 export const InviteEmail = ({
-  siteName,
+  siteName = "Home Care Headquarters",
   siteUrl,
   confirmationUrl,
 }: InviteEmailProps) => (
@@ -29,14 +29,14 @@ export const InviteEmail = ({
     <Head>
       <style>{darkModeCss}</style>
     </Head>
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>You've been invited to join {siteName === "Home Care Headquaters" ? "Home Care Headquarters" : siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>You've been invited</Heading>
         <Text style={text}>
           You've been invited to join{' '}
           <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
+            <strong>{siteName === "Home Care Headquaters" ? "Home Care Headquarters" : siteName}</strong>
           </Link>
           . Click the button below to accept the invitation and create your
           account.

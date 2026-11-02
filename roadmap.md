@@ -1,7 +1,7 @@
 # Roadmap
 
 ## One-time caregiver account connection
-- [ ] Inventory active email matches, explicit skips and unmatched accounts; preserve protected roles
+- [x] Inventory active email matches, explicit skips and unmatched accounts: 173 active, 128 new accounts needed, six existing connections needed, 37 explicit skips; no eligible protected-role conflicts
 - [ ] Create confirmed passwordless accounts without email, connect matching accounts and add caregiver roles; confirm Johneise only among existing accounts
 - [ ] Verify final counts and unchanged caregiver details, training/onboarding records and sign-in activity; report skipped names and untouched accounts
 

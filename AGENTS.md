@@ -1,5 +1,6 @@
 # Architecture rules
 
+- 618 witness handoffs opt out of shared same-person name reuse; normalized witness-name checks run in the 618 UI and a draft-to-signed database trigger so other forms and historical records remain unchanged.
 - In-service resume uses ownership-checked video RPCs with timestamp-ordered positions and monotonic watch credit, plus per-answer quiz drafts cleared atomically on attempt insertion; keep drafts separate from grading and hour accounting.
 - Training course shells stay outside the player component so autosave/state renders cannot remount playback or lose quiz focus.
 

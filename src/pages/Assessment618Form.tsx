@@ -39,6 +39,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { SignatureCapture, type SignatureResult } from "@/components/assessments/SignatureCapture";
 import { ClientSigningMode } from "@/components/assessments/ClientSigningMode";
+import { FORM618_WITNESS_ERROR, form618WitnessNamesMatch } from "@/utils/form618Witnesses";
 import {
   ClipboardCheck,
   Loader2,
@@ -433,7 +434,11 @@ export default function Assessment618Form() {
     () => form618MissingRequired(details, clientName),
     [details, clientName],
   );
-  const canComplete = readyToLock && missingRequired.length === 0;
+  const matchingWitnessNames = form618WitnessNamesMatch(
+    signed.sec4_witness_1?.signer_name,
+    signed.sec4_witness_2?.signer_name,
+  );
+  const canComplete = readyToLock && missingRequired.length === 0 && !matchingWitnessNames;
 
   function attestationFor(slot: SignatureSlot, signerType: SignerType) {
     return SLOT_BY_ID[slot].attestation[signerType] ?? "";
@@ -485,6 +490,10 @@ export default function Assessment618Form() {
 
   async function lockForm() {
     if (!form) return;
+    if (matchingWitnessNames) {
+      toast({ title: "Not ready to complete", description: FORM618_WITNESS_ERROR, variant: "destructive" });
+      return;
+    }
     if (missingRequired.length > 0) {
       toast({
         title: "Some required answers are missing",
@@ -1060,7 +1069,12 @@ export default function Assessment618Form() {
                           {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           Complete and lock this assessment
                         </Button>
-                        {!canComplete && (
+                        {matchingWitnessNames && (
+                          <p role="alert" className="text-sm text-destructive text-center">
+                            {FORM618_WITNESS_ERROR}
+                          </p>
+                        )}
+                        {!canComplete && !matchingWitnessNames && (
                           <p className="text-sm text-muted-foreground text-center">
                             {missingRequired.length > 0
                               ? `These are still needed: ${missingRequired.join(", ")}.`
@@ -1229,6 +1243,7 @@ export default function Assessment618Form() {
           clientName={clientName || "this client"}
           steps={kioskSteps.map(({ slot, signerType }) => ({
             key: slot,
+            reusePreviousName: signerType !== "witness",
             attestation: attestationFor(slot, signerType),
             askRelationship: signerType === "witness",
             heading:

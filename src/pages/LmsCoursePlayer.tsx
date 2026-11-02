@@ -18,6 +18,7 @@ import { friendlyError } from "@/lib/friendlyError";
 import GatedVideoPlayer, { VIDEO_GATE_PERCENT } from "@/components/lms/GatedVideoPlayer";
 import { useTrainingQuizDraft } from "@/hooks/useTrainingQuizDraft";
 import { firstUnanswered } from "@/utils/trainingResume";
+import { createTrainingPlaybackProtection, YOUTUBE_EMBED_HOST } from "@/utils/trainingPlayback";
 
 interface Assignment {
   id: string;
@@ -43,7 +44,7 @@ interface Assignment {
 
 function embedUrl(url: string): string | null {
   const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}?enablejsapi=1`;
+  if (yt) return `${YOUTUBE_EMBED_HOST}/embed/${yt[1]}?enablejsapi=1&rel=0`;
   const vimeo = url.match(/vimeo\.com\/(\d+)/);
   if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
   return null;
@@ -53,10 +54,62 @@ function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?:
   // In-service sessions pass only a videoId, fetched server-side, so the
   // original link never reaches the page as text or a shareable href.
   const embed = videoId
-    ? `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3`
+    ? `${YOUTUBE_EMBED_HOST}/embed/${videoId}?enablejsapi=1&rel=0&disablekb=1&iv_load_policy=3`
     : url
       ? embedUrl(url)
       : null;
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaEventsRef = useRef<ReturnType<typeof createTrainingPlaybackProtection> | null>(null);
+
+  useEffect(() => {
+    let playing = false;
+    const protection = createTrainingPlaybackProtection(() => playing);
+    mediaEventsRef.current = protection;
+    const frame = iframeRef.current;
+    const origin = embed ? new URL(embed).origin : null;
+    const post = (command: string) => {
+      if (!origin) return;
+      frame?.contentWindow?.postMessage(JSON.stringify(origin.includes("vimeo")
+        ? { method: command === "pauseVideo" ? "pause" : command }
+        : { event: "command", func: command, args: [] }), origin);
+    };
+    const pause = () => {
+      playing = false; protection.stop(); videoRef.current?.pause(); post("pauseVideo");
+    };
+    const onVisibility = () => { if (document.visibilityState === "hidden") pause(); };
+    const subscribe = () => {
+      if (!origin) return;
+      if (origin.includes("vimeo")) {
+        ["play", "pause", "ended"].forEach(value => frame?.contentWindow?.postMessage(JSON.stringify({ method: "addEventListener", value }), origin));
+      } else {
+        frame?.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: "course-video" }), origin);
+        frame?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "addEventListener", args: ["onStateChange"] }), origin);
+      }
+    };
+    const onMessage = (event: MessageEvent) => {
+      if (!frame || event.source !== frame.contentWindow || event.origin !== origin) return;
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        const state = data?.info?.playerState ?? (data?.event === "onStateChange" ? data.info : undefined);
+        if (state !== undefined || ["play", "pause", "ended"].includes(data?.event)) {
+          playing = state === 1 || data.event === "play";
+          if (playing && document.visibilityState === "visible") protection.start();
+          else if (playing) pause(); else protection.stop();
+        }
+      } catch { /* Ignore unrelated player messages. */ }
+    };
+    frame?.addEventListener("load", subscribe); subscribe();
+    window.addEventListener("message", onMessage);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", pause); window.addEventListener("beforeunload", pause);
+    return () => {
+      pause(); mediaEventsRef.current = null;
+      frame?.removeEventListener("load", subscribe); window.removeEventListener("message", onMessage);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", pause); window.removeEventListener("beforeunload", pause);
+    };
+  }, [embed, url]);
 
   useEffect(() => {
     if (!embed || !onEnded) return;
@@ -77,9 +130,12 @@ function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?:
   }, [embed, onEnded]);
 
   return (
-    <div className="w-full max-w-full mb-6 rounded-lg overflow-hidden border bg-black aspect-video">
+    <div className="mb-6 space-y-3">
+      <p className="text-sm text-muted-foreground">Watch here in the portal. Time watched on YouTube doesn’t count toward your training.</p>
+      <div className="w-full max-w-full rounded-lg overflow-hidden border bg-foreground aspect-video">
       {embed ? (
         <iframe
+          ref={iframeRef}
           src={embed}
           title="Course video"
           className="w-full h-full"
@@ -88,8 +144,12 @@ function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?:
           allowFullScreen
         />
       ) : url ? (
-        <video src={url} controls playsInline className="w-full h-full" onEnded={onEnded} />
+        <video ref={videoRef} src={url} controls playsInline className="w-full h-full"
+          onPlay={() => { if (document.visibilityState === "visible") mediaEventsRef.current?.start(); else videoRef.current?.pause(); }}
+          onPause={() => mediaEventsRef.current?.stop()}
+          onEnded={() => { mediaEventsRef.current?.stop(); onEnded?.(); }} />
       ) : null}
+      </div>
     </div>
   );
 }

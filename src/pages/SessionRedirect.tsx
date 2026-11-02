@@ -33,51 +33,15 @@ export default function SessionRedirect() {
       const n = parseInt(sessionNumber ?? "", 10);
       if (!n) { setError("That training link is not valid."); return; }
 
-      const { data: course, error: cErr } = await supabase
-        .from("lms_courses")
-        .select("id, user_id")
-        .eq("session_number", n)
-        .maybeSingle();
-      if (cErr || !course) { setError("That training session could not be found."); return; }
-
-      const { data: cg } = await supabase
-        .from("caregivers")
-        .select("id")
-        .eq("auth_user_id", user.id)
-        .maybeSingle();
-      if (!cg) {
-        setError("This link is for caregivers. Your account isn't linked to a caregiver profile yet.");
+      const { data: id, error: rpcErr } = await (supabase.rpc as any)("open_training_session", { p_session_number: n });
+      if (rpcErr || !id) {
+        const m = rpcErr?.message ?? "";
+        if (m.includes("session_not_found")) setError("That training session could not be found.");
+        else if (m.includes("not_active_caregiver")) setError("This link is for active caregivers. Your account isn't linked to an active caregiver profile yet.");
+        else setError(friendlyError(rpcErr, "We couldn't open that session. Please try again."));
         return;
       }
-
-      const { data: existing } = await supabase
-        .from("lms_assignments")
-        .select("id")
-        .eq("course_id", course.id)
-        .eq("caregiver_id", cg.id)
-        .maybeSingle();
-
-      if (existing) {
-        navigate(`/my-training/${existing.id}`, { replace: true });
-        return;
-      }
-
-      const { data: created, error: insErr } = await supabase
-        .from("lms_assignments")
-        .insert({
-          user_id: course.user_id,
-          course_id: course.id,
-          caregiver_id: cg.id,
-          assigned_by: "Shared link",
-        } as any)
-        .select("id")
-        .maybeSingle();
-
-      if (insErr || !created) {
-        setError(friendlyError(insErr, "We couldn't open that session. Please try again."));
-        return;
-      }
-      navigate(`/my-training/${created.id}`, { replace: true });
+      navigate(`/my-training/${id}`, { replace: true });
     };
 
     go();

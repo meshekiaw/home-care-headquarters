@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Training resume
-- [ ] Add ownership-checked server saves for video current/furthest positions and ungraded quiz drafts; preserve grading and completion lifecycle
-- [ ] Restore video position and quiz answers, clear graded drafts for retakes, and show Continue for unfinished sessions
-- [ ] Run focused rules/security tests and Test Caregiver-only cross-device save/readback checks; verify protected workflows remain unchanged
+- [x] Ownership-checked server saves for separate current/furthest video positions and ungraded quiz drafts; grading, hour accounting and completion lifecycle unchanged
+- [x] Restored video welcome/restart and quiz first-unanswered focus; graded drafts clear atomically, retakes blank, existing In progress/Continue retained and My Training link corrected
+- [x] 135 isolated tests passed; only test-caregiver@example.invalid used for real cross-device answer/save readback, failed grading/blank retake and offline retry; simulated third-party player exercised actual 10-second, pause, restart, pagehide saves and skip guard; temporary test assignment removed
+- [ ] Actual YouTube playback verification blocked by unavailable YouTube connection in automated browser; player errors now show Retry instead of a blank indefinite wait
 
 ## One-time caregiver account connection
 - [x] Inventory active email matches, explicit skips and unmatched accounts: 173 active, 128 new accounts needed, six existing connections needed, 37 explicit skips; no eligible protected-role conflicts

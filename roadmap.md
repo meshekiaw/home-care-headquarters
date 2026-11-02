@@ -2,7 +2,7 @@
 
 ## Email update
 - [x] Inventory all legacy email surfaces, retained-table writes and constraints; no provider conflicts or unmappable app behavior
-- [ ] Re-render authentication emails, preserve template copy, convert notification sends and add retry-safe outcome recording
+- [x] Re-render authentication emails, preserve template copy, convert notification sends and add retry-safe outcome recording; 105 isolated tests passed and replacement functions checked
 - [ ] Verify replacements, deploy affected functions, remove old email files from source only, and leave unpublished for review
 
 ## Caregiver training sign-in

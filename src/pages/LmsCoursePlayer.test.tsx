@@ -12,7 +12,7 @@ beforeEach(() => {
   release = vi.fn().mockResolvedValue(undefined); request = vi.fn().mockResolvedValue({ released: false, release });
   Object.defineProperty(navigator, "wakeLock", { configurable: true, value: { request } });
 });
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe("other training video paths retain their completion rules", () => {
   it("counts actual native playback as activity and releases protection on pause/end", async () => {
     const ended = vi.fn(), activity = vi.fn(); window.addEventListener(TRAINING_PLAYBACK_ACTIVITY_EVENT, activity);
@@ -38,6 +38,8 @@ describe("other training video paths retain their completion rules", () => {
     expect(request).toHaveBeenCalledTimes(1);
   });
   it("accepts playback messages only from the embedded YouTube frame and pauses it on leaving", async () => {
+    const frameWindow = { postMessage: vi.fn() } as unknown as Window;
+    vi.spyOn(HTMLIFrameElement.prototype, "contentWindow", "get").mockReturnValue(frameWindow);
     const view = render(<CourseVideo url="https://youtube.com/watch?v=testvideo123" />);
     const frame = view.container.querySelector("iframe"); if (!frame?.contentWindow) throw new Error("Missing video frame");
     const post = vi.spyOn(frame.contentWindow, "postMessage");

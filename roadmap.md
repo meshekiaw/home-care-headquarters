@@ -1,5 +1,11 @@
 # Roadmap
 
+## Training phone playback
+- [ ] Identify inactivity and phone-sleep causes without accessing real caregiver accounts
+- [ ] Keep visible playing training awake/active only; pause/save and release protection on pause/end/leave
+- [ ] Privacy-enhanced YouTube with same-channel related videos and exact portal-only credit notice; preserve training rules
+- [ ] Focused tests and Test Caregiver-only phone flow; report any physical-phone or YouTube verification limitations
+
 ## 618 witness-name correction
 - [x] Second-witness name opens empty; client same-person name reuse and all other forms unchanged
 - [x] Case/whitespace-normalized Section IV witness match blocks UI completion and draft-to-signed database transitions with the exact requested message

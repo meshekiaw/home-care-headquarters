@@ -36,6 +36,9 @@ import { getExpiryStatus, formatDateOnly } from "@/utils/expiryStatus";
 import { friendlyError } from "@/lib/friendlyError";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useInServiceCompletions } from "@/hooks/useInServiceCompliance";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useCaregiverSignInAccess } from "@/hooks/useCaregiverSignInAccess";
+import { ACCESS_LABELS, matchesAccessFilter, type AccessState } from "@/utils/caregiverSignInAccess";
 import {
   IN_SERVICE_STATUS_LABEL,
   IN_SERVICE_STATUS_ORDER,
@@ -95,6 +98,10 @@ function OnboardingCell({ summary }: { summary: ReturnType<typeof onboardingRost
 export default function Caregivers() {
   const { caregivers, loading, createCaregiver, refetch } = useCaregivers();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
+  const accessRoster = useCaregiverSignInAccess(isAdmin);
+  const accessById = useMemo(() => new Map(accessRoster.data?.map(access => [access.caregiver_id, access])), [accessRoster.data]);
+  const [accessFilter, setAccessFilter] = useState<"all" | AccessState>("all");
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -127,6 +134,7 @@ export default function Caregivers() {
       const specializations = caregiver.specializations?.join(" ").toLowerCase() || "";
       const matchesSearch = fullName.includes(query) || specializations.includes(query);
       if (!matchesSearch) return false;
+      if (isAdmin && !matchesAccessFilter(accessById.get(caregiver.id), accessFilter)) return false;
       if (onboardingFilter !== "all" && onboardingFor(caregiver).status !== onboardingFilter) return false;
       if (inServiceFilter === "all") return true;
       return forCaregiver(caregiver.id, (caregiver as any).hire_date).status === inServiceFilter;
@@ -151,7 +159,7 @@ export default function Caregivers() {
       return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver, onboardingFilter, onboardingRoster.data]);
+  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver, onboardingFilter, onboardingRoster.data, isAdmin, accessById, accessFilter]);
 
   const allSelected =
     filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));
@@ -274,6 +282,15 @@ export default function Caregivers() {
             </div>
 
             <div className="flex flex-wrap gap-3">
+              {isAdmin && <div className="w-56">
+                <label htmlFor="caregiver-access-filter" className="text-xs text-muted-foreground">Sign-in access</label>
+                <Select value={accessFilter} onValueChange={v => setAccessFilter(v as "all" | AccessState)} disabled={accessRoster.isLoading || accessRoster.isError}>
+                  <SelectTrigger id="caregiver-access-filter"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="all">All sign-in statuses</SelectItem>{Object.entries(ACCESS_LABELS).map(([state, label]) => <SelectItem key={state} value={state}>{label}</SelectItem>)}</SelectContent>
+                </Select>
+                {accessRoster.isLoading && <p role="status" className="text-xs text-muted-foreground mt-1">Checking sign-in access…</p>}
+                {accessRoster.isError && <Button variant="link" size="sm" className="text-destructive" onClick={() => void accessRoster.refetch()}>Retry access check</Button>}
+              </div>}
               <div className="w-56">
                 <label className="text-xs text-muted-foreground">In-service status</label>
                 <Select
@@ -422,6 +439,7 @@ export default function Caregivers() {
                           )}
                           <ExpiryBadges caregiver={caregiver as any} />
                           <dl className="mt-2 space-y-1 text-xs">
+                            {isAdmin && <div><dt className="text-muted-foreground">Sign-in access</dt><dd>{accessRoster.isError ? "Unavailable" : accessById.get(caregiver.id) ? ACCESS_LABELS[accessById.get(caregiver.id)?.state ?? "no_account"] : "Checking…"}</dd></div>}
                             <div>
                               <dt className="text-muted-foreground">Background Check Date</dt>
                               <dd>{formatDateOnly(caregiver.background_check_date)}</dd>

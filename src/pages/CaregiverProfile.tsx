@@ -22,6 +22,7 @@ import InServiceTab from "@/components/caregivers/InServiceTab";
 import { ApplicationFormFiller } from "@/components/caregivers/ApplicationFormFiller";
 import AdminOnboardingTab from "@/components/caregivers/AdminOnboardingTab";
 import CaregiverPasswordControl from "@/components/caregivers/CaregiverPasswordControl";
+import CaregiverSignInAccess from "@/components/caregivers/CaregiverSignInAccess";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
   ArrowLeft,
@@ -265,6 +266,8 @@ export default function CaregiverProfile() {
             )}
           </div>
         </div>
+
+        {isAdmin && <CaregiverSignInAccess isAdmin={isAdmin} caregiverId={caregiver.id} profileEmail={caregiver.email} profileName={`${caregiver.first_name} ${caregiver.last_name}`} onSaved={refetch} />}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="min-h-0">

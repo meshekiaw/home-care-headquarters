@@ -10,14 +10,17 @@ let apiPromise: Promise<any> | null = null;
 function loadYouTubeApi(): Promise<any> {
   if ((window as any).YT?.Player) return Promise.resolve((window as any).YT);
   if (apiPromise) return apiPromise;
-  apiPromise = new Promise((resolve) => {
+  apiPromise = new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => { apiPromise = null; reject(new Error("Video connection timed out")); }, 15000);
     const previous = (window as any).onYouTubeIframeAPIReady;
     (window as any).onYouTubeIframeAPIReady = () => {
+      window.clearTimeout(timeout);
       if (typeof previous === "function") previous();
       resolve((window as any).YT);
     };
     const script = document.createElement("script");
     script.src = "https://www.youtube.com/iframe_api";
+    script.onerror = () => { window.clearTimeout(timeout); apiPromise = null; reject(new Error("Couldn't connect to video")); };
     document.head.appendChild(script);
   });
   return apiPromise;
@@ -56,6 +59,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
     let destroyed = false;
     let player: any;
     let interval: number | undefined;
+    let readyTimeout: number | undefined;
     let watched = 0, position = 0, duration = 0;
     let lastSave = Date.now();
     let pending = false;
@@ -145,12 +149,14 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
         // YouTube replaces its target; a child leaves React's holder intact.
         const target = document.createElement("div");
         holderRef.current.replaceChildren(target);
+        readyTimeout = window.setTimeout(() => { if (!destroyed) setLoadError(true); }, 15000);
         player = new YT.Player(target, {
           videoId,
           playerVars: { controls: 0, disablekb: 1, rel: 0, iv_load_policy: 3, fs: 0, playsinline: 1, origin: window.location.origin },
           events: {
             onReady: (e: any) => {
               if (destroyed) return;
+              window.clearTimeout(readyTimeout);
               duration = e.target.getDuration() || duration;
               position = resumePosition(position, watched, duration);
               lastTime = position; lastTick = performance.now();
@@ -183,6 +189,7 @@ export default function GatedVideoPlayer({ videoId, assignmentId, onProgress }: 
     return () => {
       sample(); void save(); destroyed = true;
       if (interval) window.clearInterval(interval);
+      window.clearTimeout(readyTimeout);
       document.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", onHide); window.removeEventListener("beforeunload", onHide);
       window.removeEventListener("online", onOnline);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import CaregiverLayout from "@/components/layout/CaregiverLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,6 +167,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [caregiverId, setCaregiverId] = useState<string | null>(null);
   const [videoPercent, setVideoPercent] = useState(0);
   const [videoUnlocked, setVideoUnlocked] = useState(false);
+  const restoredCourseRef = useRef<string | undefined>();
 
   const handleVideoProgress = useCallback((pct: number, unlocked: boolean) => {
     setVideoPercent(pct);
@@ -276,11 +277,15 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     setSessionVideoId(null);
     setVideoPercent(0);
     setVideoUnlocked(false);
+    restoredCourseRef.current = undefined;
   }, [assignmentId]);
 
   useEffect(() => {
-    if (!loading && draft.ready && draft.restored && videoChecked && !videoLocked && step === "content") setStep("quiz");
-  }, [loading, draft.ready, draft.restored, videoChecked, videoLocked, step]);
+    if (!loading && draft.ready && draft.restored && videoChecked && !videoLocked && step === "content" && restoredCourseRef.current !== assignmentId) {
+      restoredCourseRef.current = assignmentId;
+      setStep("quiz");
+    }
+  }, [loading, draft.ready, draft.restored, videoChecked, videoLocked, step, assignmentId]);
 
   useEffect(() => {
     if (step !== "quiz" || !draft.restored) return;

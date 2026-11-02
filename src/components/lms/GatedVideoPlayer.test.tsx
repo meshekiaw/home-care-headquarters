@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import GatedVideoPlayer from "./GatedVideoPlayer";
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), dispose: vi.fn(), from: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from } }));
@@ -24,6 +24,7 @@ beforeEach(() => {
     constructor(_target: unknown, options: any) { config = options; player = this; queueMicrotask(() => options.events.onReady({ target: this })); }
     getDuration() { return 100; } getCurrentTime() { return time; } getPlayerState() { return state; }
     getPlaybackRate() { return 1; } seekTo(t: number) { time = t; }
+    playVideo = vi.fn(() => { state = 1; config.events.onStateChange({ data: 1, target: this }); });
     pauseVideo = vi.fn(() => { state = 2; config.events.onStateChange({ data: 2, target: this }); });
     destroy = vi.fn();
   } };
@@ -47,7 +48,7 @@ describe("training player lifecycle without changing watch credit", () => {
     expect(release).toHaveBeenCalledTimes(1);
     await act(async () => { visible = "visible"; document.dispatchEvent(new Event("visibilitychange")); });
     expect(state).toBe(2); expect(request).toHaveBeenCalledTimes(1);
-    await play(); expect(request).toHaveBeenCalledTimes(2);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Play", exact: true }))); expect(request).toHaveBeenCalledTimes(2);
   });
   it("saves and releases protection when navigating away", async () => {
     const view = await open(); await play(); mocks.rpc.mockClear(); await act(async () => view.unmount());

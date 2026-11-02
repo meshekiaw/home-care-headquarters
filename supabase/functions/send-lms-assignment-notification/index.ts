@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.93.2";
 import { EmailAPIError } from 'npm:@lovable.dev/email-js@0.4.0';
 import { sendTemplateEmail } from '../_shared/transactional-email-templates/send-email.ts';
 import { sendWithEmailAudit } from '../_shared/email-outcomes.ts';
@@ -30,7 +30,7 @@ async function sendSms(to: string, body: string) {
   return { ok: r.ok, status: r.status };
 }
 
-async function findAuthUserByEmail(admin: ReturnType<typeof createClient>, email: string): Promise<string | null> {
+async function findAuthUserByEmail(admin: SupabaseClient, email: string): Promise<string | null> {
   const target = email.toLowerCase();
   let page = 1;
   while (page < 50) {
@@ -45,7 +45,7 @@ async function findAuthUserByEmail(admin: ReturnType<typeof createClient>, email
 }
 
 async function buildMagicLink(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient,
   email: string,
 ): Promise<{ url: string; hashed_token: string }> {
   // Generate a magic-link token. We deliberately do NOT use properties.action_link,
@@ -84,9 +84,10 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !serviceKey || !anonKey) throw new Error("Missing account configuration");
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },

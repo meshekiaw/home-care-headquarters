@@ -1,5 +1,10 @@
 # Roadmap
 
+## Email update
+- [x] Inventory all legacy email surfaces, retained-table writes and constraints; no provider conflicts or unmappable app behavior
+- [ ] Re-render authentication emails, preserve template copy, convert notification sends and add retry-safe outcome recording
+- [ ] Verify replacements, deploy affected functions, remove old email files from source only, and leave unpublished for review
+
 ## Caregiver training sign-in
 - [x] Server-checked active caregiver email matching and on-request login/link/role repair with admin/nurse protection; deployed service-only atomic helpers
 - [x] Training sign-in plain unmatched-email and email-rate-limit messages; both verified on the public sign-in page

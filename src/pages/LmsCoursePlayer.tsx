@@ -50,7 +50,7 @@ function embedUrl(url: string): string | null {
   return null;
 }
 
-function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?: string | null; onEnded?: () => void }) {
+export function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?: string | null; onEnded?: () => void }) {
   // In-service sessions pass only a videoId, fetched server-side, so the
   // original link never reaches the page as text or a shareable href.
   const embed = videoId

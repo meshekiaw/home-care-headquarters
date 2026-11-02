@@ -1,5 +1,11 @@
 # Roadmap
 
+## Admin caregiver sign-in access
+- [ ] Add admin-only record access status, confirmation and change history, plus roster access filter
+- [ ] Add server-authorized silent confirmed/passwordless provisioning and atomic role/link/training/audit repair with nurse and conflicting-caregiver protection
+- [ ] Verify isolated rules and UI, deploy and test authorization using only Test Caregiver; no admin sign-ins or real caregiver changes
+- [ ] Actual signed-in admin provisioning awaits the user's check; admin sign-in is prohibited for testing
+
 ## Training phone playback
 - [x] Confirmed app warns at 13 minutes/signs out at 15; playback was not activity and no wake lock existed. Shorter phone sleep is plausible, not proven without the reporting phone; no real accounts accessed
 - [x] Visible playing training gets race-safe wake lock and activity heartbeat only; pause/end/leave stop protection, leave saves before pause, returning requires Play; existing timeout elsewhere unchanged

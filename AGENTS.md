@@ -4,6 +4,7 @@
 - In-service resume uses ownership-checked video RPCs with timestamp-ordered positions and monotonic watch credit, plus per-answer quiz drafts cleared atomically on attempt insertion; keep drafts separate from grading and hour accounting.
 - Training course shells stay outside the player component so autosave/state renders cannot remount playback or lose quiz focus.
 - Training playback protection is scoped to visible player state: a dedicated heartbeat resets existing inactivity timers, wake-lock requests are race-safe, and leaving saves before pausing; playback protection never awards watch credit.
+- URL-based course videos use the same playback protection without inheriting in-service video gating or changing their existing completion semantics; embedded playback messages must match the exact frame and origin.
 
 - Training sign-in requests use the public caregiver-training-sign-in gateway with service-only email lookup and atomic link/role RPCs; confirmed users receive magic links, unconfirmed admin-created users receive confirmation resends, mailbox verification gates sessions, duplicate/conflicting links fail closed, and protected admin/nurse roles remain unchanged.
 - Explicit one-time account maintenance uses Auth Admin APIs without passwords or email calls and the existing atomic caregiver link RPC; temporary privileged endpoints must be secret-authenticated, time-limited, and removed after verification to avoid leaving maintenance access live.

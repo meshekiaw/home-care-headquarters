@@ -64,7 +64,7 @@ function CourseVideo({ url, videoId, onEnded }: { url?: string | null; videoId?:
 
   useEffect(() => {
     let playing = false;
-    const protection = createTrainingPlaybackProtection(() => playing);
+    const protection = createTrainingPlaybackProtection(() => videoRef.current ? !videoRef.current.paused : playing);
     mediaEventsRef.current = protection;
     const frame = iframeRef.current;
     const origin = embed ? new URL(embed).origin : null;

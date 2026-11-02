@@ -48,7 +48,7 @@ describe("training player lifecycle without changing watch credit", () => {
     expect(release).toHaveBeenCalledTimes(1);
     await act(async () => { visible = "visible"; document.dispatchEvent(new Event("visibilitychange")); });
     expect(state).toBe(2); expect(request).toHaveBeenCalledTimes(1);
-    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Play", exact: true }))); expect(request).toHaveBeenCalledTimes(2);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /^Play$/ }))); expect(request).toHaveBeenCalledTimes(2);
   });
   it("saves and releases protection when navigating away", async () => {
     const view = await open(); await play(); mocks.rpc.mockClear(); await act(async () => view.unmount());

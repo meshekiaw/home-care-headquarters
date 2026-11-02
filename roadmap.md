@@ -1,5 +1,10 @@
 # Roadmap
 
+## Notification sender correction
+- [ ] Audit every email sender and historical attempted/not-sent notification counts by type without signing in or sending email
+- [ ] Use the verified notify.homecareheadquarters.org domain for every app email, preserving recipients, timing and message content; never replay old attempts
+- [ ] Run isolated sender/no-replay tests, deploy affected functions, and report function names and audit counts
+
 ## Training resume
 - [x] Ownership-checked server saves for separate current/furthest video positions and ungraded quiz drafts; grading, hour accounting and completion lifecycle unchanged
 - [x] Restored video welcome/restart and quiz first-unanswered focus; graded drafts clear atomically, retakes blank, existing In progress/Continue retained and My Training link corrected

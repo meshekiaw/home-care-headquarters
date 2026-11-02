@@ -246,6 +246,13 @@
       "when": 1793576463750,
       "tag": "0034_caregiver_training_sign_in",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793604788516,
+      "tag": "0035_training_resume",
+      "breakpoints": true
     }
   ]
 }

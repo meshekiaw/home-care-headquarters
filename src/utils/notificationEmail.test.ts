@@ -127,6 +127,21 @@ describe('forward-only repair', () => {
     expect(h.send).toHaveBeenCalledTimes(1)
     expect(h.send.mock.calls[0]?.[0]).toEqual(expect.objectContaining({ to: 'test-caregiver@example.invalid', idempotency_key: 'na-new-new-test-caregiver@example.invalid' }))
   })
+  it('previously attempted creation and reminder flags are never retried', async () => {
+    const due = new Date()
+    due.setUTCDate(due.getUTCDate() + 14)
+    const h = harness({ nurse_assessments: [{ id: 'attempted', created_at: '2026-11-02T14:00:00Z', status: 'Pending', due_date: due.toISOString().split('T')[0], assessment_type: '618', created_notification_sent_at: '2026-11-02T14:01:00Z', reminder_14_sent_at: '2026-11-02T14:01:00Z' }], nurses: [{ status: 'active', receives_618_notifications: true, email: 'test-caregiver@example.invalid' }] })
+    expect((await h.invoke('nurse-assessment-scheduler', {})).status).toBe(200)
+    expect(h.send).not.toHaveBeenCalled()
+  })
+  it.each([14, 7])('a new %i-day reminder on an older assessment keeps its scheduled window and recipient', async (days) => {
+    const due = new Date()
+    due.setUTCDate(due.getUTCDate() + days)
+    const h = harness({ nurse_assessments: [{ id: 'existing', created_at: '2026-10-01T12:00:00Z', status: 'Pending', due_date: due.toISOString().split('T')[0], assessment_type: '618', created_notification_sent_at: '2026-10-01T12:01:00Z' }], nurses: [{ status: 'active', receives_618_notifications: true, email: 'test-caregiver@example.invalid' }] })
+    expect((await h.invoke('nurse-assessment-scheduler', {})).status).toBe(200)
+    expect(h.send).toHaveBeenCalledTimes(1)
+    expect(h.send.mock.calls[0]?.[0]).toEqual(expect.objectContaining({ to: 'test-caregiver@example.invalid', subject: `Reminder: a 618 assessment is due in ${days} days`, idempotency_key: `na-rem${days}-existing-test-caregiver@example.invalid` }))
+  })
   it('old LMS assignments cannot be replayed', async () => {
     const h = harness({ user_roles: [{ user_id: 'mock-admin', role: 'admin' }], lms_assignments: [{ id: 'old', caregiver_id: 'test-only', created_at: '2026-11-01T12:00:00Z', caregivers: { email: 'test-caregiver@example.invalid' } }] })
     expect(await (await h.invoke('send-lms-assignment-notification', { assignment_ids: ['old'] })).json()).toEqual({ success: true, results: [] })

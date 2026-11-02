@@ -558,6 +558,45 @@ export type Database = {
           },
         ]
       }
+      caregiver_access_events: {
+        Row: {
+          actor_email: string
+          actor_id: string
+          caregiver_id: string
+          caregiver_name: string
+          created_at: string
+          detail: string | null
+          email: string
+          event: string
+          id: string
+          request_id: string
+        }
+        Insert: {
+          actor_email: string
+          actor_id: string
+          caregiver_id: string
+          caregiver_name: string
+          created_at?: string
+          detail?: string | null
+          email: string
+          event: string
+          id?: string
+          request_id: string
+        }
+        Update: {
+          actor_email?: string
+          actor_id?: string
+          caregiver_id?: string
+          caregiver_name?: string
+          created_at?: string
+          detail?: string | null
+          email?: string
+          event?: string
+          id?: string
+          request_id?: string
+        }
+        Relationships: []
+      }
       caregiver_activity_log: {
         Row: {
           activity_type: string
@@ -3531,6 +3570,10 @@ export type Database = {
         }
         Returns: string
       }
+      admin_caregiver_access: {
+        Args: { p_caregiver_id?: string }
+        Returns: Json
+      }
       admin_caregiver_onboarding: {
         Args: { p_caregiver_id: string }
         Returns: Json
@@ -3546,6 +3589,10 @@ export type Database = {
       assign_training_sessions: {
         Args: { p_assigned_by: string; p_caregiver_id: string }
         Returns: number
+      }
+      caregiver_access_snapshot: {
+        Args: { p_actor_id: string; p_caregiver_id: string }
+        Returns: Json
       }
       change_caregiver_onboarding_step: {
         Args: {
@@ -3608,6 +3655,16 @@ export type Database = {
       encrypt_ssn_for_caregiver: {
         Args: { p_caregiver_id: string; p_ssn: string }
         Returns: undefined
+      }
+      finish_caregiver_access: {
+        Args: {
+          p_account_id: string
+          p_actor_id: string
+          p_caregiver_id: string
+          p_email: string
+          p_request_id: string
+        }
+        Returns: Json
       }
       form_618_signatures_complete: {
         Args: { p_form_id: string }
@@ -3688,6 +3745,17 @@ export type Database = {
       open_training_session: {
         Args: { p_session_number: number }
         Returns: string
+      }
+      record_caregiver_access_event: {
+        Args: {
+          p_actor_id: string
+          p_caregiver_id: string
+          p_detail?: string
+          p_email: string
+          p_event: string
+          p_request_id: string
+        }
+        Returns: boolean
       }
       refresh_my_onboarding_receipts: { Args: never; Returns: boolean }
       register_caregiver_document: {

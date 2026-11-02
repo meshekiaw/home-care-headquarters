@@ -49,7 +49,7 @@ describe("admin caregiver access handler (synthetic accounts only)", () => {
   it("records intent before passwordless account creation then finalizes the server-resolved identity", async () => {
     const deps = dependencies(); expect((await handleCaregiverAccess(request(), deps)).status).toBe(200);
     expect(deps.createAccount).toHaveBeenCalledExactlyOnceWith(email);
-    expect(deps.record.mock.invocationCallOrder[0]).toBeLessThan(deps.createAccount.mock.invocationCallOrder[0]);
+    expect(vi.mocked(deps.record).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(deps.createAccount).mock.invocationCallOrder[0]);
     expect(deps.record).toHaveBeenNthCalledWith(2, "synthetic-admin", caregiver, email, "synthetic-request", "account_created", "Confirmed account created without a password or email.");
     expect(deps.finish).toHaveBeenCalledExactlyOnceWith("synthetic-admin", caregiver, email, "synthetic-caregiver-account", "synthetic-request");
   });

@@ -3552,19 +3552,10 @@ export type Database = {
       }
       current_nurse_id: { Args: never; Returns: string }
       decrypt_ssn: { Args: { encrypted_ssn: string }; Returns: string }
-      delete_email: {
-        Args: { message_id: number; queue_name: string }
-        Returns: boolean
-      }
-      email_queue_dispatch: { Args: never; Returns: undefined }
       encrypt_ssn: { Args: { plain_ssn: string }; Returns: string }
       encrypt_ssn_for_caregiver: {
         Args: { p_caregiver_id: string; p_ssn: string }
         Returns: undefined
-      }
-      enqueue_email: {
-        Args: { payload: Json; queue_name: string }
-        Returns: number
       }
       form_618_signatures_complete: {
         Args: { p_form_id: string }
@@ -3598,15 +3589,6 @@ export type Database = {
         Returns: boolean
       }
       lookup_training_caregiver: { Args: { p_email: string }; Returns: Json }
-      move_to_dlq: {
-        Args: {
-          dlq_name: string
-          message_id: number
-          payload: Json
-          source_queue: string
-        }
-        Returns: number
-      }
       nurse_assessment_detail: {
         Args: { p_assessment_id: string }
         Returns: {
@@ -3651,14 +3633,6 @@ export type Database = {
         Returns: boolean
       }
       onboarding_actor_name: { Args: { p_actor: string }; Returns: string }
-      read_email_batch: {
-        Args: { batch_size: number; queue_name: string; vt: number }
-        Returns: {
-          message: Json
-          msg_id: number
-          read_ct: number
-        }[]
-      }
       refresh_my_onboarding_receipts: { Args: never; Returns: boolean }
       register_caregiver_document: {
         Args: {

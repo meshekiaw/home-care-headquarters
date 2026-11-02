@@ -1,5 +1,10 @@
 # Roadmap
 
+## One-time caregiver account connection
+- [x] Inventory active email matches, explicit skips and unmatched accounts: 173 active, 128 new accounts needed, six existing connections needed, 37 explicit skips; no eligible protected-role conflicts
+- [x] Created 128 confirmed passwordless accounts without email, connected six existing matching accounts and added caregiver roles; Johneise was already confirmed and left confirmed
+- [x] Verified 136 of 173 active caregivers connected with caregiver role; 37 explicit skips and 11 unmatched accounts unchanged; all existing auth rows/passwords/sign-in activity, caregiver details and protected training/onboarding records unchanged; temporary endpoint removed, 111 isolated tests passed
+
 ## Email update
 - [x] Inventory all legacy email surfaces, retained-table writes and constraints; no provider conflicts or unmappable app behavior
 - [x] Re-render authentication emails, preserve template copy, convert notification sends and add retry-safe outcome recording; 105 isolated tests passed and replacement functions checked

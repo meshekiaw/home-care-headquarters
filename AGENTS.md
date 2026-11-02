@@ -7,6 +7,7 @@
 - Explicit one-time account maintenance uses Auth Admin APIs without passwords or email calls and the existing atomic caregiver link RPC; temporary privileged endpoints must be secret-authenticated, time-limited, and removed after verification to avoid leaving maintenance access live.
 - Custom authentication emails use the scaffolded managed auth-email-hook unchanged; customize templates without replacing SDK signature verification or dispatch.
 - App notification sends run synchronously in their existing feature functions through the managed template helper, or the shared direct API adapter for pre-existing composed HTML; retained email audit tables never gate sending, and terminal-event writes deduplicate by event-derived primary key.
+- Notification sender repairs are forward-only through a shared cutoff policy: block historical record resends and stale creation-notice backlogs without rewriting audit rows or moving recurring reminder windows; use the verified sender subdomain in every visible From header.
 
 - Caregiver-record password changes use a dedicated authenticated admin-only Edge Function that resolves the linked caregiver-only login server-side and audits outcomes without passwords; existing email, roles and links remain unchanged, and the admin session is never replaced.
 - Keep caregiver onboarding independent of applications, policy acknowledgments, orientation and scheduling; read existing orientation completion without changing its lifecycle.

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendAppEmail } from "../_shared/send-app-email.ts";
+import { NOTIFICATION_EMAIL_CUTOVER } from "../_shared/notification-email-policy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,6 +114,7 @@ serve(async (req) => {
       .from("nurse_assessments")
       .select("id, due_date, assessment_type")
       .is("created_notification_sent_at", null)
+      .gte("created_at", NOTIFICATION_EMAIL_CUTOVER)
       .in("status", ["Pending", "Overdue"]);
 
     for (const assessment of pendingNew ?? []) {

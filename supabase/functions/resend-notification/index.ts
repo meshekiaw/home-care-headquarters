@@ -1,6 +1,7 @@
  import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
  import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendAppEmail } from "../_shared/send-app-email.ts";
+import { isNewNotification } from "../_shared/notification-email-policy.ts";
  
  const corsHeaders = {
    "Access-Control-Allow-Origin": "*",
@@ -85,6 +86,18 @@ async function sendEmail(
  
      if (fetchError || !notification) {
        throw new Error(`Notification not found: ${fetchError?.message || "Unknown error"}`);
+     }
+
+     // Never replay old failed/attempted records after repairing the sender.
+     // Return before either channel sends or any historical record is updated.
+     if (!isNewNotification(notification.created_at)) {
+       return new Response(JSON.stringify({
+         success: false,
+         skipped: true,
+         email_sent: notification.email_sent,
+         sms_sent: notification.sms_sent,
+         error: "Older notifications cannot be resent. Only new notifications will send.",
+       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
      }
  
      let emailSent = notification.email_sent;

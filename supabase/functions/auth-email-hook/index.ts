@@ -123,8 +123,8 @@ async function handlePreview(req: Request): Promise<Response> {
 // The SDK handler owns verification, dispatch, and retry semantics; this file
 // owns only the email decisions: subjects, templates, and per-type props.
 const handler = createAuthEmailHandler({
-  apiKey: Deno.env.get('LOVABLE_API_KEY')!,
-  from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+  apiKey: Deno.env.get('LOVABLE_API_KEY') ?? '',
+  from: `${SITE_NAME} <noreply@${SENDER_DOMAIN}>`,
   senderDomain: SENDER_DOMAIN,
   sendUrl: Deno.env.get('LOVABLE_SEND_URL'),
   emails: {

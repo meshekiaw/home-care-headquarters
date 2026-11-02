@@ -1,6 +1,7 @@
  import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
  import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { sendAppEmail } from "../_shared/send-app-email.ts";
+import { NOTIFICATION_EMAIL_CUTOVER } from "../_shared/notification-email-policy.ts";
  
  const corsHeaders = {
    "Access-Control-Allow-Origin": "*",
@@ -185,6 +186,21 @@ async function sendEmail(
         const notificationType = manualAppointmentId
           ? "shift_reminder_manual"
           : `shift_reminder_${reminder.reminder_type}`;
+
+        if (manualAppointmentId) {
+          const { data: oldAttempts, error: oldAttemptsError } = await supabase
+            .from("notifications")
+            .select("id")
+            .eq("related_id", reminder.appointment_id)
+            .like("notification_type", "shift_reminder_%")
+            .lt("created_at", NOTIFICATION_EMAIL_CUTOVER)
+            .limit(1);
+          if (oldAttemptsError) throw oldAttemptsError;
+          if (oldAttempts?.length) {
+            results.skipped++;
+            continue;
+          }
+        }
 
         if (!manualAppointmentId) {
           const { data: existingNotification } = await supabase

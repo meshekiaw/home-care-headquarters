@@ -260,6 +260,13 @@
       "when": 1793622549428,
       "tag": "0036_training_session_auto_assign",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793629198253,
+      "tag": "0037_618_distinct_witness_names",
+      "breakpoints": true
     }
   ]
 }

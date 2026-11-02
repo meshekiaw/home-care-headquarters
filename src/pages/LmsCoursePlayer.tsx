@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import LegalFooter from "@/components/layout/LegalFooter";
 import { friendlyError } from "@/lib/friendlyError";
 import GatedVideoPlayer, { VIDEO_GATE_PERCENT } from "@/components/lms/GatedVideoPlayer";
+import { useTrainingQuizDraft } from "@/hooks/useTrainingQuizDraft";
+import { firstUnanswered } from "@/utils/trainingResume";
 
 interface Assignment {
   id: string;
@@ -110,11 +112,9 @@ interface SiblingAssignment {
 }
 
 
-export default function LmsCoursePlayer({ standalone = false }: { standalone?: boolean }) {
-  const { assignmentId } = useParams<{ assignmentId: string }>();
-  const backPath = standalone ? "/caregiver-training" : "/my-training";
-  const backLabel = standalone ? "Back to My Courses" : "Back to My Training";
-  const Shell = ({ children }: { children: React.ReactNode }) =>
+// A stable shell prevents player/quiz remounts on every progress update.
+function Shell({ children, standalone }: { children: React.ReactNode; standalone: boolean }) {
+  return (
     standalone ? (
       <div className="min-h-screen bg-muted/30">
         <header className="border-b bg-card sticky top-0 z-30">
@@ -133,7 +133,14 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       </div>
     ) : (
       <CaregiverLayout>{children}</CaregiverLayout>
-    );
+    )
+  );
+}
+
+export default function LmsCoursePlayer({ standalone = false }: { standalone?: boolean }) {
+  const { assignmentId } = useParams<{ assignmentId: string }>();
+  const backPath = standalone ? "/caregiver-training" : "/my-training";
+  const backLabel = standalone ? "Back to My Courses" : "Back to My Training";
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -141,7 +148,8 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const [loading, setLoading] = useState(true);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const draft = useTrainingQuizDraft(assignmentId, !!assignment && assignment.id === assignmentId && assignment.status !== "completed");
+  const answers = draft.answers;
   const [step, setStep] = useState<"content" | "quiz" | "result">("content");
   const [contentRead, setContentRead] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -222,12 +230,15 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
     // In-service sessions: the video is stored admin-only and resolved through a
     // security-definer function that checks this caregiver owns the assignment.
+    setSessionVideoId(null);
     if (!a.lms_courses.content_url) {
       const { data: v } = await supabase.rpc("get_session_video", { p_assignment_id: a.id });
       const row = Array.isArray(v) ? v[0] : v;
       if (row?.video_id) setSessionVideoId(row.video_id as string);
-      setVideoChecked(true);
     }
+    const { data: savedVideo } = await supabase.from("lms_video_progress").select("percent_complete").eq("assignment_id", a.id).maybeSingle();
+    handleVideoProgress(savedVideo?.percent_complete ?? 0, (savedVideo?.percent_complete ?? 0) >= VIDEO_GATE_PERCENT);
+    setVideoChecked(true);
 
     if (a.status === "completed") {
       setStep("result");
@@ -251,7 +262,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
     setLoading(false);
 
-  }, [user, assignmentId, toast, navigate]);
+  }, [user, assignmentId, toast, navigate, handleVideoProgress]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -259,10 +270,28 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   useEffect(() => {
     setStep("content");
     setResult(null);
-    setAnswers({});
     setVideoEnded(false);
     setContentRead(false);
+    setVideoChecked(false);
+    setSessionVideoId(null);
+    setVideoPercent(0);
+    setVideoUnlocked(false);
   }, [assignmentId]);
+
+  useEffect(() => {
+    if (!loading && draft.ready && draft.restored && videoChecked && !videoLocked && step === "content") setStep("quiz");
+  }, [loading, draft.ready, draft.restored, videoChecked, videoLocked, step]);
+
+  useEffect(() => {
+    if (step !== "quiz" || !draft.restored) return;
+    const id = firstUnanswered(questions, answers);
+    const timer = window.setTimeout(() => {
+      const target = document.getElementById(id ? `question-${id}` : "submit-quiz");
+      target?.scrollIntoView({ block: "center" }); target?.focus({ preventScroll: true });
+    }, 100);
+    return () => window.clearTimeout(timer);
+    // Restore focus once on quiz entry, not after every answer.
+  }, [step, draft.restored, questions]);
 
   const handleContinueToQuiz = async () => {
     if (!assignment) return;
@@ -285,6 +314,10 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       setStep("result");
       toast({ title: "Course completed" });
     } else {
+      try { await draft.begin(); } catch {
+        toast({ title: "Couldn't save your quiz", description: "Please reconnect and try again.", variant: "destructive" });
+        return;
+      }
       await supabase.from("lms_assignments").update({ progress_percentage: 50 }).eq("id", assignment.id);
       setStep("quiz");
     }
@@ -297,6 +330,11 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
       return;
     }
     setSubmitting(true);
+    try { await draft.flush(); } catch {
+      setSubmitting(false);
+      toast({ title: "Your answers haven't saved yet", description: "Please reconnect before submitting.", variant: "destructive" });
+      return;
+    }
     const { data, error } = await supabase.functions.invoke("lms-course-quiz", {
       body: { action: "check_answers", assignment_id: assignment.id, answers },
     });
@@ -325,7 +363,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   };
 
   const retryQuiz = () => {
-    setAnswers({});
+    draft.reset();
     setResult(null);
     setStep("content");
     setContentRead(false);
@@ -333,7 +371,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
   if (!authLoading && !user) {
     return (
-      <Shell>
+      <Shell standalone={standalone}>
         <div className="max-w-md mx-auto text-center py-12 space-y-3">
           <p className="font-medium">Sign in to view this course</p>
           <p className="text-sm text-muted-foreground">
@@ -348,7 +386,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   if (loading || authLoading) {
 
     return (
-      <Shell>
+      <Shell standalone={standalone}>
         <div className="space-y-4 max-w-4xl mx-auto">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-96" />
@@ -359,7 +397,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
 
   if (!assignment) {
     return (
-      <Shell>
+      <Shell standalone={standalone}>
         <div className="max-w-4xl mx-auto text-center py-12">
           <p className="text-muted-foreground mb-4">This training assignment could not be loaded.</p>
           <Button asChild variant="outline"><Link to={backPath}><ArrowLeft className="w-4 h-4 mr-2" />{backLabel}</Link></Button>
@@ -389,7 +427,6 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
     if (!nextCourse) return;
     setStep("content");
     setResult(null);
-    setAnswers({});
     setQuestions([]);
     setVideoEnded(false);
     setContentRead(false);
@@ -397,7 +434,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   };
 
   return (
-    <Shell>
+    <Shell standalone={standalone}>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between gap-4">
           <Button variant="ghost" size="sm" asChild>
@@ -486,11 +523,17 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
                     {videoPercent}% watched — the quiz unlocks at {VIDEO_GATE_PERCENT}%.
                   </p>
                 ) : (
-                  <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting}>
+                  <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleContinueToQuiz} loading={submitting} disabled={questions.length > 0 && !draft.ready}>
                     {questions.length > 0 ? "Continue to Quiz" : "Mark Complete"}
                   </Button>
                 )}
               </div>
+              {!draft.ready && draft.status === "error" && questions.length > 0 && (
+                <div role="alert" className="mt-3 flex items-center gap-3 text-sm text-destructive">
+                  Couldn't load your saved answers.
+                  <Button variant="outline" size="sm" onClick={draft.retryLoad}>Retry</Button>
+                </div>
+              )}
 
             </CardContent>
           </Card>
@@ -502,14 +545,17 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
             <CardHeader className="border-b px-4 sm:px-6">
               <CardTitle className="text-base sm:text-lg">Quiz</CardTitle>
               <p className="text-sm text-muted-foreground">Answer all questions. Passing score: {course.passing_score ?? 70}%.</p>
+              <p role="status" className={`text-sm ${draft.status === "error" ? "text-destructive" : "text-muted-foreground"}`}>
+                {draft.status === "saving" ? "Saving your answer…" : draft.status === "error" ? "Your latest answer hasn't saved yet. Please reconnect." : draft.restored ? "Your answers were saved." : "Answers saved"}
+              </p>
             </CardHeader>
             <CardContent className="pt-6 px-4 sm:px-6 space-y-6">
               {questions.map((q, idx) => {
                 const opts: string[] = Array.isArray(q.options) ? q.options : [];
                 return (
-                  <div key={q.id} className="space-y-2">
+                  <div key={q.id} id={`question-${q.id}`} tabIndex={-1} className="space-y-2 scroll-mt-20">
                     <p className="font-medium text-base">{idx + 1}. {q.question_text}</p>
-                    <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))}>
+                    <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => draft.pick(q.id, v)} disabled={submitting || !draft.ready}>
                       {opts.map((opt, i) => (
                         <div key={i} className="flex items-start gap-3 rounded-lg border p-3">
                           <RadioGroupItem value={opt} id={`${q.id}-${i}`} className="mt-0.5" />
@@ -522,7 +568,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
               })}
               <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t">
                 <Button className="h-11 w-full sm:w-auto sm:h-10" variant="outline" onClick={() => setStep("content")} disabled={submitting}>Back to content</Button>
-                <Button className="h-11 w-full sm:w-auto sm:h-10" onClick={handleSubmitQuiz} loading={submitting}>Submit Quiz</Button>
+                <Button id="submit-quiz" className="h-11 w-full sm:w-auto sm:h-10" onClick={handleSubmitQuiz} loading={submitting} disabled={!draft.ready || draft.status === "saving" || draft.status === "error"}>Submit Quiz</Button>
               </div>
             </CardContent>
           </Card>

@@ -199,7 +199,7 @@ export default function CaregiverTraining() {
                 </Button>
               ) : (
                 <Button size="sm" asChild>
-                  <Link to={`/my-training/${a.id}`}>{a.status === "in_progress" ? "Continue" : "Start"}</Link>
+                  <Link to={`/my-training/course/${a.id}`}>{a.status === "in_progress" ? "Continue" : "Start"}</Link>
                 </Button>
               )}
             </div>

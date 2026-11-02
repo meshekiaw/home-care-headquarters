@@ -416,7 +416,7 @@ export default function LmsCoursePlayer({ standalone = false }: { standalone?: b
   const coursePath = (s: SiblingAssignment) =>
     s.content_type === "orientation"
       ? "/my-orientation"
-      : `${standalone ? "/caregiver-training" : "/my-training"}/course/${s.id}`;
+      : standalone ? `/caregiver-training/course/${s.id}` : `/my-training/${s.id}`;
 
   const currentIndex = siblings.findIndex((s) => s.id === assignment.id);
   const nextCourse =

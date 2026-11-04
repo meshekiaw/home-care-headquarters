@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Client payer, requested schedule and status
-- [ ] Add independent admin-only fields and audited status history; leave all legacy client data and assessment logic unchanged
-- [ ] Add fields to New Intake, Edit and client record; cards, payer filter and counted status tabs; preserve pipeline columns
-- [ ] Verify permissions, status/date validation and hours with synthetic clients only; remove test clients; no admin or real-user sign-ins
+- [x] Added independent admin-only fields and immutable, actor-stamped status history; all 16 existing clients start Not set and their complete legacy-data fingerprint is unchanged
+- [x] Added fields to New Intake, Add New Client, Edit and client record; payer/status/schedule cards, multi-payer filter and counted status tabs; pipeline columns and assessment rules preserved
+- [x] 266 isolated tests passed; synthetic desktop/phone list filters, record save/readback/history, Edit round-trip and Intake-to-pipeline verified; disposable test data removed, no live client writes or any sign-ins; build OK
+- [ ] Live authenticated admin save remains untested because admin and real-user sign-ins are prohibited
 
 ## Admin caregiver sign-in access
 - [x] Added admin-only record access status beside profile controls, exact name/email confirmation and append-only access history, plus all four roster filter states

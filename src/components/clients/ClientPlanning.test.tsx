@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { ClientPlanningPanel } from "./ClientPlanningPanel";
 import { ClientPlanningFields } from "./ClientPlanningFields";
 import ClientIntakeForm from "./ClientIntakeForm";
 import ClientNew from "@/pages/ClientNew";
+import ClientEdit from "@/pages/ClientEdit";
 import { clientPlanningDraft } from "@/utils/clientPlanning";
 const mocks = vi.hoisted(() => ({ admin: true, update: vi.fn(), insert: vi.fn(), toast: vi.fn(), from: vi.fn() }));
 vi.mock("@/hooks/useUserRole", () => ({ useUserRole: () => ({ isAdmin: mocks.admin }) }));
@@ -13,7 +14,7 @@ vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mocks.toast }) }
 vi.mock("@/components/layout/DashboardLayout", () => ({ default: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("jspdf", () => ({ default: vi.fn() }));
 vi.mock("@/components/scheduling/AiResponseCard", () => ({ AiResponseCard: () => null }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from, auth: { getUser: async () => ({ data: { user: { id: "synthetic-actor" } } }) } } }));
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from, auth: { getUser: async () => ({ data: { user: { id: "synthetic-actor" } } }), getSession: async () => ({ data: { session: null } }) } } }));
 beforeEach(() => {
   vi.clearAllMocks(); mocks.admin = true;
   mocks.from.mockImplementation((table: string) => {
@@ -30,7 +31,7 @@ describe("synthetic client planning controls without sign-in", () => {
     await screen.findByText("Synthetic Office Admin", { exact: false });
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
     fireEvent.click(screen.getByLabelText("VA")); fireEvent.click(screen.getByLabelText("Private pay"));
-    fireEvent.click(screen.getByRole("button", { name: "Save", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
     await waitFor(() => expect(saved).toHaveBeenCalledOnce());
     expect(mocks.update.mock.calls[0][0]).toMatchObject({ payers: ["VA", "Private pay"], client_status: "not_set" });
     expect(mocks.update.mock.calls[0][0]).not.toHaveProperty("payer_type"); expect(mocks.update.mock.calls[0][0]).not.toHaveProperty("status");
@@ -42,7 +43,7 @@ describe("synthetic client planning controls without sign-in", () => {
   });
   it("does not save hospitalized status without its admit date", async () => {
     render(<ClientPlanningPanel client={{ id: "made-up-client", client_status: "hospitalized" }} onSaved={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: "Edit" })); fireEvent.click(screen.getByRole("button", { name: "Save", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit" })); fireEvent.click(screen.getByRole("button", { name: /^Save$/ }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ variant: "destructive" })));
     expect(mocks.update).not.toHaveBeenCalled();
   });
@@ -68,8 +69,22 @@ describe("synthetic client planning controls without sign-in", () => {
     fireEvent.change(screen.getByLabelText("First Name *"), { target: { value: "Made-up" } });
     fireEvent.change(screen.getByLabelText("Last Name *"), { target: { value: "Client" } });
     fireEvent.change(screen.getByLabelText("Medicaid ID *"), { target: { value: "SYNTHETIC-ONLY" } });
-    fireEvent.click(screen.getByLabelText("VA")); fireEvent.click(screen.getByRole("button", { name: "Add Client", exact: true }));
+    fireEvent.click(screen.getByLabelText("VA")); fireEvent.click(screen.getByRole("button", { name: /^Add Client$/ }));
     await waitFor(() => expect(mocks.insert).toHaveBeenCalledTimes(2));
     expect(mocks.insert.mock.calls[0][1][0]).toMatchObject({ payers: ["VA"], payer_type: "Medicaid", client_status: "not_set" });
+  });
+  it("hydrates and updates Edit Client without changing its assessment values", async () => {
+    const record = { id: "made-up-client", first_name: "Made-up", last_name: "Client", status: "active", payer_type: "VA", medicaid_id: "", payers: ["Private pay"], client_status: "on_hold", client_status_date: "2026-11-04", client_status_reason: "Synthetic reason", form_618_expiration_date: "2027-11-04", requested_schedule: { mon: { enabled: true, start: "09:00", end: "13:00" } } };
+    mocks.from.mockImplementation(() => {
+      const query = { select: () => query, eq: () => query, single: async () => ({ data: record, error: null }), update: (payload: unknown) => { mocks.update(payload); return query; } };
+      return query;
+    });
+    render(<MemoryRouter initialEntries={["/clients/made-up-client/edit"]}><Routes><Route path="/clients/:id/edit" element={<ClientEdit />} /></Routes></MemoryRouter>);
+    await screen.findByLabelText("Monday");
+    expect((screen.getByLabelText("Monday start time") as HTMLInputElement).value).toBe("09:00");
+    fireEvent.click(screen.getByLabelText("ARChoices"));
+    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledOnce());
+    expect(mocks.update.mock.calls[0][0]).toMatchObject({ payers: ["Private pay", "ARChoices"], payer_type: "VA", status: "active", form_618_expiration_date: "2027-11-04", client_status: "on_hold", client_status_reason: "Synthetic reason" });
   });
 });

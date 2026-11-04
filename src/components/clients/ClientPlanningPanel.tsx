@@ -70,7 +70,7 @@ export function ClientPlanningPanel({ client, onSaved }: { client: ClientPlannin
         <p className="text-xs text-muted-foreground">Recorded {new Date(event.changed_at).toLocaleString()}</p>
       </li>)}</ol>}
     </div>
-    <Dialog open={editing && isAdmin} onOpenChange={open => { if (!saving) setEditing(open); }}><DialogContent className="max-w-xl max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle>Edit payer, schedule & client status</DialogTitle></DialogHeader>
+    <Dialog open={editing && isAdmin} onOpenChange={open => { if (!saving) setEditing(open); }}><DialogContent aria-describedby={undefined} className="max-w-xl max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle>Edit payer, schedule & client status</DialogTitle></DialogHeader>
       <form onSubmit={e => { e.preventDefault(); void save(); }} className="space-y-4"><ClientPlanningFields value={draft} onChange={setDraft} disabled={saving} /><div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={saving} onClick={() => setEditing(false)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}Save</Button></div></form>
     </DialogContent></Dialog>
   </section>;

@@ -33,8 +33,11 @@ import { NursingFormsTab } from "@/components/clients/NursingFormsTab";
 import { ClientFormsTab } from "@/components/clients/ClientFormsTab";
 import { calculateAgeFromDateOnly, formatDateOnly, isDateOnlyString } from "@/utils/dateOnly";
 import { friendlyError } from "@/lib/friendlyError";
+import { useUserRole } from "@/hooks/useUserRole";
+import { ClientPlanningPanel } from "@/components/clients/ClientPlanningPanel";
+import { clientStatusLabel, type ClientPlanningRecord } from "@/utils/clientPlanning";
 
-interface Client {
+interface Client extends ClientPlanningRecord {
   id: string;
   first_name: string;
   last_name: string;
@@ -66,6 +69,7 @@ export default function ClientProfile() {
   const { toast } = useToast();
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isAdmin } = useUserRole();
 
   useEffect(() => {
     if (id) {
@@ -189,13 +193,14 @@ export default function ClientProfile() {
                 </span>
               </div>
               <div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-2xl font-bold">
                     {client.first_name} {client.last_name}
                   </h1>
                   <Badge variant={getStatusVariant(client.status)} className="capitalize">
                     {client.status}
                   </Badge>
+                  <Badge variant="outline">{clientStatusLabel(client.client_status)}</Badge>
                 </div>
                 <div className="flex items-center gap-4 mt-1 text-muted-foreground">
                   {age && <span>{age} years old</span>}
@@ -209,12 +214,12 @@ export default function ClientProfile() {
               </div>
             </div>
           </div>
-          <Link to={`/clients/${client.id}/edit`}>
+          {isAdmin && <Link to={`/clients/${client.id}/edit`}>
             <Button variant="outline">
               <Edit className="w-4 h-4 mr-2" />
               Edit Client
             </Button>
-          </Link>
+          </Link>}
         </div>
 
         {/* Tabs */}
@@ -267,6 +272,7 @@ export default function ClientProfile() {
           </TabsList>
 
           <TabsContent value="overview">
+            <ClientPlanningPanel client={client} onSaved={() => { void fetchClient(); }} />
             <ClientOverview client={client} formatDate={formatDate} />
           </TabsContent>
 

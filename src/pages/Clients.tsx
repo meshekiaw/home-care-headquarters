@@ -72,8 +72,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
 import OnboardingPipeline from "@/components/clients/OnboardingPipeline";
 import { friendlyError } from "@/lib/friendlyError";
+import { CLIENT_PAYERS, CLIENT_STATUSES, clientPayerLabel, clientStatusLabel, clientStatusCounts, matchesClientPayer, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
 
-interface Client {
+interface Client extends ClientPlanningRecord {
   id: string;
   first_name: string;
   last_name: string;
@@ -108,6 +109,8 @@ export default function Clients() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [payerFilter, setPayerFilter] = useState("all");
+  const [planningPayerFilter, setPlanningPayerFilter] = useState("all");
+  const [clientStatusTab, setClientStatusTab] = useState("all");
   const [dueDateMonth, setDueDateMonth] = useState("all");
   const [expirationDateMonth, setExpirationDateMonth] = useState("all");
   const navigate = useNavigate();
@@ -206,6 +209,8 @@ export default function Clients() {
     if (!matchesSearch) return false;
     if (statusFilter !== "all" && client.status !== statusFilter) return false;
     if (payerFilter !== "all" && (client.payer_type || "Medicaid") !== payerFilter) return false;
+    if (!matchesClientPayer(client, planningPayerFilter)) return false;
+    if (clientStatusTab !== "all" && (client.client_status ?? "not_set") !== clientStatusTab) return false;
     if (dueDateMonth !== "all") {
       if (!client.authorization_due_date) return false;
       if (getDateOnlyYearMonth(client.authorization_due_date) !== dueDateMonth) return false;
@@ -245,7 +250,7 @@ export default function Clients() {
   // Clear selection when search changes
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [searchQuery]);
+  }, [searchQuery, clientStatusTab, planningPayerFilter, payerFilter, statusFilter, dueDateMonth, expirationDateMonth]);
 
   const formatYearMonth = (dateStr: string) => {
     return getDateOnlyYearMonth(dateStr) ?? "";
@@ -263,7 +268,8 @@ export default function Clients() {
     clients.filter(c => c.authorization_expiration_date).map(c => formatYearMonth(c.authorization_expiration_date!))
   )].sort();
 
-  const activeFilterCount = [statusFilter !== "all", payerFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
+  const statusCounts = clientStatusCounts(clients);
+  const activeFilterCount = [statusFilter !== "all", payerFilter !== "all", planningPayerFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
 
   const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
   const someSelected = sortedClients.some(c => selectedIds.has(c.id));
@@ -340,6 +346,13 @@ export default function Clients() {
 
 
           <TabsContent value="list" className="space-y-6">
+            <Tabs value={clientStatusTab} onValueChange={setClientStatusTab}>
+              <div className="overflow-x-auto pb-1">
+                <TabsList aria-label="Client status groups" className="h-auto justify-start">
+                  {[{ value: "all", label: "All" }, ...CLIENT_STATUSES].map(status => <TabsTrigger value={status.value} key={status.value} className="gap-2">{status.label}<span className="text-xs tabular-nums">{statusCounts[status.value]}</span></TabsTrigger>)}
+                </TabsList>
+              </div>
+            </Tabs>
 
         {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
@@ -375,6 +388,10 @@ export default function Clients() {
               </Badge>
             )}
           </Button>
+          <Select value={planningPayerFilter} onValueChange={setPlanningPayerFilter}>
+            <SelectTrigger aria-label="Payer filter" className="w-full sm:w-[225px]"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All payers</SelectItem><SelectItem value="not_set">Payer: Not set</SelectItem>{CLIENT_PAYERS.map(payer => <SelectItem value={payer} key={payer}>{payer}</SelectItem>)}</SelectContent>
+          </Select>
         </div>
 
         {/* Filter Bar */}
@@ -436,7 +453,7 @@ export default function Clients() {
               </Select>
             </div>
             {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => { setStatusFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setStatusFilter("all"); setPayerFilter("all"); setPlanningPayerFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
                 <X className="w-4 h-4 mr-1" />
                 Clear Filters
               </Button>
@@ -595,6 +612,8 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Client status</TableHead>
+                      <TableHead>Payer</TableHead>
                       <TableHead>Payer Type</TableHead>
                       <TableHead>Current 618 Date</TableHead>
                       <TableHead>618 Expiration Date</TableHead>
@@ -625,6 +644,7 @@ export default function Clients() {
                             </div>
                             <div>
                               <p className="font-medium">{client.first_name} {client.last_name}</p>
+                              <p className="text-xs text-muted-foreground whitespace-normal min-w-[180px] max-w-[300px]">Requested: {requestedScheduleSummary(readRequestedSchedule(client.requested_schedule))}</p>
                             </div>
                           </Link>
                         </TableCell>
@@ -656,6 +676,12 @@ export default function Clients() {
                           <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${getStatusColor(client.status)}`}>
                             {client.status}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="whitespace-nowrap">{clientStatusLabel(client.client_status)}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm whitespace-normal break-words">{clientPayerLabel(client)}</span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm font-medium">{client.payer_type || 'Medicaid'}</span>

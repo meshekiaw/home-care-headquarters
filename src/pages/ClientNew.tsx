@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { friendlyError } from "@/lib/friendlyError";
+import { useUserRole } from "@/hooks/useUserRole";
+import { ClientPlanningFields } from "@/components/clients/ClientPlanningFields";
+import { clientPlanningDraft, clientPlanningPayload } from "@/utils/clientPlanning";
 
 const clientSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(100),
@@ -58,6 +61,8 @@ export default function ClientNew() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { isAdmin } = useUserRole();
+  const [planning, setPlanning] = useState(() => clientPlanningDraft());
   
   const [formData, setFormData] = useState<ClientFormData>({
     first_name: "",
@@ -99,6 +104,8 @@ export default function ClientNew() {
     try {
       // Validate form data
       const validated = clientSchema.parse(formData);
+      if (!isAdmin) throw new Error("Only admins can add client details.");
+      const planningPayload = clientPlanningPayload(planning);
 
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -106,6 +113,7 @@ export default function ClientNew() {
 
       // Insert client
       const { data: inserted, error } = await supabase.from('clients').insert([{
+        ...planningPayload,
         first_name: validated.first_name,
         last_name: validated.last_name,
         email: validated.email || null,
@@ -471,6 +479,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Notes */}
+          {isAdmin && <ClientPlanningFields value={planning} onChange={setPlanning} disabled={loading} />}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">

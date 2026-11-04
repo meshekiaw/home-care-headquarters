@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { friendlyError } from "@/lib/friendlyError";
+import { useUserRole } from "@/hooks/useUserRole";
+import { ClientPlanningFields } from "@/components/clients/ClientPlanningFields";
+import { clientPlanningDraft, clientPlanningPayload } from "@/utils/clientPlanning";
 
 const clientSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(100),
@@ -60,6 +63,8 @@ export default function ClientEdit() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { isAdmin } = useUserRole();
+  const [planning, setPlanning] = useState(() => clientPlanningDraft());
 
   const [formData, setFormData] = useState<ClientFormData>({
     first_name: "",
@@ -96,6 +101,8 @@ export default function ClientEdit() {
           .single();
 
         if (error) throw error;
+
+        setPlanning(clientPlanningDraft(data));
 
         setFormData({
           first_name: data.first_name || "",
@@ -148,6 +155,9 @@ export default function ClientEdit() {
 
     try {
       const validated = clientSchema.parse(formData);
+      if (!id) throw new Error("Client not found.");
+      if (!isAdmin) throw new Error("Only admins can change client details.");
+      const planningPayload = clientPlanningPayload(planning);
 
       const { data: { session } } = await supabase.auth.getSession();
       console.log("[ClientEdit] Saving as user:", session?.user?.id, "client:", id);
@@ -155,6 +165,7 @@ export default function ClientEdit() {
       const { error } = await supabase
         .from("clients")
         .update({
+          ...planningPayload,
           first_name: validated.first_name,
           last_name: validated.last_name,
           email: validated.email || null,
@@ -177,7 +188,7 @@ export default function ClientEdit() {
           client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
           status: validated.status,
         })
-        .eq("id", id!)
+        .eq("id", id)
         .select("id")
         .single();
 
@@ -409,6 +420,7 @@ export default function ClientEdit() {
           </Card>
 
           {/* Notes */}
+          {isAdmin && <ClientPlanningFields value={planning} onChange={setPlanning} disabled={loading} />}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">

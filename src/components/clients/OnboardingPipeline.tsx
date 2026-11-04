@@ -16,6 +16,7 @@ import { Calendar, User, Eye, AlertCircle, Inbox, RefreshCw, Loader2 } from "luc
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { friendlyError } from "@/lib/friendlyError";
+import { clientPayerLabel, clientStatusLabel, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
 
 type Assessment = {
   id: string;
@@ -33,7 +34,7 @@ type Assessment = {
   family_email: string | null;
   created_at: string;
   updated_at: string;
-  clients?: { first_name: string; last_name: string } | null;
+  clients?: ({ first_name: string; last_name: string } & ClientPlanningRecord) | null;
 };
 
 type Column = "pending" | "scheduled" | "completed" | "overdue";
@@ -91,7 +92,7 @@ export default function OnboardingPipeline() {
     setError(null);
     const { data, error } = await supabase
       .from("client_assessments")
-      .select("*, clients(first_name, last_name)")
+      .select("*, clients(first_name, last_name, payers, payer_other, client_status, requested_schedule)")
       .order("created_at", { ascending: false });
     if (error) {
       setError(error.message);
@@ -220,6 +221,9 @@ export default function OnboardingPipeline() {
                         <p className="text-xs text-muted-foreground">
                           {a.assessment_name || a.assessment_type || "Assessment"}
                         </p>
+                        <p className="text-xs break-words"><span className="text-muted-foreground">Payer: </span>{clientPayerLabel(a.clients ?? {})}</p>
+                        <p className="text-xs break-words"><span className="text-muted-foreground">Client status: </span>{clientStatusLabel(a.clients?.client_status)}</p>
+                        <p className="text-xs break-words"><span className="text-muted-foreground">Requested: </span>{requestedScheduleSummary(readRequestedSchedule(a.clients?.requested_schedule))}</p>
                         <div className="flex items-center gap-1.5 text-xs">
                           <Calendar className="w-3 h-3 text-muted-foreground" />
                           <span className={isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}>

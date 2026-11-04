@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AiResponseCard } from "@/components/scheduling/AiResponseCard";
 import { friendlyError } from "@/lib/friendlyError";
+import { useUserRole } from "@/hooks/useUserRole";
+import { ClientPlanningFields } from "./ClientPlanningFields";
+import { clientPlanningDraft, clientPlanningPayload, clientPayerLabel } from "@/utils/clientPlanning";
 
 const SECTIONS = [
   { key: "care_plan", label: "Care Plan Draft" },
@@ -27,10 +30,11 @@ const SECTIONS = [
 ];
 
 const SERVICE_TYPES = ["Personal Care", "Attendant Care", "Respite", "Companion", "Skilled Nursing"];
-const PAYERS = ["ARChoices/Medicaid", "DHS Aged & Disabled Waiver", "Private Pay", "Optum/VA"];
 
 export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } = {}) {
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
+  const [planning, setPlanning] = useState(() => clientPlanningDraft());
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<Record<string, string> | null>(null);
@@ -42,7 +46,6 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
     dob: "",
     diagnosis: "",
     serviceType: "Personal Care",
-    payer: "ARChoices/Medicaid",
     authorizedHours: "",
     emergencyContactName: "",
     emergencyContactPhone: "",
@@ -66,8 +69,9 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
     setLoading(true);
     setResult(null);
     try {
+      const planningPayload = clientPlanningPayload(planning);
       const { data, error } = await supabase.functions.invoke("call-off-assistant", {
-        body: { mode: "intake", payload: form },
+        body: { mode: "intake", payload: { ...form, payer: clientPayerLabel(planningPayload) } },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -87,6 +91,8 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
     }
     setSaving(true);
     try {
+      if (!isAdmin) throw new Error("Only admins can add client details.");
+      const planningPayload = clientPlanningPayload(planning);
       const { data: userData, error: userErr } = await supabase.auth.getUser();
       if (userErr || !userData?.user) throw new Error("Not signed in");
       const userId = userData.user.id;
@@ -98,6 +104,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       const { data: client, error: cErr } = await supabase
         .from("clients")
         .insert({
+          ...planningPayload,
           user_id: userId,
           first_name: firstName,
           last_name: lastName,
@@ -209,7 +216,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       ["Address", form.address || "—"],
       ["Primary Diagnosis", form.diagnosis || "—"],
       ["Service Type", form.serviceType || "—"],
-      ["Payer / Program", form.payer || "—"],
+      ["Payer", clientPayerLabel({ payers: planning.payers, payer_other: planning.payerOther })],
       ["Authorized Hours", form.authorizedHours || "—"],
       ["Emergency Contact", `${form.emergencyContactName || "—"} ${form.emergencyContactPhone ? "• " + form.emergencyContactPhone : ""}`.trim()],
     ];
@@ -375,15 +382,6 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label>Payer / Program</Label>
-                <Select value={form.payer} onValueChange={(v) => update("payer", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PAYERS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -402,10 +400,11 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating…</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Intake Packet</>}
             </Button>
+            {isAdmin && <ClientPlanningFields value={planning} onChange={setPlanning} disabled={saving || loading} />}
             <Button
               type="button"
               onClick={onSaveClient}
-              disabled={saving || !form.clientName.trim()}
+              disabled={!isAdmin || saving || !form.clientName.trim()}
               variant="secondary"
               className="w-full"
             >
@@ -452,7 +451,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
                     ["Address", form.address],
                     ["Primary Diagnosis", form.diagnosis],
                     ["Service Type", form.serviceType],
-                    ["Payer / Program", form.payer],
+                    ["Payer", clientPayerLabel({ payers: planning.payers, payer_other: planning.payerOther })],
                     ["Authorized Hours", form.authorizedHours],
                     ["Emergency Contact", `${form.emergencyContactName || ""}${form.emergencyContactPhone ? " • " + form.emergencyContactPhone : ""}`.trim()],
                   ] as [string, string][]).map(([k, v]) => (

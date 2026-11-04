@@ -1,5 +1,10 @@
 # Roadmap
 
+## Client payer, requested schedule and status
+- [ ] Add independent admin-only fields and audited status history; leave all legacy client data and assessment logic unchanged
+- [ ] Add fields to New Intake, Edit and client record; cards, payer filter and counted status tabs; preserve pipeline columns
+- [ ] Verify permissions, status/date validation and hours with synthetic clients only; remove test clients; no admin or real-user sign-ins
+
 ## Admin caregiver sign-in access
 - [x] Added admin-only record access status beside profile controls, exact name/email confirmation and append-only access history, plus all four roster filter states
 - [x] Deployed dedicated admin-authenticated gateway; confirmed/passwordless creation without email, service-only atomic role/link/12-session/audit repair preserves admin roles and refuses nurse/conflicting caregiver links

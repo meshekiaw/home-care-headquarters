@@ -23,7 +23,7 @@ beforeEach(async () => {
   await db.query("INSERT INTO clients(id,first_name,last_name) VALUES($1,'Made-up','Test Client')", [clientId]);
 });
 afterAll(async () => { await db.close(); });
-const history = async () => (await db.query("SELECT * FROM client_status_history ORDER BY changed_at,id")).rows;
+const history = async () => (await db.query<{ changed_at: Date; [key: string]: unknown }>("SELECT * FROM client_status_history ORDER BY changed_at,id")).rows;
 describe("client planning migration in a disposable synthetic database", () => {
   it("keeps all existing fields unchanged when planning details change", async () => {
     await db.query("UPDATE clients SET payers=ARRAY['VA','Private pay'],client_status='current_staffed' WHERE id=$1", [clientId]);

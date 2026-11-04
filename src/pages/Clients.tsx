@@ -678,6 +678,12 @@ export default function Clients() {
                           </span>
                         </TableCell>
                         <TableCell>
+                          <Badge variant="outline" className="whitespace-nowrap">{clientStatusLabel(client.client_status)}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm whitespace-normal break-words">{clientPayerLabel(client)}</span>
+                        </TableCell>
+                        <TableCell>
                           <span className="text-sm font-medium">{client.payer_type || 'Medicaid'}</span>
                         </TableCell>
                         {(() => {

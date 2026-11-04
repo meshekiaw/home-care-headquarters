@@ -96,6 +96,7 @@ export function clientStatusCounts(records: ClientPlanningRecord[]): Record<stri
   return counts;
 }
 export function validateClientPlanning(draft: ClientPlanningDraft): string | null {
+  if (draft.payerOther.length > 200 || draft.scheduleNotes.length > 2000 || draft.statusReason.length > 2000) return "Client planning text is too long.";
   if (draft.payers.some(p => !CLIENT_PAYERS.some(option => option === p)) || new Set(draft.payers).size !== draft.payers.length) return "Select valid, distinct payers.";
   if (draft.payers.includes("Other") && !draft.payerOther.trim()) return "Enter the other payer.";
   if (!CLIENT_STATUSES.some(s => s.value === draft.status)) return "Select a valid client status.";

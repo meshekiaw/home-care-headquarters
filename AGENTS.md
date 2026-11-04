@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Client operational payers, requested schedules and status live in additive fields independent of legacy assessment payer/activity fields; database validation enforces admin-only changes and append-only actor-stamped status history so planning never alters assessment dates or pipeline stages.
+
 - Admin caregiver access uses its own authenticated gateway and service-only status/finalization RPCs; append-only access events retain actors and confirmed identities, and role/link/12-session repair commits atomically without changing the public training sign-in or password flows.
 
 - 618 witness handoffs opt out of shared same-person name reuse; normalized witness-name checks run in the 618 UI and a draft-to-signed database trigger so other forms and historical records remain unchanged.

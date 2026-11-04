@@ -1590,6 +1590,53 @@ export type Database = {
           },
         ]
       }
+      client_status_history: {
+        Row: {
+          actor_id: string
+          actor_name: string
+          changed_at: string
+          client_id: string
+          effective_date: string
+          expected_return_date: string | null
+          id: string
+          new_status: string
+          previous_status: string
+          reason: string | null
+        }
+        Insert: {
+          actor_id: string
+          actor_name: string
+          changed_at?: string
+          client_id: string
+          effective_date: string
+          expected_return_date?: string | null
+          id?: string
+          new_status: string
+          previous_status: string
+          reason?: string | null
+        }
+        Update: {
+          actor_id?: string
+          actor_name?: string
+          changed_at?: string
+          client_id?: string
+          effective_date?: string
+          expected_return_date?: string | null
+          id?: string
+          new_status?: string
+          previous_status?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_status_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -1599,11 +1646,15 @@ export type Database = {
           city: string | null
           client_class: string | null
           client_hours: number | null
+          client_status: string
+          client_status_date: string | null
+          client_status_reason: string | null
           created_at: string
           date_of_birth: string | null
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          expected_return_date: string | null
           first_name: string
           form_618_date: string | null
           form_618_expiration_date: string | null
@@ -1612,8 +1663,12 @@ export type Database = {
           medicaid_id: string | null
           notes: string | null
           nurse_visit_due_date: string | null
+          payer_other: string | null
           payer_type: string
+          payers: string[]
           phone: string | null
+          requested_schedule: Json
+          requested_schedule_notes: string | null
           state: string | null
           status: string
           updated_at: string
@@ -1628,11 +1683,15 @@ export type Database = {
           city?: string | null
           client_class?: string | null
           client_hours?: number | null
+          client_status?: string
+          client_status_date?: string | null
+          client_status_reason?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          expected_return_date?: string | null
           first_name: string
           form_618_date?: string | null
           form_618_expiration_date?: string | null
@@ -1641,8 +1700,12 @@ export type Database = {
           medicaid_id?: string | null
           notes?: string | null
           nurse_visit_due_date?: string | null
+          payer_other?: string | null
           payer_type?: string
+          payers?: string[]
           phone?: string | null
+          requested_schedule?: Json
+          requested_schedule_notes?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -1657,11 +1720,15 @@ export type Database = {
           city?: string | null
           client_class?: string | null
           client_hours?: number | null
+          client_status?: string
+          client_status_date?: string | null
+          client_status_reason?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          expected_return_date?: string | null
           first_name?: string
           form_618_date?: string | null
           form_618_expiration_date?: string | null
@@ -1670,8 +1737,12 @@ export type Database = {
           medicaid_id?: string | null
           notes?: string | null
           nurse_visit_due_date?: string | null
+          payer_other?: string | null
           payer_type?: string
+          payers?: string[]
           phone?: string | null
+          requested_schedule?: Json
+          requested_schedule_notes?: string | null
           state?: string | null
           status?: string
           updated_at?: string

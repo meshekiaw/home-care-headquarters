@@ -1394,6 +1394,94 @@ export type Database = {
           },
         ]
       }
+      client_authorization_history: {
+        Row: {
+          actor_id: string | null
+          actor_name: string
+          changed_at: string
+          client_id: string
+          id: string
+          new_values: Json
+          previous_values: Json
+          source: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name: string
+          changed_at?: string
+          client_id: string
+          id?: string
+          new_values: Json
+          previous_values: Json
+          source: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string
+          changed_at?: string
+          client_id?: string
+          id?: string
+          new_values?: Json
+          previous_values?: Json
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_authorization_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_authorization_progress: {
+        Row: {
+          approved_on: string | null
+          assessment_completed_on: string | null
+          assessment_id: string | null
+          assessment_scheduled_at: string | null
+          assessment_source: string | null
+          client_id: string
+          denial_reason: string | null
+          denied_on: string | null
+          submitted_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_on?: string | null
+          assessment_completed_on?: string | null
+          assessment_id?: string | null
+          assessment_scheduled_at?: string | null
+          assessment_source?: string | null
+          client_id: string
+          denial_reason?: string | null
+          denied_on?: string | null
+          submitted_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_on?: string | null
+          assessment_completed_on?: string | null
+          assessment_id?: string | null
+          assessment_scheduled_at?: string | null
+          assessment_source?: string | null
+          client_id?: string
+          denial_reason?: string | null
+          denied_on?: string | null
+          submitted_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_authorization_progress_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_caregivers: {
         Row: {
           assigned_date: string

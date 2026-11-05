@@ -295,6 +295,13 @@
       "when": 1793846755361,
       "tag": "0041_exclude_test_nurse_portal_queues",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793848916814,
+      "tag": "0042_client_authorization_progress",
+      "breakpoints": true
     }
   ]
 }

@@ -216,7 +216,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       ["Address", form.address || "—"],
       ["Primary Diagnosis", form.diagnosis || "—"],
       ["Service Type", form.serviceType || "—"],
-      ["Payer", clientPayerLabel({ payers: planning.payers, payer_other: planning.payerOther })],
+      ["Payer Type", clientPayerLabel({ payer_type: planning.payerType, payer_type_other: planning.payerOther })],
       ["Authorized Hours", form.authorizedHours || "—"],
       ["Emergency Contact", `${form.emergencyContactName || "—"} ${form.emergencyContactPhone ? "• " + form.emergencyContactPhone : ""}`.trim()],
     ];
@@ -451,7 +451,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
                     ["Address", form.address],
                     ["Primary Diagnosis", form.diagnosis],
                     ["Service Type", form.serviceType],
-                    ["Payer", clientPayerLabel({ payers: planning.payers, payer_other: planning.payerOther })],
+                    ["Payer Type", clientPayerLabel({ payer_type: planning.payerType, payer_type_other: planning.payerOther })],
                     ["Authorized Hours", form.authorizedHours],
                     ["Emergency Contact", `${form.emergencyContactName || ""}${form.emergencyContactPhone ? " • " + form.emergencyContactPhone : ""}`.trim()],
                   ] as [string, string][]).map(([k, v]) => (

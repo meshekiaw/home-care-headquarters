@@ -95,8 +95,9 @@ async function sendEmail(
          assessment_name,
          due_date,
          user_id,
-         clients (first_name, last_name)
+         clients!inner (first_name, last_name, status)
        `)
+       .neq("clients.status", "test")
        .eq("id", assessment_id)
        .single();
  

@@ -68,7 +68,7 @@ export function useWeeklyConflicts(weekDate: Date) {
           status,
           caregiver_id,
           caregiver:caregivers(id, first_name, last_name),
-          client:clients(id, first_name, last_name)
+          client:clients!inner(id, first_name, last_name)
         `)
         .gte("start_time", weekStart.toISOString())
         .lte("start_time", weekEnd.toISOString())

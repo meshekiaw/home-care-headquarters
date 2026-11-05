@@ -92,7 +92,8 @@ export default function OnboardingPipeline() {
     setError(null);
     const { data, error } = await supabase
       .from("client_assessments")
-      .select("*, clients(first_name, last_name, payers, payer_other, client_status, requested_schedule)")
+      .select("*, clients!inner(first_name, last_name, payer_type, payer_type_other, status, requested_schedule)")
+      .neq("clients.status", "test")
       .order("created_at", { ascending: false });
     if (error) {
       setError(error.message);
@@ -221,8 +222,8 @@ export default function OnboardingPipeline() {
                         <p className="text-xs text-muted-foreground">
                           {a.assessment_name || a.assessment_type || "Assessment"}
                         </p>
-                        <p className="text-xs break-words"><span className="text-muted-foreground">Payer: </span>{clientPayerLabel(a.clients ?? {})}</p>
-                        <p className="text-xs break-words"><span className="text-muted-foreground">Client status: </span>{clientStatusLabel(a.clients?.client_status)}</p>
+                        <p className="text-xs break-words"><span className="text-muted-foreground">Payer Type: </span>{clientPayerLabel(a.clients ?? {})}</p>
+                        <p className="text-xs break-words"><span className="text-muted-foreground">Status: </span>{clientStatusLabel(a.clients?.status)}</p>
                         <p className="text-xs break-words"><span className="text-muted-foreground">Requested: </span>{requestedScheduleSummary(readRequestedSchedule(a.clients?.requested_schedule))}</p>
                         <div className="flex items-center gap-1.5 text-xs">
                           <Calendar className="w-3 h-3 text-muted-foreground" />

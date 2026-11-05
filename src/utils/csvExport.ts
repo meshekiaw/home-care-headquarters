@@ -111,6 +111,10 @@ export function formatClientForExport(client: {
   emergency_contact_name?: string | null;
   emergency_contact_phone?: string | null;
   payer_type?: string | null;
+  payer_type_other?: string | null;
+  client_status_date?: string | null;
+  expected_return_date?: string | null;
+  client_status_reason?: string | null;
   medicaid_id?: string | null;
   client_hours?: number | null;
   created_at: string;
@@ -128,7 +132,11 @@ export function formatClientForExport(client: {
     date_of_birth: client.date_of_birth || '',
     emergency_contact_name: client.emergency_contact_name || '',
   emergency_contact_phone: client.emergency_contact_phone || '',
-    payer_type: client.payer_type || 'Medicaid',
+    payer_type: client.payer_type || '',
+    payer_type_other: client.payer_type_other || '',
+    client_status_date: client.client_status_date || '',
+    expected_return_date: client.expected_return_date || '',
+    client_status_reason: client.client_status_reason || '',
     medicaid_id: client.medicaid_id || '',
     client_hours: client.client_hours || '',
     created_at: client.created_at,

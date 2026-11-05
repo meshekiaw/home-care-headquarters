@@ -1,3 +1,4 @@
+import { ACTIVE_CLIENT_STATUSES } from "@/utils/clientPlanning";
 import { friendlyError } from "@/lib/friendlyError";
  import { useState, useEffect } from "react";
  import { Button } from "@/components/ui/button";
@@ -78,7 +79,7 @@ import { friendlyError } from "@/lib/friendlyError";
            role,
            is_active,
            notes,
-           clients (
+           clients!inner (
              id,
              first_name,
              last_name,
@@ -109,7 +110,7 @@ import { friendlyError } from "@/lib/friendlyError";
        const { data, error } = await supabase
          .from('clients')
          .select('*')
-         .eq('status', 'active')
+         .in("status", ACTIVE_CLIENT_STATUSES)
          .order('first_name');
  
        if (error) throw error;

@@ -94,7 +94,7 @@ export async function checkSchedulingConflicts(
       .from("appointments")
       .select(`
         *,
-        client:clients(first_name, last_name)
+        client:clients!inner(first_name, last_name)
       `)
       .eq("caregiver_id", caregiverId)
       .neq("status", "cancelled")

@@ -236,10 +236,10 @@ export default function NurseAssessments() {
         supabase
           .from("nurse_assessments")
           .select(
-            "id, client_id, assessment_type, due_date, assigned_nurse_id, scheduled_date, scheduled_time, status, notes, rescheduled_at, reschedule_count, previous_scheduled_date, previous_scheduled_time, clients(first_name,last_name), nurses(first_name,last_name)",
+            "id, client_id, assessment_type, due_date, assigned_nurse_id, scheduled_date, scheduled_time, status, notes, rescheduled_at, reschedule_count, previous_scheduled_date, previous_scheduled_time, clients!inner(first_name,last_name), nurses(first_name,last_name)",
           )
           .order("due_date", { ascending: true }),
-        supabase.from("clients").select("id, first_name, last_name").order("last_name"),
+        supabase.from("clients").select("id, first_name, last_name").neq("status", "test").order("last_name"),
         supabase.from("nurses").select("id, first_name, last_name").order("last_name"),
       ]);
 

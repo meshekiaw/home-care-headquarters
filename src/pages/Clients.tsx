@@ -71,8 +71,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientIntakeForm from "@/components/clients/ClientIntakeForm";
 import OnboardingPipeline from "@/components/clients/OnboardingPipeline";
+import { useUserRole } from "@/hooks/useUserRole";
 import { friendlyError } from "@/lib/friendlyError";
-import { CLIENT_PAYERS, CLIENT_STATUSES, clientPayerLabel, clientStatusLabel, clientStatusCounts, matchesClientPayer, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
+import { CLIENT_PAYERS, CLIENT_STATUSES, clientPayerLabel, clientStatusLabel, clientStatusCounts, matchesClientPayer, matchesClientStatusTab, isOperationalClient, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
 
 interface Client extends ClientPlanningRecord {
   id: string;
@@ -107,14 +108,14 @@ export default function Clients() {
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("all");
   const [payerFilter, setPayerFilter] = useState("all");
-  const [planningPayerFilter, setPlanningPayerFilter] = useState("all");
-  const [clientStatusTab, setClientStatusTab] = useState("all");
+  const [clientStatusTab, setClientStatusTab] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("status") === "test" ? "test" : "all");
   const [dueDateMonth, setDueDateMonth] = useState("all");
   const [expirationDateMonth, setExpirationDateMonth] = useState("all");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
+  const operationalClients = clients.filter(isOperationalClient);
 
   useEffect(() => {
     fetchClients();
@@ -142,7 +143,7 @@ export default function Clients() {
 
   async function handleBulkImport(parsedClients: ParsedClient[]): Promise<{ success: number; failed: number }> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    if (!user || !isAdmin) {
       toast({ title: "Error", description: "You must be logged in to import clients", variant: "destructive" });
       return { success: 0, failed: parsedClients.length };
     }
@@ -170,7 +171,7 @@ export default function Clients() {
         .eq('client_id', inserted.id)
         .limit(1);
 
-      if (!existing || existing.length === 0) {
+      if (client.status !== "test" && (!existing || existing.length === 0)) {
         const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
         const { error: aErr } = await supabase.from('client_assessments').insert({
           client_id: inserted.id,
@@ -207,10 +208,8 @@ export default function Clients() {
       client.phone?.includes(searchQuery)
     );
     if (!matchesSearch) return false;
-    if (statusFilter !== "all" && client.status !== statusFilter) return false;
-    if (payerFilter !== "all" && (client.payer_type || "Medicaid") !== payerFilter) return false;
-    if (!matchesClientPayer(client, planningPayerFilter)) return false;
-    if (clientStatusTab !== "all" && (client.client_status ?? "not_set") !== clientStatusTab) return false;
+    if (!matchesClientPayer(client, payerFilter)) return false;
+    if (!matchesClientStatusTab(client, clientStatusTab)) return false;
     if (dueDateMonth !== "all") {
       if (!client.authorization_due_date) return false;
       if (getDateOnlyYearMonth(client.authorization_due_date) !== dueDateMonth) return false;
@@ -230,7 +229,7 @@ export default function Clients() {
         if (!b.city) return -1;
         return a.city.localeCompare(b.city);
       case 'status': {
-        const order: Record<string, number> = { active: 0, pending: 1, inactive: 2 };
+        const order: Record<string, number> = Object.fromEntries(CLIENT_STATUSES.map((s, index) => [s.value, index]));
         return (order[a.status] ?? 3) - (order[b.status] ?? 3);
       }
       case 'created_at':
@@ -250,7 +249,7 @@ export default function Clients() {
   // Clear selection when search changes
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [searchQuery, clientStatusTab, planningPayerFilter, payerFilter, statusFilter, dueDateMonth, expirationDateMonth]);
+  }, [searchQuery, clientStatusTab, payerFilter, dueDateMonth, expirationDateMonth]);
 
   const formatYearMonth = (dateStr: string) => {
     return getDateOnlyYearMonth(dateStr) ?? "";
@@ -261,15 +260,15 @@ export default function Clients() {
   };
 
   const dueDateMonths = [...new Set(
-    clients.filter(c => c.authorization_due_date).map(c => formatYearMonth(c.authorization_due_date!))
+    operationalClients.flatMap(c => c.authorization_due_date ? [formatYearMonth(c.authorization_due_date)] : [])
   )].sort();
 
   const expirationDateMonths = [...new Set(
-    clients.filter(c => c.authorization_expiration_date).map(c => formatYearMonth(c.authorization_expiration_date!))
+    operationalClients.flatMap(c => c.authorization_expiration_date ? [formatYearMonth(c.authorization_expiration_date)] : [])
   )].sort();
 
   const statusCounts = clientStatusCounts(clients);
-  const activeFilterCount = [statusFilter !== "all", payerFilter !== "all", planningPayerFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
+  const activeFilterCount = [payerFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
 
   const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
   const someSelected = sortedClients.some(c => selectedIds.has(c.id));
@@ -319,11 +318,11 @@ export default function Clients() {
             <Button 
               variant="outline" 
               onClick={() => {
-                const exportData = clients.map(formatClientForExport);
+                const exportData = operationalClients.map(formatClientForExport);
                 downloadCSV(exportData, `clients-${new Date().toISOString().split('T')[0]}`);
-                toast({ title: "Export complete", description: `Exported ${clients.length} clients` });
+                toast({ title: "Export complete", description: `Exported ${operationalClients.length} clients` });
               }}
-              disabled={clients.length === 0}
+              disabled={operationalClients.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
               Export CSV
@@ -388,42 +387,15 @@ export default function Clients() {
               </Badge>
             )}
           </Button>
-          <Select value={planningPayerFilter} onValueChange={setPlanningPayerFilter}>
-            <SelectTrigger aria-label="Payer filter" className="w-full sm:w-[225px]"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="all">All payers</SelectItem><SelectItem value="not_set">Payer: Not set</SelectItem>{CLIENT_PAYERS.map(payer => <SelectItem value={payer} key={payer}>{payer}</SelectItem>)}</SelectContent>
+          <Select value={payerFilter} onValueChange={setPayerFilter}>
+            <SelectTrigger aria-label="Payer Type filter" className="w-full sm:w-[225px]"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="all">All payers</SelectItem>{CLIENT_PAYERS.map(payer => <SelectItem value={payer} key={payer}>{payer}</SelectItem>)}</SelectContent>
           </Select>
         </div>
 
         {/* Filter Bar */}
         {filterOpen && (
           <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/50 border rounded-lg">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Payer Type</label>
-              <Select value={payerFilter} onValueChange={setPayerFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="Medicaid">Medicaid</SelectItem>
-                  <SelectItem value="VA">VA</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Current 618 Date Month</label>
               <Select value={dueDateMonth} onValueChange={setDueDateMonth}>
@@ -453,7 +425,7 @@ export default function Clients() {
               </Select>
             </div>
             {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => { setStatusFilter("all"); setPayerFilter("all"); setPlanningPayerFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setPayerFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
                 <X className="w-4 h-4 mr-1" />
                 Clear Filters
               </Button>
@@ -467,7 +439,7 @@ export default function Clients() {
             <span className="text-sm font-medium">{selectedIds.size} selected</span>
             
             {/* Change Status */}
-            <DropdownMenu>
+            {isAdmin && <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline">
                   <ChevronDown className="w-4 h-4 mr-1" />
@@ -475,17 +447,17 @@ export default function Clients() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {["active", "inactive", "pending"].map((status) => (
+                {CLIENT_STATUSES.filter(s => !["hospitalized", "on_hold", "discharged"].includes(s.value)).map(({ value: status, label }) => (
                   <DropdownMenuItem
                     key={status}
                     onClick={async () => {
                       try {
                         const { error } = await supabase
                           .from('clients')
-                          .update({ status })
+                          .update({ status, client_status_date: null, expected_return_date: null, client_status_reason: null })
                           .in('id', [...selectedIds]);
                         if (error) throw error;
-                        toast({ title: "Status updated", description: `${selectedIds.size} clients set to ${status}` });
+                        toast({ title: "Status updated", description: `${selectedIds.size} clients set to ${label}` });
                         setSelectedIds(new Set());
                         fetchClients();
                       } catch (error: any) {
@@ -493,18 +465,18 @@ export default function Clients() {
                       }
                     }}
                   >
-                    <span className="capitalize">{status}</span>
+                    <span>{label}</span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu>}
 
             {/* Export Selected */}
             <Button
               size="sm"
               variant="outline"
               onClick={() => {
-                const selected = clients.filter(c => selectedIds.has(c.id));
+                const selected = operationalClients.filter(c => selectedIds.has(c.id));
                 const exportData = selected.map(formatClientForExport);
                 downloadCSV(exportData, `clients-selected-${new Date().toISOString().split('T')[0]}`);
                 toast({ title: "Export complete", description: `Exported ${selected.length} clients` });
@@ -519,7 +491,7 @@ export default function Clients() {
               size="sm"
               variant="outline"
               onClick={() => {
-                const selected = clients.filter(c => selectedIds.has(c.id));
+                const selected = operationalClients.filter(c => selectedIds.has(c.id));
                 const printWindow = window.open('', '_blank');
                 if (printWindow) {
                   printWindow.document.write(`
@@ -527,7 +499,7 @@ export default function Clients() {
                     <style>body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5}</style>
                     </head><body><h1>Selected Clients (${selected.length})</h1>
                     <table><tr><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>Status</th></tr>
-                    ${selected.map(c => `<tr><td>${c.first_name} ${c.last_name}</td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.city || '-'}</td><td>${c.status}</td></tr>`).join('')}
+                    ${selected.map(c => `<tr><td>${c.first_name} ${c.last_name}</td><td>${c.phone || '-'}</td><td>${c.email || '-'}</td><td>${c.city || '-'}</td><td>${clientStatusLabel(c.status)}</td></tr>`).join('')}
                     </table></body></html>`);
                   printWindow.document.close();
                   printWindow.print();
@@ -612,8 +584,6 @@ export default function Clients() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Client status</TableHead>
-                      <TableHead>Payer</TableHead>
                       <TableHead>Payer Type</TableHead>
                       <TableHead>Current 618 Date</TableHead>
                       <TableHead>618 Expiration Date</TableHead>
@@ -672,20 +642,8 @@ export default function Clients() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell>
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${getStatusColor(client.status)}`}>
-                            {client.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="whitespace-nowrap">{clientStatusLabel(client.client_status)}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm whitespace-normal break-words">{clientPayerLabel(client)}</span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm font-medium">{client.payer_type || 'Medicaid'}</span>
-                        </TableCell>
+                        <TableCell><Badge variant="outline" className="whitespace-nowrap">{clientStatusLabel(client.status)}</Badge></TableCell>
+                        <TableCell><span className="text-sm font-medium break-words">{clientPayerLabel(client)}</span></TableCell>
                         {(() => {
                           const mdY = { month: '2-digit', day: '2-digit', year: 'numeric' } as const;
                           const fmt = (d: string | null | undefined) =>
@@ -759,7 +717,7 @@ export default function Clients() {
           </TabsContent>
 
           <TabsContent value="intake">
-            <ClientIntakeForm onSaved={() => { setActiveTab("pipeline"); fetchClients(); }} />
+            <ClientIntakeForm onSaved={status => { setActiveTab(status === "test" ? "list" : "pipeline"); if (status === "test") setClientStatusTab("test"); fetchClients(); }} />
           </TabsContent>
 
 

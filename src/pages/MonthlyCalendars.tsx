@@ -1,3 +1,4 @@
+import { ACTIVE_CLIENT_STATUSES } from "@/utils/clientPlanning";
 import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,7 +91,7 @@ export default function MonthlyCalendars() {
       let query = supabase
         .from("clients")
         .select("id, first_name, last_name, status")
-        .eq("status", "active")
+        .in("status", ACTIVE_CLIENT_STATUSES)
         .order("last_name");
 
       if (!isAdmin) {

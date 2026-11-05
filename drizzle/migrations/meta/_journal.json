@@ -281,6 +281,20 @@
       "when": 1793835319010,
       "tag": "0039_client_payers_requested_schedule_status",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793846681128,
+      "tag": "0040_consolidate_client_status_and_payer_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793846755361,
+      "tag": "0041_exclude_test_nurse_portal_queues",
+      "breakpoints": true
     }
   ]
 }

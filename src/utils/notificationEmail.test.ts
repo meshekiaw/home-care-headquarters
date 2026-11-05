@@ -14,6 +14,7 @@ function harness(rows: Record<string, any[]> = {}) {
   let authOptions: any
   const env: Record<string, string> = { LOVABLE_API_KEY: 'mock-email', SUPABASE_URL: 'https://mock.invalid', SUPABASE_SERVICE_ROLE_KEY: 'mock-service', SUPABASE_ANON_KEY: 'mock-anon' }
   const client = {
+    rpc: async (name: string, args: { p_id: string }) => ({ data: name === 'client_record_is_test' && (rows.test_records ?? []).some(r => r.id === args.p_id), error: null }),
     auth: { getUser: async () => ({ data: { user: { id: 'mock-admin' } } }) },
     from: (table: string) => {
       let data = [...(rows[table] ?? [])]
@@ -21,6 +22,7 @@ function harness(rows: Record<string, any[]> = {}) {
       const query: any = {
         select: () => query,
         eq: (c: string, v: any) => { data = data.filter(r => r[c] === v); return query },
+        neq: (c: string, v: any) => { data = data.filter(r => c.split('.').reduce((value: any, key) => value?.[key], r) !== v); return query },
         is: (c: string, v: any) => { data = data.filter(r => (r[c] ?? null) === v); return query },
         in: (c: string, v: any[]) => { data = data.filter(r => v.includes(r[c])); return query },
         gte: (c: string, v: any) => { data = data.filter(r => r[c] >= v); return query },
@@ -153,5 +155,21 @@ describe('forward-only repair', () => {
     expect(await (await h.invoke('send-shift-reminders', { appointment_id: 'old-appointment' })).json()).toEqual({ sent: 0, skipped: 1, errors: [] })
     expect(h.send).not.toHaveBeenCalled()
     expect(h.mutations).not.toHaveBeenCalled()
+  })
+  it('Test-linked new notifications cannot be resent', async () => {
+    const h = harness({ notifications: [{ id:'new', related_id:'synthetic-test', created_at:'2026-11-05T02:00:00Z', email_sent:false,sms_sent:true,recipient_email:'test-caregiver@example.invalid' }], test_records:[{id:'synthetic-test'}] });
+    expect((await (await h.invoke('resend-notification',{notification_id:'new'})).json()).skipped).toBe(true);
+    expect(h.send).not.toHaveBeenCalled(); expect(h.mutations).not.toHaveBeenCalled();
+  })
+  it('Test assessments are excluded from new creation notices and reminder windows', async () => {
+    const due = new Date(); due.setUTCDate(due.getUTCDate()+14);
+    const h=harness({nurse_assessments:[{id:'synthetic-test',clients:{status:'test'},created_at:'2026-11-05T02:00:00Z',status:'Pending',assessment_type:'618',due_date:due.toISOString().split('T')[0]}],nurses:[{status:'active',receives_618_notifications:true,email:'test-caregiver@example.invalid'}]});
+    expect((await h.invoke('nurse-assessment-scheduler',{})).status).toBe(200);
+    expect(h.send).not.toHaveBeenCalled(); expect(h.mutations).not.toHaveBeenCalled();
+  })
+  it('Test shifts are excluded from manual reminder sends',async()=>{
+    const h=harness({appointments:[{id:'synthetic-test',clients:{status:'test'},caregivers:{email:'test-caregiver@example.invalid'}}]});
+    expect(await (await h.invoke('send-shift-reminders',{appointment_id:'synthetic-test'})).json()).toEqual({sent:0,skipped:0,errors:[]});
+    expect(h.send).not.toHaveBeenCalled();expect(h.mutations).not.toHaveBeenCalled();
   })
 })

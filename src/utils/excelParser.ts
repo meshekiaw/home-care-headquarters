@@ -80,6 +80,11 @@ const COLUMN_MAP: Record<string, keyof ClientCSVRow> = {
   "payer_type": "payer_type",
   "payer type": "payer_type",
   "payer": "payer_type",
+  "payer_type_other": "payer_type_other",
+  "other payer": "payer_type_other",
+  "client_status_date": "client_status_date",
+  "expected_return_date": "expected_return_date",
+  "client_status_reason": "client_status_reason",
   "client_hours": "client_hours",
   "client hours": "client_hours",
   "hours": "client_hours",
@@ -117,7 +122,7 @@ export function parseExcelFile(file: File): Promise<ClientCSVRow[]> {
                 if (value === "✓" || value === "✔" || value === "TRUE" || value === "true") {
                   mapped[mappedKey] = "active";
                 } else if (!value) {
-                  mapped[mappedKey] = "inactive";
+                  mapped[mappedKey] = "not_set";
                 } else {
                   mapped[mappedKey] = value;
                 }

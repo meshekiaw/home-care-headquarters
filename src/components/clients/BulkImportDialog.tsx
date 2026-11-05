@@ -1,3 +1,4 @@
+import { CLIENT_PAYERS, clientStatusLabel, clientPayerLabel } from "@/utils/clientPlanning";
  import { useState, useCallback } from "react";
  import {
    Dialog,
@@ -214,10 +215,10 @@ import { parseExcelFile } from "@/utils/excelParser";
                  <code className="bg-muted px-1 rounded">last_name</code>
                </p>
                <p className="text-xs text-muted-foreground mt-1">
-                 Strongly recommended: <code className="bg-muted px-1 rounded">payer_type</code> (Medicaid or VA) — rows left blank default to Medicaid and will skip the VA Nurse Visit requirement.
+                 Strongly recommended: <code className="bg-muted px-1 rounded">payer_type</code> ({CLIENT_PAYERS.join(", ")}) — rows left blank default to Medicaid and will skip the VA Nurse Visit requirement.
                </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Also include <code className="bg-muted px-1 rounded">medicaid_id</code> — it is required for every Medicaid client, and optional for VA clients.
+                  Also include <code className="bg-muted px-1 rounded">medicaid_id</code> — it is required for every Medicaid client, and optional for other payer types.
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Optional: email, phone, status, date_of_birth, address, city, state, zip_code, emergency_contact_name, emergency_contact_phone, notes
@@ -282,7 +283,7 @@ import { parseExcelFile } from "@/utils/excelParser";
                     ))}
                   </div>
                   <p className="text-sm mt-2">
-                    Add a <code className="bg-muted px-1 rounded">payer_type</code> column with Medicaid or VA and re-upload, or import now and change the VA clients on their profiles.
+                    Add a <code className="bg-muted px-1 rounded">payer_type</code> column with a supported Payer Type and re-upload, or import now and change the VA clients on their profiles.
                   </p>
                 </AlertDescription>
               </Alert>
@@ -319,7 +320,7 @@ import { parseExcelFile } from "@/utils/excelParser";
                        </TableCell>
                        <TableCell>
                          <Badge variant="outline" className="text-xs">
-                           {client.status}
+                           {clientStatusLabel(client.status)}
                          </Badge>
                        </TableCell>
                        <TableCell>
@@ -331,7 +332,7 @@ import { parseExcelFile } from "@/utils/excelParser";
                                : ""
                            }`}
                          >
-                           {client.payer_type}
+                           {clientPayerLabel(client)}
                          </Badge>
                        </TableCell>
                        <TableCell className="text-sm">

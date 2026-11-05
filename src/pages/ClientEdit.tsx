@@ -20,7 +20,7 @@ import { z } from "zod";
 import { friendlyError } from "@/lib/friendlyError";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ClientPlanningFields } from "@/components/clients/ClientPlanningFields";
-import { clientPlanningDraft, clientPlanningPayload } from "@/utils/clientPlanning";
+import { CLIENT_PAYERS, clientPlanningDraft, clientPlanningPayload } from "@/utils/clientPlanning";
 
 const clientSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(100),
@@ -40,10 +40,9 @@ const clientSchema = z.object({
   form_618_date: z.string().optional(),
   form_618_expiration_date: z.string().optional(),
   authorization_begin_date: z.string().optional(),
-  payer_type: z.enum(["Medicaid", "VA"], { required_error: "Payer type is required" }),
+  payer_type: z.enum(CLIENT_PAYERS, { required_error: "Payer type is required" }),
   medicaid_id: z.string().max(50).optional(),
   client_hours: z.string().optional(),
-  status: z.enum(["active", "inactive", "pending"]),
 }).superRefine((data, ctx) => {
   if (data.payer_type === "Medicaid" && !data.medicaid_id?.trim()) {
     ctx.addIssue({
@@ -87,7 +86,6 @@ export default function ClientEdit() {
     payer_type: "Medicaid",
     medicaid_id: "",
     client_hours: "",
-    status: "active",
   });
 
   useEffect(() => {
@@ -122,10 +120,9 @@ export default function ClientEdit() {
           form_618_date: data.form_618_date || "",
           form_618_expiration_date: data.form_618_expiration_date || "",
           authorization_begin_date: data.authorization_begin_date || "",
-          payer_type: (data as any).payer_type === "VA" ? "VA" : "Medicaid",
+          payer_type: data.payer_type as ClientFormData["payer_type"],
           medicaid_id: (data as any).medicaid_id || "",
           client_hours: data.client_hours != null ? String(data.client_hours) : "",
-          status: (data.status as "active" | "inactive" | "pending") || "active",
         });
       } catch (error: any) {
         toast({
@@ -186,8 +183,7 @@ export default function ClientEdit() {
           payer_type: validated.payer_type,
           medicaid_id: validated.medicaid_id?.trim() || null,
           client_hours: validated.client_hours ? parseFloat(validated.client_hours) : null,
-          status: validated.status,
-        })
+          })
         .eq("id", id)
         .select("id")
         .single();
@@ -284,17 +280,7 @@ export default function ClientEdit() {
                 <Label htmlFor="date_of_birth">Date of Birth</Label>
                 <Input id="date_of_birth" type="date" value={formData.date_of_birth} onChange={(e) => handleChange("date_of_birth", e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleChange("status", value as ClientFormData["status"])}>
-                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
             </CardContent>
           </Card>
 
@@ -391,14 +377,14 @@ export default function ClientEdit() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payer_type">Payer Type *</Label>
-                <Select value={formData.payer_type} onValueChange={(value) => handleChange("payer_type", value)}>
+                <Select disabled={!isAdmin || loading} value={formData.payer_type} onValueChange={(value) => { handleChange("payer_type", value); setPlanning(prev => ({ ...prev, payerType: value })); }}>
                   <SelectTrigger id="payer_type"><SelectValue placeholder="Select payer type" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Medicaid">Medicaid</SelectItem>
-                    <SelectItem value="VA">VA</SelectItem>
+                    {CLIENT_PAYERS.map(payer => <SelectItem key={payer} value={payer}>{payer}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 {errors.payer_type && <p className="text-sm text-destructive">{errors.payer_type}</p>}
+                {planning.payerType === "Other" && <div className="space-y-2"><Label htmlFor="payer_type_other">Other payer *</Label><Input id="payer_type_other" disabled={!isAdmin || loading} value={planning.payerOther} maxLength={200} onChange={e => setPlanning(prev => ({ ...prev, payerOther: e.target.value }))} /></div>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="medicaid_id">
@@ -420,7 +406,7 @@ export default function ClientEdit() {
           </Card>
 
           {/* Notes */}
-          {isAdmin && <ClientPlanningFields value={planning} onChange={setPlanning} disabled={loading} />}
+          {isAdmin && <ClientPlanningFields includePayer={false} value={planning} onChange={setPlanning} disabled={loading} />}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">

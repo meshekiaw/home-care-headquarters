@@ -135,9 +135,10 @@ async function sendEmail(
          client_id,
          assigned_nurse_id,
          user_id,
-         clients (first_name, last_name),
+         clients!inner (first_name, last_name, status),
          nurses (first_name, last_name, email, phone)
        `)
+       .neq("clients.status", "test")
        .eq("status", "pending")
        .lte("due_date", daysAhead.toISOString().split("T")[0])
        .gte("due_date", new Date().toISOString().split("T")[0]);

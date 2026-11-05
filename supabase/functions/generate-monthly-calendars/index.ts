@@ -88,8 +88,8 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Determine target month: next month from now
@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
     // Get all active assignments
     const { data: assignments, error: assignErr } = await supabase
       .from("monthly_calendar_assignments")
-      .select("*")
+      .select("*, clients!inner(status)").neq("clients.status", "test")
       .eq("is_active", true);
 
     if (assignErr) throw assignErr;

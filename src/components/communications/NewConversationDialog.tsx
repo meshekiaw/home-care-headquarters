@@ -1,3 +1,4 @@
+import { ACTIVE_CLIENT_STATUSES } from "@/utils/clientPlanning";
 import { useState, useEffect } from "react";
 import { Users, User, Megaphone, Search } from "lucide-react";
 import {
@@ -71,7 +72,7 @@ export function NewConversationDialog({
       let clientsQuery = supabase
         .from("clients")
         .select("id, first_name, last_name")
-        .eq("status", "active");
+        .in("status", ACTIVE_CLIENT_STATUSES);
 
       if (!isAdmin) {
         caregiversQuery = caregiversQuery.eq("user_id", user.id);

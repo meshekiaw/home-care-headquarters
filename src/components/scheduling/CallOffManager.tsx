@@ -48,7 +48,7 @@ export function CallOffManager() {
     (async () => {
       const [{ data: cg }, { data: cl }] = await Promise.all([
         supabase.from("caregivers").select("id, first_name, last_name").order("last_name"),
-        supabase.from("clients").select("id, first_name, last_name").order("last_name"),
+        supabase.from("clients").select("id, first_name, last_name").neq("status", "test").order("last_name"),
       ]);
       setCaregivers((cg || []).map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })));
       setClients((cl || []).map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })));

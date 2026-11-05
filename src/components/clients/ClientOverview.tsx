@@ -1,3 +1,4 @@
+import { clientStatusLabel } from "@/utils/clientPlanning";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -67,17 +68,11 @@ export function ClientOverview({ client, formatDate }: ClientOverviewProps) {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Status</p>
-              <p className="font-medium capitalize">{client.status}</p>
+              <p className="font-medium capitalize">{clientStatusLabel(client.status)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Client Since</p>
               <p className="font-medium">{formatDate(client.created_at)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Payer Type</p>
-              <p className="font-medium">
-                <Badge variant="outline">{client.payer_type || 'Medicaid'}</Badge>
-              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Medicaid ID</p>

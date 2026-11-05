@@ -1,3 +1,4 @@
+import { CLIENT_PAYERS, CLIENT_STATUSES, consolidatedClientStatus, validateClientPlanning, clientPlanningDraft } from "./clientPlanning";
 import { backgroundCheckExpiration } from "./caregiverCompliance";
 
 export interface CaregiverCSVRow {
@@ -272,6 +273,10 @@ export interface ClientCSVRow {
   "618_date"?: string;
   "618_expiration_date"?: string;
   payer_type?: string;
+  payer_type_other?: string;
+  client_status_date?: string;
+  expected_return_date?: string;
+  client_status_reason?: string;
   medicaid_id?: string;
   client_hours?: string;
 }
@@ -296,6 +301,10 @@ export interface ParsedClient {
   form_618_expiration_date: string | null;
   authorization_begin_date: string | null;
   payer_type: string;
+  payer_type_other: string | null;
+  client_status_date: string | null;
+  expected_return_date: string | null;
+  client_status_reason: string | null;
   medicaid_id: string | null;
   client_hours: number | null;
 }
@@ -355,16 +364,14 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
       errors.push({ row: rowNum, field: 'email', message: 'Invalid email format' });
     }
     
-    // Status validation - handle checkmarks
-    const validStatuses = ['active', 'inactive', 'pending'];
-    let status = row.status?.trim().toLowerCase() || 'active';
-    if (status === '✓' || status === '✔' || status === 'true') {
-      status = 'active';
-    }
-    if (!validStatuses.includes(status)) {
-      errors.push({ row: rowNum, field: 'status', message: `Status must be one of: ${validStatuses.join(', ')}` });
-    }
-
+    const rawStatus = row.status?.trim().toLowerCase() || 'not_set';
+    const normalizedStatus = ['✓','✔','true'].includes(rawStatus) ? 'active' : rawStatus;
+    const status = ['active','inactive','pending'].includes(normalizedStatus)
+      ? consolidatedClientStatus(normalizedStatus)
+      : CLIENT_STATUSES.find(s => s.value === normalizedStatus || s.label.toLowerCase() === normalizedStatus)?.value ?? normalizedStatus;
+    const statusDate = parseDateString(row.client_status_date || '') || null;
+    const expectedReturn = parseDateString(row.expected_return_date || '') || null;
+    const statusReason = row.client_status_reason?.trim() || null;
     // Date of birth validation
     let dateOfBirth: string | null = null;
     if (row.date_of_birth?.trim()) {
@@ -397,18 +404,12 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
     const form618ExpDate = pickDate(row.form_618_expiration_date, row["618_expiration_date"]);
     const authBeginDate = pickDate(row.authorization_begin_date);
 
-    // Payer type: Medicaid or VA. Never default silently — always warn.
     const rawPayer = row.payer_type?.trim() || '';
     const normalizedPayer = rawPayer.toLowerCase();
-    let payerType = 'Medicaid';
-    if (normalizedPayer === 'va' || normalizedPayer === 'veterans affairs' || normalizedPayer === 'veteran') {
-      payerType = 'VA';
-    } else if (normalizedPayer === 'medicaid') {
-      payerType = 'Medicaid';
-    } else if (rawPayer) {
-      errors.push({ row: rowNum, field: 'payer_type', message: `Payer type must be Medicaid or VA (found "${rawPayer}")` });
-    }
-
+    const payerType = ['va','veterans affairs','veteran'].includes(normalizedPayer) ? 'VA' : CLIENT_PAYERS.find(p => p.toLowerCase() === normalizedPayer) ?? (rawPayer || 'Medicaid');
+    const payerOther = row.payer_type_other?.trim() || null;
+    const planningError = validateClientPlanning({ ...clientPlanningDraft(), payerType, payerOther: payerOther || '', status, statusDate: statusDate || '', expectedReturn: expectedReturn || '', statusReason: statusReason || '' });
+    if (planningError) errors.push({ row: rowNum, field: 'client_planning', message: planningError });
     // Medicaid ID: required for Medicaid clients (the 618 cannot be submitted without it)
     const medicaidId = (row as any).medicaid_id?.trim() || '';
     if (payerType === 'Medicaid' && !medicaidId) {
@@ -430,7 +431,7 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
 
     // Only add if no critical errors for this row
     const rowErrors = errors.filter(e => e.row === rowNum);
-    const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name' || e.field === 'payer_type');
+    const hasCriticalError = rowErrors.some(e => e.field === 'first_name' || e.field === 'last_name' || e.field === 'payer_type' || e.field === 'client_planning');
     
     if (!hasCriticalError) {
       clients.push({
@@ -438,7 +439,8 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         last_name: row.last_name?.trim() || '',
         email: row.email?.trim() || null,
         phone: row.phone?.trim() || null,
-        status: validStatuses.includes(status) ? status : 'active',
+        status,
+        client_status_date: statusDate, expected_return_date: expectedReturn, client_status_reason: statusReason,
         date_of_birth: dateOfBirth,
         address: row.address?.trim() || null,
         city: row.city?.trim() || null,
@@ -452,7 +454,7 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
         form_618_date: form618Date,
         form_618_expiration_date: form618ExpDate,
         authorization_begin_date: authBeginDate,
-        payer_type: payerType,
+        payer_type: payerType, payer_type_other: payerOther,
         medicaid_id: medicaidId || null,
         client_hours: row.client_hours?.trim() ? parseFloat(row.client_hours.trim()) : null,
       });
@@ -470,6 +472,6 @@ export function validateAndTransformClients(rows: ClientCSVRow[]): ClientParseRe
 
 export function generateClientSampleCSV(): string {
   return `first_name,last_name,email,phone,status,payer_type,medicaid_id,date_of_birth,address,city,state,zip_code,emergency_contact_name,emergency_contact_phone,notes,618_date,618_expiration_date,authorization_begin_date,authorization_expiration_date
-John,Smith,john.smith@email.com,(555) 123-4567,active,Medicaid,123456789,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance,2026-01-15,2027-01-14,2026-01-15,2027-01-14
-Mary,Johnson,mary.j@email.com,(555) 987-6543,active,VA,,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits,2026-02-01,2026-08-01,2026-02-01,2026-08-01`;
+John,Smith,john.smith@email.com,(555) 123-4567,not_set,Medicaid,123456789,1955-03-15,123 Main St,Springfield,IL,62701,Mary Smith,(555) 111-2222,Requires wheelchair assistance,2026-01-15,2027-01-14,2026-01-15,2027-01-14
+Mary,Johnson,mary.j@email.com,(555) 987-6543,not_set,VA,,1948-07-22,456 Oak Ave,Chicago,IL,60601,Tom Johnson,(555) 333-4444,Prefers morning visits,2026-02-01,2026-08-01,2026-02-01,2026-08-01`;
 }

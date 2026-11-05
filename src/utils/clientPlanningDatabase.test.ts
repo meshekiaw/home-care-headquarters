@@ -58,7 +58,7 @@ describe("client planning migration in a disposable synthetic database", () => {
     await db.query("UPDATE clients SET client_status='new_client',client_status_date='2026-11-04' WHERE id=$1", [clientId]);
     await db.query("UPDATE clients SET client_status='hospitalized',client_status_date='2026-11-05',expected_return_date='2026-11-08' WHERE id=$1", [clientId]);
     await db.query("UPDATE clients SET expected_return_date='2026-11-09' WHERE id=$1", [clientId]);
-    const events = await history(); expect(events).toHaveLength(3); expect(events[1]).toMatchObject({ previous_status: "new_client", new_status: "hospitalized", actor_id: actor, actor_name: "Synthetic Office Admin" }); expect(events[1]?.changed_at).toBeTruthy();
+    const events = await history(); expect(events).toHaveLength(3); const admission = events.find(event => event.previous_status === "new_client" && event.new_status === "hospitalized"); expect(admission).toMatchObject({ previous_status: "new_client", new_status: "hospitalized", actor_id: actor, actor_name: "Synthetic Office Admin" }); expect(admission?.changed_at).toBeTruthy();
     await db.query("UPDATE clients SET client_status=client_status WHERE id=$1", [clientId]); expect(await history()).toHaveLength(3);
   });
   it("records selected status on new client creation atomically", async () => {

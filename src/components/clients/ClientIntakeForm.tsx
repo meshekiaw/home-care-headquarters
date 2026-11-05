@@ -31,7 +31,7 @@ const SECTIONS = [
 
 const SERVICE_TYPES = ["Personal Care", "Attendant Care", "Respite", "Companion", "Skilled Nursing"];
 
-export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } = {}) {
+export default function ClientIntakeForm({ onSaved }: { onSaved?: (status: string) => void } = {}) {
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
   const [planning, setPlanning] = useState(() => clientPlanningDraft());
@@ -119,6 +119,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
         .single();
       if (cErr) throw cErr;
 
+      if (planningPayload.status !== "test") {
       const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
       const dueDate = deadline.toISOString().slice(0, 10);
 
@@ -135,12 +136,13 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
         notes: form.notes || null,
       });
       if (aErr) throw aErr;
+      }
 
       toast({
         title: "Client saved",
-        description: "Client saved and assessment created. Check Onboarding Pipeline to track progress.",
+        description: planningPayload.status === "test" ? "Test client saved without an assessment." : "Client saved and assessment created. Check Onboarding Pipeline to track progress.",
       });
-      onSaved?.();
+      onSaved?.(planningPayload.status);
     } catch (err: any) {
       toast({ title: "Save failed", description: friendlyError(err), variant: "destructive" });
     } finally {
@@ -216,7 +218,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
       ["Address", form.address || "—"],
       ["Primary Diagnosis", form.diagnosis || "—"],
       ["Service Type", form.serviceType || "—"],
-      ["Payer", clientPayerLabel({ payers: planning.payers, payer_other: planning.payerOther })],
+      ["Payer Type", clientPayerLabel({ payer_type: planning.payerType, payer_type_other: planning.payerOther })],
       ["Authorized Hours", form.authorizedHours || "—"],
       ["Emergency Contact", `${form.emergencyContactName || "—"} ${form.emergencyContactPhone ? "• " + form.emergencyContactPhone : ""}`.trim()],
     ];
@@ -451,7 +453,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
                     ["Address", form.address],
                     ["Primary Diagnosis", form.diagnosis],
                     ["Service Type", form.serviceType],
-                    ["Payer", clientPayerLabel({ payers: planning.payers, payer_other: planning.payerOther })],
+                    ["Payer Type", clientPayerLabel({ payer_type: planning.payerType, payer_type_other: planning.payerOther })],
                     ["Authorized Hours", form.authorizedHours],
                     ["Emergency Contact", `${form.emergencyContactName || ""}${form.emergencyContactPhone ? " • " + form.emergencyContactPhone : ""}`.trim()],
                   ] as [string, string][]).map(([k, v]) => (

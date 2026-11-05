@@ -130,7 +130,7 @@ async function sendEmail(
           id, title, start_time, end_time, user_id,
           caregiver_id,
           caregivers (first_name, last_name, email, phone),
-          clients (first_name, last_name)
+          clients!inner (first_name, last_name, status)
         `;
 
       let endingAppointments;
@@ -138,14 +138,14 @@ async function sendEmail(
         // Manual trigger: send immediately for this appointment regardless of timing
         const { data } = await supabase
           .from("appointments")
-          .select(selectClause)
+          .select(selectClause).neq("clients.status", "test")
           .eq("id", manualAppointmentId)
           .limit(1);
         endingAppointments = data;
       } else {
         const { data } = await supabase
           .from("appointments")
-          .select(selectClause)
+          .select(selectClause).neq("clients.status", "test")
           .eq("status", "scheduled")
           .gte("end_time", windowStart.toISOString())
           .lt("end_time", windowEnd.toISOString());

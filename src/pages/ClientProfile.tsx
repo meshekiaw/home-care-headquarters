@@ -197,10 +197,7 @@ export default function ClientProfile() {
                   <h1 className="text-2xl font-bold">
                     {client.first_name} {client.last_name}
                   </h1>
-                  <Badge variant={getStatusVariant(client.status)} className="capitalize">
-                    {client.status}
-                  </Badge>
-                  <Badge variant="outline">{clientStatusLabel(client.client_status)}</Badge>
+                  <Badge variant="outline">{clientStatusLabel(client.status)}</Badge>
                 </div>
                 <div className="flex items-center gap-4 mt-1 text-muted-foreground">
                   {age && <span>{age} years old</span>}

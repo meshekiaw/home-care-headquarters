@@ -1,6 +1,6 @@
 # Architecture rules
 
-- Client operational payers, requested schedules and status live in additive fields independent of legacy assessment payer/activity fields; database validation enforces admin-only changes and append-only actor-stamped status history so planning never alters assessment dates or pipeline stages.
+- Client planning uses canonical Payer Type and Status with shared active/Test predicates; admin-only validation and append-only status history preserve requested schedules and assessment dates, while restrictive parent-eligibility policies plus service-query filtering exclude Test records without deleting historical work.
 
 - Admin caregiver access uses its own authenticated gateway and service-only status/finalization RPCs; append-only access events retain actors and confirmed identities, and role/link/12-session repair commits atomically without changing the public training sign-in or password flows.
 

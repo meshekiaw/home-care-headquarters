@@ -91,7 +91,7 @@ import { friendlyError } from "@/lib/friendlyError";
            completed_date,
            status,
            notes,
-           clients (
+           clients!inner (
              id,
              first_name,
              last_name
@@ -120,7 +120,7 @@ import { friendlyError } from "@/lib/friendlyError";
          .from('client_nurses')
          .select(`
            client_id,
-           clients (
+           clients!inner (
              id,
              first_name,
              last_name

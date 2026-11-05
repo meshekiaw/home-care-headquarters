@@ -1,3 +1,4 @@
+import { ACTIVE_CLIENT_STATUSES } from "@/utils/clientPlanning";
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -117,13 +118,13 @@ export default function Dashboard() {
         const [clientsResult, caregiversResult, appointmentsResult, credentialsResult] = await Promise.all([
           supabase
           .from('clients')
-            .select('*', { count: 'exact', head: true }),
+            .select('*', { count: 'exact', head: true }).in('status', ACTIVE_CLIENT_STATUSES),
           supabase
             .from('caregivers')
             .select('*', { count: 'exact', head: true }),
           supabase
             .from('appointments')
-            .select('*', { count: 'exact', head: true })
+            .select('*, clients!inner(status)', { count: 'exact', head: true }).neq('clients.status', 'test')
             .gte('start_time', dayStart)
             .lte('start_time', dayEnd),
           supabase
@@ -141,7 +142,8 @@ export default function Dashboard() {
         // Real upcoming visits (next scheduled appointments from now on)
         const { data: visits } = await supabase
           .from('appointments')
-          .select('id, start_time, status, caregivers:caregiver_id(first_name, last_name), clients:client_id(first_name, last_name)')
+          .select('id, start_time, status, caregivers:caregiver_id(first_name, last_name), clients:client_id!inner(first_name, last_name, status)')
+          .neq('clients.status', 'test')
           .gte('start_time', new Date().toISOString())
           .order('start_time', { ascending: true })
           .limit(5);

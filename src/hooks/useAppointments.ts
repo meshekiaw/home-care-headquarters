@@ -39,7 +39,7 @@ export function useAppointments(selectedDate: Date) {
         .from("appointments")
         .select(`
           *,
-          client:clients(first_name, last_name),
+          client:clients!inner(first_name, last_name),
           caregiver:caregivers(first_name, last_name)
         `)
         .gte("start_time", startOfMonth.toISOString())
@@ -75,7 +75,7 @@ export function useAppointments(selectedDate: Date) {
         .from("appointments")
         .select(`
           *,
-          client:clients(first_name, last_name),
+          client:clients!inner(first_name, last_name),
           caregiver:caregivers(first_name, last_name)
         `)
         .eq("caregiver_id", caregiverId)

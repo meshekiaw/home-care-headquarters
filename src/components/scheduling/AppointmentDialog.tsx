@@ -1,3 +1,4 @@
+import { ACTIVE_CLIENT_STATUSES } from "@/utils/clientPlanning";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -114,7 +115,7 @@ export function AppointmentDialog({
     setLoading(true);
     try {
       const [clientsRes, caregiversRes] = await Promise.all([
-        supabase.from("clients").select("id, first_name, last_name").eq("status", "active"),
+        supabase.from("clients").select("id, first_name, last_name").in("status", ACTIVE_CLIENT_STATUSES),
         supabase.from("caregivers").select("id, first_name, last_name, cleared_to_schedule").eq("status", "active"),
       ]);
 

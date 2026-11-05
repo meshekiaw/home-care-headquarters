@@ -1,3 +1,4 @@
+import { isActiveClient, clientStatusLabel } from "@/utils/clientPlanning";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +56,7 @@ export default function AssignmentsHistoryTab({ caregiverId }: AssignmentsHistor
           is_active,
           notes,
           created_at,
-          clients (
+          clients!inner (
             id,
             first_name,
             last_name,
@@ -182,8 +183,8 @@ export default function AssignmentsHistoryTab({ caregiverId }: AssignmentsHistor
                           <p className="font-medium">
                             {assignment.clients.first_name} {assignment.clients.last_name}
                           </p>
-                          <Badge variant={assignment.clients.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                            {assignment.clients.status}
+                          <Badge variant={isActiveClient(assignment.clients) ? 'default' : 'secondary'} className="text-xs">
+                            {clientStatusLabel(assignment.clients.status)}
                           </Badge>
                         </div>
                       </div>

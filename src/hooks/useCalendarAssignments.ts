@@ -40,7 +40,7 @@ export function useCalendarAssignments() {
 
       let query = supabase
         .from("monthly_calendar_assignments")
-        .select("*");
+        .select("*, clients!inner(status)").neq("clients.status", "test");
 
       if (!isAdmin) {
         query = query.eq("user_id", user.id);
@@ -182,7 +182,8 @@ export function useGeneratedCalendars(assignmentId?: string) {
       if (!user || roleLoading) return [];
       let query = supabase
         .from("monthly_calendars")
-        .select("*")
+        .select("*, monthly_calendar_assignments!inner(clients!inner(status))")
+        .neq("monthly_calendar_assignments.clients.status", "test")
         .order("year", { ascending: false })
         .order("month", { ascending: false });
 

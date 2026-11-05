@@ -110,7 +110,7 @@ export default function ShiftRemindersWidget() {
              title,
              end_time,
              caregivers:caregiver_id(first_name, last_name),
-             clients:client_id(first_name, last_name)
+             clients:client_id!inner(first_name, last_name)
            `)
            .eq('status', 'scheduled')
            .gte('end_time', now.toISOString())

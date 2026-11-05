@@ -90,6 +90,7 @@ export function useProximityMatching(clientId: string | null) {
         .from('clients')
         .select('id, first_name, last_name, address, city, state, zip_code')
         .eq('id', clientId)
+        .neq('status', 'test')
         .maybeSingle();
 
       if (clientError) throw clientError;

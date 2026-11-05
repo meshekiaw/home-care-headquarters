@@ -40,7 +40,7 @@ export default function NeedsActionNow() {
 
       const { data: aData } = await supabase
         .from("client_assessments")
-        .select("id, client_id, assessment_name, status, due_date, clients:client_id(first_name, last_name)")
+        .select("id, client_id, assessment_name, status, due_date, clients:client_id!inner(first_name, last_name)")
         .neq("status", "completed")
         .not("due_date", "is", null)
         .gte("created_at", sevenDaysAgo)

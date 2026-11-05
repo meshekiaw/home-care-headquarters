@@ -41,7 +41,7 @@ export function EvvExceptionLog() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from("appointments")
-        .select("id, start_time, end_time, status, client:client_id(first_name,last_name), caregiver:caregiver_id(first_name,last_name)")
+        .select("id, start_time, end_time, status, client:client_id!inner(first_name,last_name), caregiver:caregiver_id(first_name,last_name)")
         .lt("end_time", nowIso)
         .in("status", ["scheduled", "confirmed", "in_progress"])
         .order("end_time", { ascending: false })

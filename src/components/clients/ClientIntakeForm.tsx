@@ -119,6 +119,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
         .single();
       if (cErr) throw cErr;
 
+      if (planningPayload.status !== "test") {
       const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
       const dueDate = deadline.toISOString().slice(0, 10);
 
@@ -135,6 +136,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
         notes: form.notes || null,
       });
       if (aErr) throw aErr;
+      }
 
       toast({
         title: "Client saved",

@@ -138,6 +138,7 @@ export default function ClientNew() {
       if (error) throw error;
 
       // Create initial assessment (deadline auto-set by trigger; also set due_date 48h out)
+      if (planningPayload.status !== "test") {
       const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
       const { error: aErr } = await supabase.from('client_assessments').insert([{
         client_id: inserted.id,
@@ -152,6 +153,7 @@ export default function ClientNew() {
         due_date: deadline,
       }]);
       if (aErr) throw aErr;
+      }
 
       toast({
         title: "Client added and initial assessment created.",

@@ -143,7 +143,7 @@ export default function Clients() {
 
   async function handleBulkImport(parsedClients: ParsedClient[]): Promise<{ success: number; failed: number }> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    if (!user || !isAdmin) {
       toast({ title: "Error", description: "You must be logged in to import clients", variant: "destructive" });
       return { success: 0, failed: parsedClients.length };
     }
@@ -171,7 +171,7 @@ export default function Clients() {
         .eq('client_id', inserted.id)
         .limit(1);
 
-      if (!existing || existing.length === 0) {
+      if (client.status !== "test" && (!existing || existing.length === 0)) {
         const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
         const { error: aErr } = await supabase.from('client_assessments').insert({
           client_id: inserted.id,
@@ -491,7 +491,7 @@ export default function Clients() {
               size="sm"
               variant="outline"
               onClick={() => {
-                const selected = clients.filter(c => selectedIds.has(c.id));
+                const selected = operationalClients.filter(c => selectedIds.has(c.id));
                 const printWindow = window.open('', '_blank');
                 if (printWindow) {
                   printWindow.document.write(`

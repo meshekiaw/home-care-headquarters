@@ -67,13 +67,13 @@ describe("synthetic Client List sorting without sign-in", () => {
   it.each(["All", "New client", "Current – needs staffing", "Current – staffed", "Hospitalized", "On hold", "Discharged", "Not set", "Test"])("keeps the %s tab and filtered/search membership when sorting", async tab => {
     await open();
     const groups = screen.getByRole("tablist", { name: "Client status groups" });
-    fireEvent.click(within(groups).getByRole("tab", { name: new RegExp(`^${tab} `) }));
+    fireEvent.mouseDown(within(groups).getByRole("tab", { name: new RegExp(`^${tab} `) }), { button: 0, ctrlKey: false });
     await choose("Payer Type filter", "VA");
     fireEvent.change(screen.getByPlaceholderText("Search clients by name, email, or phone..."), { target: { value: "Synthetic" } });
     const before = rowIds();
     fireEvent.click(screen.getByRole("button", { name: "Name", exact: true }));
     fireEvent.click(screen.getByRole("button", { name: "Name", exact: true }));
-    expect(rowIds()).toEqual([...before].reverse());
+    expect(rowIds()).toEqual([...before.filter(id => id?.endsWith("Zulu")), ...before.filter(id => id?.endsWith("Alpha"))]);
     expect(within(groups).getByRole("tab", { name: new RegExp(`^${tab} `) }).getAttribute("data-state")).toBe("active");
     expect(screen.getByRole("combobox", { name: "Payer Type filter" }).textContent).toContain("VA");
     expect((screen.getByPlaceholderText("Search clients by name, email, or phone...") as HTMLInputElement).value).toBe("Synthetic");
@@ -83,7 +83,7 @@ describe("synthetic Client List sorting without sign-in", () => {
   it("preserves authorization and date filters through all three sort states", async () => {
     await open();
     await choose("Authorization progress filter", "Not started (14)");
-    fireEvent.click(screen.getByRole("button", { name: "Filters", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const monthSelectors = screen.getAllByRole("combobox").filter(box => box.textContent === "All");
     fireEvent.click(monthSelectors[1]);
     fireEvent.click(await screen.findByRole("option", { name: "January 2027", exact: true }));

@@ -1665,6 +1665,7 @@ export type Database = {
           nurse_visit_due_date: string | null
           payer_other: string | null
           payer_type: string
+          payer_type_other: string | null
           payers: string[]
           phone: string | null
           requested_schedule: Json
@@ -1702,6 +1703,7 @@ export type Database = {
           nurse_visit_due_date?: string | null
           payer_other?: string | null
           payer_type?: string
+          payer_type_other?: string | null
           payers?: string[]
           phone?: string | null
           requested_schedule?: Json
@@ -1739,6 +1741,7 @@ export type Database = {
           nurse_visit_due_date?: string | null
           payer_other?: string | null
           payer_type?: string
+          payer_type_other?: string | null
           payers?: string[]
           phone?: string | null
           requested_schedule?: Json
@@ -3705,6 +3708,7 @@ export type Database = {
         }
         Returns: Json
       }
+      client_record_is_test: { Args: { p_id: string }; Returns: boolean }
       complete_618_form: { Args: { p_form_id: string }; Returns: Json }
       complete_nurse_assessment: {
         Args: { p_assessment_id: string; p_notes?: string }
@@ -3768,6 +3772,7 @@ export type Database = {
         Args: { p_caregiver_id: string }
         Returns: boolean
       }
+      is_operational_client: { Args: { p_id: string }; Returns: boolean }
       lookup_training_caregiver: { Args: { p_email: string }; Returns: Json }
       nurse_assessment_detail: {
         Args: { p_assessment_id: string }

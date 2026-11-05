@@ -1337,6 +1337,7 @@ export type Database = {
           family_phone: string | null
           id: string
           notes: string | null
+          scheduled_at: string | null
           status: string
           updated_at: string
           user_id: string
@@ -1355,6 +1356,7 @@ export type Database = {
           family_phone?: string | null
           id?: string
           notes?: string | null
+          scheduled_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -1373,6 +1375,7 @@ export type Database = {
           family_phone?: string | null
           id?: string
           notes?: string | null
+          scheduled_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string

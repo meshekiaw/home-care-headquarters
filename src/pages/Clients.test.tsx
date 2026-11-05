@@ -24,21 +24,21 @@ beforeEach(() => {
 afterEach(cleanup);
 async function open() {
   render(<MemoryRouter><Clients /></MemoryRouter>);
-  await screen.findByRole("button", { name: "Name", exact: true });
+  await screen.findByRole("button", { name: "Name" });
 }
 function rowIds() {
   return Array.from(document.querySelectorAll<HTMLAnchorElement>("tbody td:nth-child(2) a")).map(link => link.getAttribute("href")?.replace("/clients/", ""));
 }
 async function choose(label: string, option: string) {
   fireEvent.click(screen.getByRole("combobox", { name: label }));
-  fireEvent.click(await screen.findByRole("option", { name: option, exact: true }));
+  fireEvent.click(await screen.findByRole("option", { name: option }));
 }
 
 describe("synthetic Client List sorting without sign-in", () => {
   it.each(["Name", "Contact", "Location", "Status", "Payer Type", "Authorization progress", "Current 618 Date", "618 Expiration Date", "Authorization Begin Date", "Authorization Expiration Date"])("cycles the %s heading and synchronizes the dropdown", async heading => {
     await open();
     const defaults = rowIds();
-    const button = screen.getByRole("button", { name: heading, exact: true });
+    const button = screen.getByRole("button", { name: heading });
     fireEvent.click(button);
     const th = button.closest("th");
     expect(th?.getAttribute("aria-sort")).toBe("ascending");
@@ -54,7 +54,7 @@ describe("synthetic Client List sorting without sign-in", () => {
   it("dropdown selections update the matching heading and preserve subsequent tap direction", async () => {
     await open();
     await choose("Sort by", "618 Expiration Date");
-    const button = screen.getByRole("button", { name: "618 Expiration Date", exact: true });
+    const button = screen.getByRole("button", { name: "618 Expiration Date" });
     expect(button.closest("th")?.getAttribute("aria-sort")).toBe("ascending");
     expect(rowIds()[0]).toBe("new_client-Alpha");
     fireEvent.click(button);
@@ -71,8 +71,8 @@ describe("synthetic Client List sorting without sign-in", () => {
     await choose("Payer Type filter", "VA");
     fireEvent.change(screen.getByPlaceholderText("Search clients by name, email, or phone..."), { target: { value: "Synthetic" } });
     const before = rowIds();
-    fireEvent.click(screen.getByRole("button", { name: "Name", exact: true }));
-    fireEvent.click(screen.getByRole("button", { name: "Name", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Name" }));
+    fireEvent.click(screen.getByRole("button", { name: "Name" }));
     expect(rowIds()).toEqual([...before.filter(id => id?.endsWith("Zulu")), ...before.filter(id => id?.endsWith("Alpha"))]);
     expect(within(groups).getByRole("tab", { name: new RegExp(`^${tab} `) }).getAttribute("data-state")).toBe("active");
     expect(screen.getByRole("combobox", { name: "Payer Type filter" }).textContent).toContain("VA");
@@ -87,10 +87,10 @@ describe("synthetic Client List sorting without sign-in", () => {
     const monthFilter = screen.getByText("Auth Expiration Month").parentElement;
     if (!monthFilter) throw new Error("Missing expiration month filter");
     fireEvent.click(within(monthFilter).getByRole("combobox"));
-    fireEvent.click(await screen.findByRole("option", { name: "Jan 2027", exact: true }));
+    fireEvent.click(await screen.findByRole("option", { name: "Jan 2027" }));
     const before = rowIds();
     expect(before).toHaveLength(7);
-    for (let tap = 0; tap < 3; tap++) fireEvent.click(screen.getByRole("button", { name: "Status", exact: true }));
+    for (let tap = 0; tap < 3; tap++) fireEvent.click(screen.getByRole("button", { name: "Status" }));
     expect(rowIds()).toEqual(before);
     expect(screen.getByRole("combobox", { name: "Authorization progress filter" }).textContent).toContain("Not started");
   });

@@ -109,7 +109,7 @@ export default function Clients() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [payerFilter, setPayerFilter] = useState("all");
-  const [clientStatusTab, setClientStatusTab] = useState("all");
+  const [clientStatusTab, setClientStatusTab] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("status") === "test" ? "test" : "all");
   const [dueDateMonth, setDueDateMonth] = useState("all");
   const [expirationDateMonth, setExpirationDateMonth] = useState("all");
   const navigate = useNavigate();
@@ -457,7 +457,7 @@ export default function Clients() {
                           .update({ status, client_status_date: null, expected_return_date: null, client_status_reason: null })
                           .in('id', [...selectedIds]);
                         if (error) throw error;
-                        toast({ title: "Status updated", description: `${selectedIds.size} clients set to ${status}` });
+                        toast({ title: "Status updated", description: `${selectedIds.size} clients set to ${label}` });
                         setSelectedIds(new Set());
                         fetchClients();
                       } catch (error: any) {

@@ -140,7 +140,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
 
       toast({
         title: "Client saved",
-        description: "Client saved and assessment created. Check Onboarding Pipeline to track progress.",
+        description: planningPayload.status === "test" ? "Test client saved without an assessment." : "Client saved and assessment created. Check Onboarding Pipeline to track progress.",
       });
       onSaved?.();
     } catch (err: any) {

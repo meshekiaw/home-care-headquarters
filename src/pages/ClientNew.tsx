@@ -156,11 +156,11 @@ export default function ClientNew() {
       }
 
       toast({
-        title: "Client added and initial assessment created.",
-        description: "View in Onboarding Pipeline.",
+        title: planningPayload.status === "test" ? "Test client added." : "Client added and initial assessment created.",
+        description: planningPayload.status === "test" ? "View in the Test tab." : "View in Onboarding Pipeline.",
       });
 
-      navigate("/clients?tab=pipeline");
+      navigate(planningPayload.status === "test" ? "/clients?status=test" : "/clients?tab=pipeline");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};

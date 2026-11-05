@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Client authorization progress
-- [ ] Add separate authorization milestones with automatic current pipeline assessment dates, admin-only saves, and append-only actor-stamped history
-- [ ] Add record/Edit controls, list column/filter and pipeline display; 15+ day warning and Test exclusion without changing existing fields or assessment rules
-- [ ] Verify synthetic rules and browser flows without sign-in, preserved real-data fingerprints, and final non-Test milestone counts
+- [x] Added separate authorization milestones, actual pipeline/618 appointment times and completion dates, admin-only decisions and append-only actor-stamped history; deadlines never become appointment dates and pending renewals retain completed progress
+- [x] Added record/Edit controls, list column/counted filter and pipeline display, orange Waiting 15+ days and Test exclusion without changing existing fields or assessment rules
+- [x] Verified synthetic database/controls and desktop/phone browser save/readback/history/filter/denial/clear/Edit flows without sign-in or live writes; original clients, assessment fields and status history retain matching fingerprints; non-Test counts: Not started 10, all five other steps 0, authorization dates blank, six Test clients excluded
+- [ ] Live authenticated admin save remains untested because the user prohibits all sign-ins
 
 ## Client field consolidation and Test exclusion
 - [x] Consolidated canonical Payer Type/Status with exact authorized mapping; retained schedules/dates and all three original history events; removed duplicate payer data, retired legacy storage for live-version safety, enforced admin-only changes

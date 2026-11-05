@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { friendlyError } from "@/lib/friendlyError";
 import { clientPayerLabel, clientStatusLabel, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
 import { ClientAuthorizationSummary } from "./ClientAuthorizationSummary";
-import type { AuthorizationProgress } from "@/utils/clientAuthorization";
+import { authorizationDate, type AuthorizationProgress } from "@/utils/clientAuthorization";
 
 type Assessment = {
   id: string;
@@ -28,6 +28,7 @@ type Assessment = {
   assessment_name: string | null;
   due_date: string | null;
   assessment_deadline: string | null;
+  scheduled_at: string | null;
   completed_date: string | null;
   status: string | null;
   notes: string | null;
@@ -275,6 +276,7 @@ export default function OnboardingPipeline() {
                 <Field label="Assessment Type" value={selected.assessment_type} />
                 <Field label="Assessment Name" value={selected.assessment_name} />
                 <Field label="Deadline" value={formatDeadline(getDeadline(selected))} />
+                <Field label="Scheduled assessment" value={authorizationDate(selected.scheduled_at || selected.clients?.client_authorization_progress?.assessment_scheduled_at)} />
                 <Field label="Due Date" value={selected.due_date} />
                 <Field label="Completed Date" value={selected.completed_date} />
                 <Field

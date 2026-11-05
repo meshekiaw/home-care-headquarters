@@ -1,8 +1,8 @@
 # Roadmap
 
 ## Client List sorting
-- [ ] Add three-state sorting to every data heading and synchronize the existing dropdown without changing columns, tabs, filters or data
-- [ ] Verify actual-date sorting, blanks last, exact status/progress ranks and stable search/filter/tab behavior using synthetic data only and no sign-ins
+- [x] Added ascending/descending/default sorting to all ten data headings with shared dropdown state, directional arrows and 44px phone tap targets; default remains last name/first name ascending and Date Added remains newest-first
+- [x] Verified chronological displayed-date sorting, blanks last in both directions, exact status/progress ranks and oldest-first same-step dates; all status tabs, search and existing filters retained; synthetic desktop/phone taps and dropdown synchronization passed with zero sign-ins, client writes or page errors; 424 isolated regression tests passed
 
 ## Client authorization progress
 - [x] Added separate authorization milestones, actual pipeline/618 appointment times and completion dates, admin-only decisions and append-only actor-stamped history; deadlines never become appointment dates and pending renewals retain completed progress

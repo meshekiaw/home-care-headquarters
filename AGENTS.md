@@ -1,6 +1,7 @@
 # Architecture rules
 
 - Client planning uses canonical Payer Type and Status with shared active/Test predicates; admin-only validation and append-only status history preserve requested schedules and assessment dates, while restrictive parent-eligibility policies plus service-query filtering exclude Test records without deleting historical work.
+- Authorization milestones live separately from client planning/compliance dates; trigger-only assessment projections use actual 618 appointments and pipeline completion dates, while admin-only decisions and immutable history preserve assessment lifecycles and avoid pending-renewal regressions.
 
 - Admin caregiver access uses its own authenticated gateway and service-only status/finalization RPCs; append-only access events retain actors and confirmed identities, and role/link/12-session repair commits atomically without changing the public training sign-in or password flows.
 

@@ -74,8 +74,11 @@ import OnboardingPipeline from "@/components/clients/OnboardingPipeline";
 import { useUserRole } from "@/hooks/useUserRole";
 import { friendlyError } from "@/lib/friendlyError";
 import { CLIENT_PAYERS, CLIENT_STATUSES, clientPayerLabel, clientStatusLabel, clientStatusCounts, matchesClientPayer, matchesClientStatusTab, isOperationalClient, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
+import { AUTHORIZATION_STEPS, matchesAuthorizationFilter, type AuthorizationProgress } from "@/utils/clientAuthorization";
+import { ClientAuthorizationSummary } from "@/components/clients/ClientAuthorizationSummary";
 
 interface Client extends ClientPlanningRecord {
+  client_authorization_progress?: AuthorizationProgress | null;
   id: string;
   first_name: string;
   last_name: string;
@@ -109,6 +112,7 @@ export default function Clients() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [payerFilter, setPayerFilter] = useState("all");
+  const [authorizationFilter, setAuthorizationFilter] = useState("all");
   const [clientStatusTab, setClientStatusTab] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("status") === "test" ? "test" : "all");
   const [dueDateMonth, setDueDateMonth] = useState("all");
   const [expirationDateMonth, setExpirationDateMonth] = useState("all");
@@ -125,7 +129,7 @@ export default function Clients() {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select('*, client_authorization_progress(*)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -210,6 +214,7 @@ export default function Clients() {
     if (!matchesSearch) return false;
     if (!matchesClientPayer(client, payerFilter)) return false;
     if (!matchesClientStatusTab(client, clientStatusTab)) return false;
+    if (authorizationFilter !== "all" && !matchesAuthorizationFilter(client.status, client.client_authorization_progress, authorizationFilter)) return false;
     if (dueDateMonth !== "all") {
       if (!client.authorization_due_date) return false;
       if (getDateOnlyYearMonth(client.authorization_due_date) !== dueDateMonth) return false;
@@ -249,7 +254,7 @@ export default function Clients() {
   // Clear selection when search changes
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [searchQuery, clientStatusTab, payerFilter, dueDateMonth, expirationDateMonth]);
+  }, [searchQuery, clientStatusTab, payerFilter, authorizationFilter, dueDateMonth, expirationDateMonth]);
 
   const formatYearMonth = (dateStr: string) => {
     return getDateOnlyYearMonth(dateStr) ?? "";
@@ -268,7 +273,7 @@ export default function Clients() {
   )].sort();
 
   const statusCounts = clientStatusCounts(clients);
-  const activeFilterCount = [payerFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
+  const activeFilterCount = [payerFilter !== "all", authorizationFilter !== "all", dueDateMonth !== "all", expirationDateMonth !== "all"].filter(Boolean).length;
 
   const allSelected = sortedClients.length > 0 && sortedClients.every(c => selectedIds.has(c.id));
   const someSelected = sortedClients.some(c => selectedIds.has(c.id));
@@ -393,6 +398,8 @@ export default function Clients() {
           </Select>
         </div>
 
+        <div className="max-w-sm"><label className="text-xs font-medium text-muted-foreground">Authorization progress</label><Select value={authorizationFilter} onValueChange={setAuthorizationFilter}><SelectTrigger aria-label="Authorization progress filter"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All authorization progress</SelectItem>{AUTHORIZATION_STEPS.map(step => <SelectItem key={step.value} value={step.value}>{step.label} ({operationalClients.filter(c => matchesAuthorizationFilter(c.status, c.client_authorization_progress, step.value)).length})</SelectItem>)}<SelectItem value="waiting">Waiting 15+ days ({operationalClients.filter(c => matchesAuthorizationFilter(c.status, c.client_authorization_progress, "waiting")).length})</SelectItem></SelectContent></Select></div>
+
         {/* Filter Bar */}
         {filterOpen && (
           <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/50 border rounded-lg">
@@ -425,7 +432,7 @@ export default function Clients() {
               </Select>
             </div>
             {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => { setPayerFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setPayerFilter("all"); setAuthorizationFilter("all"); setDueDateMonth("all"); setExpirationDateMonth("all"); }}>
                 <X className="w-4 h-4 mr-1" />
                 Clear Filters
               </Button>
@@ -585,6 +592,7 @@ export default function Clients() {
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Payer Type</TableHead>
+                      <TableHead>Authorization progress</TableHead>
                       <TableHead>Current 618 Date</TableHead>
                       <TableHead>618 Expiration Date</TableHead>
                       <TableHead>Authorization Begin Date</TableHead>
@@ -644,6 +652,7 @@ export default function Clients() {
                         </TableCell>
                         <TableCell><Badge variant="outline" className="whitespace-nowrap">{clientStatusLabel(client.status)}</Badge></TableCell>
                         <TableCell><span className="text-sm font-medium break-words">{clientPayerLabel(client)}</span></TableCell>
+                        <TableCell>{client.status !== "test" ? <ClientAuthorizationSummary progress={client.client_authorization_progress} /> : <span className="text-muted-foreground">—</span>}</TableCell>
                         {(() => {
                           const mdY = { month: '2-digit', day: '2-digit', year: 'numeric' } as const;
                           const fmt = (d: string | null | undefined) =>

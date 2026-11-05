@@ -88,6 +88,9 @@ export function requestedScheduleSummary(schedule: RequestedSchedule): string {
   return `${summary} · ${hoursLabel(requestedWeeklyHours(schedule))} hrs/wk`;
 }
 export function clientStatusLabel(value: string | undefined): string {
+  if (value === "active") return "Active (previous status)";
+  if (value === "pending") return "Pending (previous status)";
+  if (value === "inactive") return "Inactive (previous status)";
   return CLIENT_STATUSES.find(s => s.value === value)?.label ?? "Not set";
 }
 export function clientPayerLabel(record: ClientPlanningRecord): string {

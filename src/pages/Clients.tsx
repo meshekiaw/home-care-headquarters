@@ -40,7 +40,9 @@ import {
   MessageSquare,
   ChevronDown,
   UserPlus,
-  ArrowUpDown
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import {
   Select,
@@ -63,7 +65,6 @@ import type { ParsedClient } from "@/utils/csvParser";
 import { Badge } from "@/components/ui/badge";
 import {
   
-  compareDateOnly,
   formatDateOnly,
   formatDateOnlyYearMonth,
   getDateOnlyYearMonth,
@@ -76,6 +77,8 @@ import { friendlyError } from "@/lib/friendlyError";
 import { CLIENT_PAYERS, CLIENT_STATUSES, clientPayerLabel, clientStatusLabel, clientStatusCounts, matchesClientPayer, matchesClientStatusTab, isOperationalClient, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
 import { AUTHORIZATION_STEPS, matchesAuthorizationFilter, type AuthorizationProgress } from "@/utils/clientAuthorization";
 import { ClientAuthorizationSummary } from "@/components/clients/ClientAuthorizationSummary";
+import { ClientSortHeading } from "@/components/clients/ClientSortHeading";
+import { CLIENT_SORT_OPTIONS, clientSortFromDropdown, sortClientList, type ClientSort } from "@/utils/clientListSorting";
 
 interface Client extends ClientPlanningRecord {
   client_authorization_progress?: AuthorizationProgress | null;
@@ -98,8 +101,6 @@ interface Client extends ClientPlanningRecord {
   payer_type: string | null;
 }
 
-type SortOption = 'name' | 'city' | 'status' | 'created_at' | 'authorization_due_date' | 'authorization_expiration_date';
-
 export default function Clients() {
   const initialTab = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tab") === "pipeline" ? "pipeline" : "list";
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -108,7 +109,7 @@ export default function Clients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<SortOption>('name');
+  const [sort, setSort] = useState<ClientSort>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [payerFilter, setPayerFilter] = useState("all");
@@ -226,30 +227,7 @@ export default function Clients() {
     return true;
   });
 
-  const sortedClients = [...filteredClients].sort((a, b) => {
-    switch (sortBy) {
-      case 'city':
-        if (!a.city && !b.city) return 0;
-        if (!a.city) return 1;
-        if (!b.city) return -1;
-        return a.city.localeCompare(b.city);
-      case 'status': {
-        const order: Record<string, number> = Object.fromEntries(CLIENT_STATUSES.map((s, index) => [s.value, index]));
-        return (order[a.status] ?? 3) - (order[b.status] ?? 3);
-      }
-      case 'created_at':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'authorization_due_date':
-      case 'authorization_expiration_date': {
-        const dateA = a[sortBy];
-        const dateB = b[sortBy];
-        return compareDateOnly(dateA, dateB);
-      }
-      case 'name':
-      default:
-        return a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name);
-    }
-  });
+  const sortedClients = sortClientList(filteredClients, sort);
 
   // Clear selection when search changes
   useEffect(() => {
@@ -369,18 +347,14 @@ export default function Clients() {
               className="pl-10"
             />
           </div>
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-[200px]">
-              <ArrowUpDown className="w-4 h-4 mr-2" />
+          <Select value={sort?.key ?? "default"} onValueChange={(value) => setSort(clientSortFromDropdown(value))}>
+            <SelectTrigger aria-label="Sort by" className="w-full sm:w-[240px]">
+              {sort ? sort.direction === "asc" ? <ArrowUp className="w-4 h-4 mr-2 shrink-0" aria-hidden="true" /> : <ArrowDown className="w-4 h-4 mr-2 shrink-0" aria-hidden="true" /> : <ArrowUpDown className="w-4 h-4 mr-2 shrink-0" aria-hidden="true" />}
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="city">City</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
-              <SelectItem value="created_at">Date Added</SelectItem>
-              <SelectItem value="authorization_due_date">Current 618 Date</SelectItem>
-              <SelectItem value="authorization_expiration_date">Auth Expiration Date</SelectItem>
+              <SelectItem value="default">Default order (Name)</SelectItem>
+              {CLIENT_SORT_OPTIONS.map(option => <SelectItem key={option.key} value={option.key}>{option.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Button variant="outline" className="sm:w-auto relative" onClick={() => setFilterOpen(!filterOpen)}>
@@ -587,16 +561,16 @@ export default function Clients() {
                           {...(someSelected && !allSelected ? { "data-state": "indeterminate" as any } : {})}
                         />
                       </TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Payer Type</TableHead>
-                      <TableHead>Authorization progress</TableHead>
-                      <TableHead>Current 618 Date</TableHead>
-                      <TableHead>618 Expiration Date</TableHead>
-                      <TableHead>Authorization Begin Date</TableHead>
-                      <TableHead>Authorization Expiration Date</TableHead>
+                      <ClientSortHeading label="Name" sortKey="name" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Contact" sortKey="contact" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Location" sortKey="city" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Status" sortKey="status" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Payer Type" sortKey="payer_type" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Authorization progress" sortKey="authorization_progress" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Current 618 Date" sortKey="authorization_due_date" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="618 Expiration Date" sortKey="form_618_expiration_date" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Authorization Begin Date" sortKey="authorization_begin_date" sort={sort} onSort={setSort} />
+                      <ClientSortHeading label="Authorization Expiration Date" sortKey="authorization_expiration_date" sort={sort} onSort={setSort} />
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>

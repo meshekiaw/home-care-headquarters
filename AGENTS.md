@@ -1,5 +1,6 @@
 # Architecture rules
 
+- Client List headings and dropdown share one in-memory sort state and pure comparator applied after existing filters; displayed values define sort keys and null placement is direction-independent so sorting never writes client data.
 - Client planning uses canonical Payer Type and Status with shared active/Test predicates; admin-only validation and append-only status history preserve requested schedules and assessment dates, while restrictive parent-eligibility policies plus service-query filtering exclude Test records without deleting historical work.
 - Authorization milestones live separately from client planning/compliance dates; trigger-only assessment projections use actual 618 appointments and pipeline completion dates, while admin-only decisions and immutable history preserve assessment lifecycles and avoid pending-renewal regressions.
 

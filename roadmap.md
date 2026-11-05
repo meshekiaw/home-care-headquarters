@@ -1,5 +1,9 @@
 # Roadmap
 
+## Client List sorting
+- [ ] Add three-state sorting to every data heading and synchronize the existing dropdown without changing columns, tabs, filters or data
+- [ ] Verify actual-date sorting, blanks last, exact status/progress ranks and stable search/filter/tab behavior using synthetic data only and no sign-ins
+
 ## Client authorization progress
 - [x] Added separate authorization milestones, actual pipeline/618 appointment times and completion dates, admin-only decisions and append-only actor-stamped history; deadlines never become appointment dates and pending renewals retain completed progress
 - [x] Added record/Edit controls, list column/counted filter and pipeline display, orange Waiting 15+ days and Test exclusion without changing existing fields or assessment rules

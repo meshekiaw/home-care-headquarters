@@ -1,5 +1,10 @@
 # Roadmap
 
+## Client authorization progress
+- [ ] Add separate authorization milestones with automatic current pipeline assessment dates, admin-only saves, and append-only actor-stamped history
+- [ ] Add record/Edit controls, list column/filter and pipeline display; 15+ day warning and Test exclusion without changing existing fields or assessment rules
+- [ ] Verify synthetic rules and browser flows without sign-in, preserved real-data fingerprints, and final non-Test milestone counts
+
 ## Client field consolidation and Test exclusion
 - [x] Consolidated canonical Payer Type/Status with exact authorized mapping; retained schedules/dates and all three original history events; removed duplicate payer data, retired legacy storage for live-version safety, enforced admin-only changes
 - [x] Updated forms/cards/filters/counts/imports/exports/scheduling/assessment queues; restrictive Test parent policies cover existing records, nurse RPCs and seven deployed service functions exclude Test without deleting historical work

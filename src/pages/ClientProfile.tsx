@@ -35,6 +35,7 @@ import { calculateAgeFromDateOnly, formatDateOnly, isDateOnlyString } from "@/ut
 import { friendlyError } from "@/lib/friendlyError";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ClientPlanningPanel } from "@/components/clients/ClientPlanningPanel";
+import { ClientAuthorizationPanel } from "@/components/clients/ClientAuthorizationPanel";
 import { clientStatusLabel, type ClientPlanningRecord } from "@/utils/clientPlanning";
 
 interface Client extends ClientPlanningRecord {
@@ -270,6 +271,7 @@ export default function ClientProfile() {
 
           <TabsContent value="overview">
             <ClientPlanningPanel client={client} onSaved={() => { void fetchClient(); }} />
+            {client.status !== "test" && <ClientAuthorizationPanel clientId={client.id} />}
             <ClientOverview client={client} formatDate={formatDate} />
           </TabsContent>
 

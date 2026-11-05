@@ -21,6 +21,7 @@ import { friendlyError } from "@/lib/friendlyError";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ClientPlanningFields } from "@/components/clients/ClientPlanningFields";
 import { CLIENT_PAYERS, clientPlanningDraft, clientPlanningPayload } from "@/utils/clientPlanning";
+import { ClientAuthorizationPanel } from "@/components/clients/ClientAuthorizationPanel";
 
 const clientSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(100),
@@ -245,6 +246,7 @@ export default function ClientEdit() {
           </div>
         </div>
 
+        {id && planning.status !== "test" && <ClientAuthorizationPanel clientId={id} />}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
           <Card>

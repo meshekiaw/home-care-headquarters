@@ -1337,6 +1337,7 @@ export type Database = {
           family_phone: string | null
           id: string
           notes: string | null
+          scheduled_at: string | null
           status: string
           updated_at: string
           user_id: string
@@ -1355,6 +1356,7 @@ export type Database = {
           family_phone?: string | null
           id?: string
           notes?: string | null
+          scheduled_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -1373,6 +1375,7 @@ export type Database = {
           family_phone?: string | null
           id?: string
           notes?: string | null
+          scheduled_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -1389,6 +1392,94 @@ export type Database = {
             foreignKeyName: "client_assessments_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_authorization_history: {
+        Row: {
+          actor_id: string | null
+          actor_name: string
+          changed_at: string
+          client_id: string
+          id: string
+          new_values: Json
+          previous_values: Json
+          source: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name: string
+          changed_at?: string
+          client_id: string
+          id?: string
+          new_values: Json
+          previous_values: Json
+          source: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string
+          changed_at?: string
+          client_id?: string
+          id?: string
+          new_values?: Json
+          previous_values?: Json
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_authorization_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_authorization_progress: {
+        Row: {
+          approved_on: string | null
+          assessment_completed_on: string | null
+          assessment_id: string | null
+          assessment_scheduled_at: string | null
+          assessment_source: string | null
+          client_id: string
+          denial_reason: string | null
+          denied_on: string | null
+          submitted_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_on?: string | null
+          assessment_completed_on?: string | null
+          assessment_id?: string | null
+          assessment_scheduled_at?: string | null
+          assessment_source?: string | null
+          client_id: string
+          denial_reason?: string | null
+          denied_on?: string | null
+          submitted_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_on?: string | null
+          assessment_completed_on?: string | null
+          assessment_id?: string | null
+          assessment_scheduled_at?: string | null
+          assessment_source?: string | null
+          client_id?: string
+          denial_reason?: string | null
+          denied_on?: string | null
+          submitted_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_authorization_progress_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -3832,6 +3923,10 @@ export type Database = {
           p_request_id: string
         }
         Returns: boolean
+      }
+      refresh_client_authorization_assessment: {
+        Args: { cid: string }
+        Returns: undefined
       }
       refresh_my_onboarding_receipts: { Args: never; Returns: boolean }
       register_caregiver_document: {

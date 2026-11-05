@@ -295,6 +295,27 @@
       "when": 1793846755361,
       "tag": "0041_exclude_test_nurse_portal_queues",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793848916814,
+      "tag": "0042_client_authorization_progress",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793848937980,
+      "tag": "0043_refine_authorization_assessment_sync",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1793849262302,
+      "tag": "0044_explicit_pipeline_appointment_date",
+      "breakpoints": true
     }
   ]
 }

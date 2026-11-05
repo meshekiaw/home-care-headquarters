@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { friendlyError } from "@/lib/friendlyError";
 import { clientPayerLabel, clientStatusLabel, readRequestedSchedule, requestedScheduleSummary, type ClientPlanningRecord } from "@/utils/clientPlanning";
+import { ClientAuthorizationSummary } from "./ClientAuthorizationSummary";
+import { authorizationDate, type AuthorizationProgress } from "@/utils/clientAuthorization";
 
 type Assessment = {
   id: string;
@@ -26,6 +28,7 @@ type Assessment = {
   assessment_name: string | null;
   due_date: string | null;
   assessment_deadline: string | null;
+  scheduled_at: string | null;
   completed_date: string | null;
   status: string | null;
   notes: string | null;
@@ -34,7 +37,7 @@ type Assessment = {
   family_email: string | null;
   created_at: string;
   updated_at: string;
-  clients?: ({ first_name: string; last_name: string } & ClientPlanningRecord) | null;
+  clients?: ({ first_name: string; last_name: string; client_authorization_progress?: AuthorizationProgress | null } & ClientPlanningRecord) | null;
 };
 
 type Column = "pending" | "scheduled" | "completed" | "overdue";
@@ -92,7 +95,7 @@ export default function OnboardingPipeline() {
     setError(null);
     const { data, error } = await supabase
       .from("client_assessments")
-      .select("*, clients!inner(first_name, last_name, payer_type, payer_type_other, status, requested_schedule)")
+      .select("*, clients!inner(first_name, last_name, payer_type, payer_type_other, status, requested_schedule, client_authorization_progress(*))")
       .neq("clients.status", "test")
       .order("created_at", { ascending: false });
     if (error) {
@@ -224,6 +227,7 @@ export default function OnboardingPipeline() {
                         </p>
                         <p className="text-xs break-words"><span className="text-muted-foreground">Payer Type: </span>{clientPayerLabel(a.clients ?? {})}</p>
                         <p className="text-xs break-words"><span className="text-muted-foreground">Status: </span>{clientStatusLabel(a.clients?.status)}</p>
+                        <div><p className="text-xs text-muted-foreground">Authorization progress</p><ClientAuthorizationSummary progress={a.clients?.client_authorization_progress} /></div>
                         <p className="text-xs break-words"><span className="text-muted-foreground">Requested: </span>{requestedScheduleSummary(readRequestedSchedule(a.clients?.requested_schedule))}</p>
                         <div className="flex items-center gap-1.5 text-xs">
                           <Calendar className="w-3 h-3 text-muted-foreground" />
@@ -272,6 +276,7 @@ export default function OnboardingPipeline() {
                 <Field label="Assessment Type" value={selected.assessment_type} />
                 <Field label="Assessment Name" value={selected.assessment_name} />
                 <Field label="Deadline" value={formatDeadline(getDeadline(selected))} />
+                <Field label="Scheduled assessment" value={authorizationDate(selected.scheduled_at || selected.clients?.client_authorization_progress?.assessment_scheduled_at)} />
                 <Field label="Due Date" value={selected.due_date} />
                 <Field label="Completed Date" value={selected.completed_date} />
                 <Field

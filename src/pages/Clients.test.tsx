@@ -84,9 +84,10 @@ describe("synthetic Client List sorting without sign-in", () => {
     await open();
     await choose("Authorization progress filter", "Not started (14)");
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
-    const monthSelectors = screen.getAllByRole("combobox").filter(box => box.textContent === "All");
-    fireEvent.click(monthSelectors[1]);
-    fireEvent.click(await screen.findByRole("option", { name: "January 2027", exact: true }));
+    const monthFilter = screen.getByText("Auth Expiration Month").parentElement;
+    if (!monthFilter) throw new Error("Missing expiration month filter");
+    fireEvent.click(within(monthFilter).getByRole("combobox"));
+    fireEvent.click(await screen.findByRole("option", { name: "Jan 2027", exact: true }));
     const before = rowIds();
     expect(before).toHaveLength(7);
     for (let tap = 0; tap < 3; tap++) fireEvent.click(screen.getByRole("button", { name: "Status", exact: true }));

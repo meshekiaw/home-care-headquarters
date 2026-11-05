@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({ admin: true, update: vi.fn(), insert: vi.fn(),
 vi.mock("@/hooks/useUserRole", () => ({ useUserRole: () => ({ isAdmin: mocks.admin }) }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock("@/components/layout/DashboardLayout", () => ({ default: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock("@/components/clients/ClientAuthorizationPanel", () => ({ ClientAuthorizationPanel: () => null }));
 vi.mock("jspdf", () => ({ default: vi.fn() }));
 vi.mock("@/components/scheduling/AiResponseCard", () => ({ AiResponseCard: () => null }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from, auth: { getUser: async () => ({ data: { user: { id: "synthetic-actor" } } }), getSession: async () => ({ data: { session: null } }) } } }));

@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach,afterEach,describe,it,expect,vi } from 'vitest';
 import { cleanup,fireEvent,render,screen,waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
 import { ClientAuthorizationPanel } from './ClientAuthorizationPanel';
 const mocks=vi.hoisted(()=>({admin:true,from:vi.fn(),update:vi.fn(),toast:vi.fn(),progress:{client_id:'made-up',assessment_scheduled_at:'2026-11-04T15:00Z',assessment_completed_on:'2026-11-04',submitted_on:null as string|null,approved_on:null as string|null,denied_on:null as string|null,denial_reason:null as string|null,updated_at:'2026-11-04T16:00Z'},history:[] as unknown[],fail:false}));
 vi.mock('@/hooks/useUserRole',()=>({useUserRole:()=>({isAdmin:mocks.admin})}));

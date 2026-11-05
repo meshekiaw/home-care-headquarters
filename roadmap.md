@@ -1,5 +1,10 @@
 # Roadmap
 
+## Client field consolidation and Test exclusion
+- [ ] Consolidate Payer Type/Status with exact authorized mapping, retain dates/history/schedules, remove duplicate payer data and enforce admin-only writes
+- [ ] Update every form/card/filter/count/export/scheduling/assessment/notification path; Test clients only in Test tab
+- [ ] Verify with synthetic tests and browser, no sign-in; report before/after counts and preserved-data fingerprints
+
 ## Client payer, requested schedule and status
 - [x] Added independent admin-only fields and immutable, actor-stamped status history; all 16 existing clients start Not set and their complete legacy-data fingerprint is unchanged
 - [x] Added fields to New Intake, Add New Client, Edit and client record; payer/status/schedule cards, multi-payer filter and counted status tabs; pipeline columns and assessment rules preserved

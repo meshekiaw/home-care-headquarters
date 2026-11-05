@@ -717,7 +717,7 @@ export default function Clients() {
           </TabsContent>
 
           <TabsContent value="intake">
-            <ClientIntakeForm onSaved={() => { setActiveTab("pipeline"); fetchClients(); }} />
+            <ClientIntakeForm onSaved={status => { setActiveTab(status === "test" ? "list" : "pipeline"); if (status === "test") setClientStatusTab("test"); fetchClients(); }} />
           </TabsContent>
 
 

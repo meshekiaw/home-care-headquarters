@@ -31,7 +31,7 @@ const SECTIONS = [
 
 const SERVICE_TYPES = ["Personal Care", "Attendant Care", "Respite", "Companion", "Skilled Nursing"];
 
-export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } = {}) {
+export default function ClientIntakeForm({ onSaved }: { onSaved?: (status: string) => void } = {}) {
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
   const [planning, setPlanning] = useState(() => clientPlanningDraft());
@@ -142,7 +142,7 @@ export default function ClientIntakeForm({ onSaved }: { onSaved?: () => void } =
         title: "Client saved",
         description: planningPayload.status === "test" ? "Test client saved without an assessment." : "Client saved and assessment created. Check Onboarding Pipeline to track progress.",
       });
-      onSaved?.();
+      onSaved?.(planningPayload.status);
     } catch (err: any) {
       toast({ title: "Save failed", description: friendlyError(err), variant: "destructive" });
     } finally {

@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Client field consolidation and Test exclusion
-- [ ] Consolidate Payer Type/Status with exact authorized mapping, retain dates/history/schedules, remove duplicate payer data and enforce admin-only writes
-- [ ] Update every form/card/filter/count/export/scheduling/assessment/notification path; Test clients only in Test tab
-- [ ] Verify with synthetic tests and browser, no sign-in; report before/after counts and preserved-data fingerprints
+- [x] Consolidated canonical Payer Type/Status with exact authorized mapping; retained schedules/dates and all three original history events; removed duplicate payer data, retired legacy storage for live-version safety, enforced admin-only changes
+- [x] Updated forms/cards/filters/counts/imports/exports/scheduling/assessment queues; restrictive Test parent policies cover existing records, nurse RPCs and seven deployed service functions exclude Test without deleting historical work
+- [x] 334 isolated tests passed; synthetic desktop/phone list/Test isolation, Payer Type filter, Other/status save and UI history readback, retained schedule, pipeline and Test intake verified with zero page errors and no sign-in/live test records; build OK
+- [x] Verified old Status: Active 10/Pending 6; old Client status: Not set 13/Hospitalized 3; new Status: Not set 7/New client 6/Hospitalized 3/all others 0; Payer Type populated 16 before/after (Medicaid 9/VA 7); preserved-data and original-history fingerprints unchanged
+- [ ] Live authenticated admin save remains untested because all sign-ins are prohibited; physical retirement of unused compatibility columns requires a later allowed breaking schema change
 
 ## Client payer, requested schedule and status
 - [x] Added independent admin-only fields and immutable, actor-stamped status history; all 16 existing clients start Not set and their complete legacy-data fingerprint is unchanged

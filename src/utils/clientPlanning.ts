@@ -1,6 +1,6 @@
 import type { Json } from "@/integrations/supabase/types";
 
-export const CLIENT_PAYERS = ["Medicaid personal care", "ARChoices", "VA", "Private pay", "Other"] as const;
+export const CLIENT_PAYERS = ["Medicaid", "ARChoices", "PASSE", "VA", "Private pay", "Long-term care insurance", "Other"] as const;
 export const CLIENT_STATUSES = [
   { value: "not_set", label: "Not set" },
   { value: "new_client", label: "New client" },
@@ -9,7 +9,13 @@ export const CLIENT_STATUSES = [
   { value: "hospitalized", label: "Hospitalized" },
   { value: "on_hold", label: "On hold" },
   { value: "discharged", label: "Discharged" },
+  { value: "test", label: "Test" },
 ] as const;
+export const ACTIVE_CLIENT_STATUSES = ["current_staffed", "current_needs_staffing", "hospitalized", "on_hold", "not_set"] as const;
+export function isActiveClient(record: { status?: string | null }): boolean { return ACTIVE_CLIENT_STATUSES.some(status => status === record.status); }
+export function isOperationalClient(record: { status?: string | null }): boolean { return record.status !== "test"; }
+export function matchesClientStatusTab(record: { status?: string | null }, tab: string): boolean { return tab === "test" ? record.status === "test" : isOperationalClient(record) && (tab === "all" || (record.status ?? "not_set") === tab); }
+export function consolidatedClientStatus(oldStatus: string, chosenStatus?: string | null): string { return chosenStatus && chosenStatus !== "not_set" ? chosenStatus : oldStatus.toLowerCase() === "pending" ? "new_client" : oldStatus.toLowerCase() === "active" ? "not_set" : "discharged"; }
 export const WEEK_DAYS = [
   { key: "mon", label: "Monday", short: "Mon" },
   { key: "tue", label: "Tuesday", short: "Tue" },
@@ -23,12 +29,12 @@ export type DayKey = typeof WEEK_DAYS[number]["key"];
 export type ScheduleDay = { enabled: boolean; start: string; end: string };
 export type RequestedSchedule = Partial<Record<DayKey, ScheduleDay>>;
 export type ClientPlanningRecord = {
-  payers?: string[]; payer_other?: string | null; requested_schedule?: Json;
-  requested_schedule_notes?: string | null; client_status?: string;
+  payer_type?: string | null; payer_type_other?: string | null; requested_schedule?: Json;
+  requested_schedule_notes?: string | null; status?: string;
   client_status_date?: string | null; expected_return_date?: string | null; client_status_reason?: string | null;
 };
 export type ClientPlanningDraft = {
-  payers: string[]; payerOther: string; schedule: RequestedSchedule; scheduleNotes: string;
+  payerType: string; payerOther: string; schedule: RequestedSchedule; scheduleNotes: string;
   status: string; statusDate: string; expectedReturn: string; statusReason: string;
 };
 export function readRequestedSchedule(value: Json | undefined): RequestedSchedule {
@@ -43,7 +49,7 @@ export function readRequestedSchedule(value: Json | undefined): RequestedSchedul
   return result;
 }
 export function clientPlanningDraft(record: ClientPlanningRecord = {}): ClientPlanningDraft {
-  return { payers: record.payers ?? [], payerOther: record.payer_other ?? "", schedule: readRequestedSchedule(record.requested_schedule), scheduleNotes: record.requested_schedule_notes ?? "", status: record.client_status ?? "not_set", statusDate: record.client_status_date ?? "", expectedReturn: record.expected_return_date ?? "", statusReason: record.client_status_reason ?? "" };
+  return { payerType: record.payer_type ?? "Medicaid", payerOther: record.payer_type_other ?? "", schedule: readRequestedSchedule(record.requested_schedule), scheduleNotes: record.requested_schedule_notes ?? "", status: record.status ?? "not_set", statusDate: record.client_status_date ?? "", expectedReturn: record.expected_return_date ?? "", statusReason: record.client_status_reason ?? "" };
 }
 function timeMinutes(value: string): number | null {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) return null;
@@ -85,20 +91,20 @@ export function clientStatusLabel(value: string | undefined): string {
   return CLIENT_STATUSES.find(s => s.value === value)?.label ?? "Not set";
 }
 export function clientPayerLabel(record: ClientPlanningRecord): string {
-  return record.payers?.length ? record.payers.map(p => p === "Other" && record.payer_other ? `Other: ${record.payer_other}` : p).join(", ") : "Not set";
+  return record.payer_type === "Other" && record.payer_type_other ? `Other: ${record.payer_type_other}` : record.payer_type || "Not set";
 }
 export function matchesClientPayer(record: ClientPlanningRecord, filter: string): boolean {
-  return filter === "all" || (filter === "not_set" ? !record.payers?.length : !!record.payers?.includes(filter));
+  return filter === "all" || record.payer_type === filter;
 }
 export function clientStatusCounts(records: ClientPlanningRecord[]): Record<string, number> {
-  const counts: Record<string, number> = { all: records.length };
-  for (const s of CLIENT_STATUSES) counts[s.value] = records.filter(r => (r.client_status ?? "not_set") === s.value).length;
+  const counts: Record<string, number> = { all: records.filter(isOperationalClient).length };
+  for (const s of CLIENT_STATUSES) counts[s.value] = records.filter(r => matchesClientStatusTab(r, s.value)).length;
   return counts;
 }
 export function validateClientPlanning(draft: ClientPlanningDraft): string | null {
   if (draft.payerOther.length > 200 || draft.scheduleNotes.length > 2000 || draft.statusReason.length > 2000) return "Client planning text is too long.";
-  if (draft.payers.some(p => !CLIENT_PAYERS.some(option => option === p)) || new Set(draft.payers).size !== draft.payers.length) return "Select valid, distinct payers.";
-  if (draft.payers.includes("Other") && !draft.payerOther.trim()) return "Enter the other payer.";
+  if (!CLIENT_PAYERS.some(option => option === draft.payerType)) return "Select a valid payer type.";
+  if (draft.payerType === "Other" && !draft.payerOther.trim()) return "Enter the other payer.";
   if (!CLIENT_STATUSES.some(s => s.value === draft.status)) return "Select a valid client status.";
   if (["hospitalized", "on_hold", "discharged"].includes(draft.status) && !draft.statusDate) return "Enter the status date.";
   if (["on_hold", "discharged"].includes(draft.status) && !draft.statusReason.trim()) return "Enter a reason for this client status.";
@@ -113,9 +119,9 @@ export function clientPlanningPayload(draft: ClientPlanningDraft) {
   const error = validateClientPlanning(draft);
   if (error) throw new Error(error);
   return {
-    payers: draft.payers, payer_other: draft.payers.includes("Other") ? draft.payerOther.trim() : null,
+    payer_type: draft.payerType, payer_type_other: draft.payerType === "Other" ? draft.payerOther.trim() : null,
     requested_schedule: draft.schedule as Json, requested_schedule_notes: draft.scheduleNotes.trim() || null,
-    client_status: draft.status, client_status_date: draft.statusDate || null,
+    status: draft.status, client_status_date: draft.statusDate || null,
     expected_return_date: draft.status === "hospitalized" ? draft.expectedReturn || null : null,
     client_status_reason: ["on_hold", "discharged"].includes(draft.status) ? draft.statusReason.trim() : null,
   };

@@ -6,22 +6,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CLIENT_PAYERS, CLIENT_STATUSES, WEEK_DAYS, hoursLabel, requestedWeeklyHours, type ClientPlanningDraft } from "@/utils/clientPlanning";
 
-export function ClientPlanningFields({ value, onChange, disabled = false }: { value: ClientPlanningDraft; onChange: (value: ClientPlanningDraft) => void; disabled?: boolean }) {
+export function ClientPlanningFields({ value, onChange, disabled = false, includePayer = true }: { value: ClientPlanningDraft; onChange: (value: ClientPlanningDraft) => void; disabled?: boolean; includePayer?: boolean }) {
   const id = useId();
   const update = (patch: Partial<ClientPlanningDraft>) => onChange({ ...value, ...patch });
   return (
     <fieldset disabled={disabled} className="min-w-0 space-y-6 border-t pt-5">
-      <section className="space-y-3">
-        <h3 className="font-semibold">Payer</h3>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {CLIENT_PAYERS.map(payer => <div key={payer} className="flex items-center gap-2">
-            <Checkbox id={`${id}-${payer}`} disabled={disabled} checked={value.payers.includes(payer)} onCheckedChange={checked => update({ payers: checked === true ? [...value.payers, payer] : value.payers.filter(p => p !== payer) })} />
-            <Label htmlFor={`${id}-${payer}`}>{payer}</Label>
-          </div>)}
-        </div>
-        {value.payers.length === 0 && <p className="text-sm text-muted-foreground">Not set</p>}
-        {value.payers.includes("Other") && <div className="space-y-2"><Label htmlFor={`${id}-other`}>Other payer *</Label><Input id={`${id}-other`} value={value.payerOther} maxLength={200} onChange={e => update({ payerOther: e.target.value })} /></div>}
-      </section>
+      {includePayer && <section className="space-y-3">
+        <Label htmlFor={`${id}-payer`}>Payer Type *</Label>
+        <Select value={value.payerType} disabled={disabled} onValueChange={payerType => update({ payerType })}>
+          <SelectTrigger id={`${id}-payer`} aria-label="Payer Type"><SelectValue /></SelectTrigger>
+          <SelectContent>{CLIENT_PAYERS.map(payer => <SelectItem key={payer} value={payer}>{payer}</SelectItem>)}</SelectContent>
+        </Select>
+        {value.payerType === "Other" && <div className="space-y-2"><Label htmlFor={`${id}-other`}>Other payer *</Label><Input id={`${id}-other`} value={value.payerOther} maxLength={200} onChange={e => update({ payerOther: e.target.value })} /></div>}
+      </section>}
       <section className="space-y-3">
         <h3 className="font-semibold">Requested schedule</h3>
         <div className="grid grid-cols-[minmax(90px,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-x-2 gap-y-3 items-center">
@@ -41,9 +38,9 @@ export function ClientPlanningFields({ value, onChange, disabled = false }: { va
         <div className="space-y-2"><Label htmlFor={`${id}-schedule-notes`}>Requested schedule notes</Label><Textarea id={`${id}-schedule-notes`} maxLength={2000} rows={3} value={value.scheduleNotes} onChange={e => update({ scheduleNotes: e.target.value })} /></div>
       </section>
       <section className="space-y-3">
-        <h3 className="font-semibold">Client status</h3>
+        <h3 className="font-semibold">Status</h3>
         <Select value={value.status} disabled={disabled} onValueChange={status => update({ status, statusDate: "", expectedReturn: "", statusReason: "" })}>
-          <SelectTrigger aria-label="Client status"><SelectValue /></SelectTrigger>
+          <SelectTrigger aria-label="Status"><SelectValue /></SelectTrigger>
           <SelectContent>{CLIENT_STATUSES.map(status => <SelectItem value={status.value} key={status.value}>{status.label}</SelectItem>)}</SelectContent>
         </Select>
         {value.status !== "not_set" && <div className="space-y-2"><Label htmlFor={`${id}-status-date`}>{value.status === "hospitalized" ? "Admit date *" : ["on_hold", "discharged"].includes(value.status) ? "Status date *" : "Status date (optional)"}</Label><Input type="date" id={`${id}-status-date`} value={value.statusDate} onChange={e => update({ statusDate: e.target.value })} /></div>}

@@ -17,7 +17,7 @@ vi.mock("@/components/scheduling/AiResponseCard", () => ({ AiResponseCard: () =>
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from, auth: { getUser: async () => ({ data: { user: { id: "synthetic-actor" } } }), getSession: async () => ({ data: { session: null } }) } } }));
 async function choose(label: string, option: string) {
   fireEvent.click(screen.getByRole("combobox", { name: label }));
-  fireEvent.click(await screen.findByRole("option", { name: option, exact: true }));
+  fireEvent.click(await screen.findByRole("option", { name: option }));
 }
 beforeEach(() => {
   vi.clearAllMocks(); mocks.admin = true;

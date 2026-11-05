@@ -100,6 +100,9 @@ async function sendEmail(
        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
      }
  
+     const { data: isTest, error: eligibilityError } = await supabase.rpc("client_record_is_test", { p_id: notification.related_id });
+     if (eligibilityError) throw eligibilityError;
+     if (isTest) return new Response(JSON.stringify({ success: false, skipped: true, error: "Test client notifications are excluded." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
      let emailSent = notification.email_sent;
      let smsSent = notification.sms_sent;
      let errorMessage = "";

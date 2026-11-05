@@ -64,7 +64,8 @@ Deno.serve(async (req: Request) => {
     // Get all active ARChoices assignments with AC hours > 0
     const { data: assignments, error: assignErr } = await supabase
       .from("monthly_calendar_assignments")
-      .select("*, caregivers(first_name, last_name, email), clients(first_name, last_name)")
+      .select("*, caregivers(first_name, last_name, email), clients!inner(first_name, last_name, status)")
+      .neq("clients.status", "test")
       .eq("is_active", true)
       .eq("is_archoices", true)
       .gt("attendant_care_hours", 0);

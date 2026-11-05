@@ -3921,6 +3921,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      refresh_client_authorization_assessment: {
+        Args: { cid: string }
+        Returns: undefined
+      }
       refresh_my_onboarding_receipts: { Args: never; Returns: boolean }
       register_caregiver_document: {
         Args: {

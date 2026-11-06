@@ -1,5 +1,11 @@
 # Roadmap
 
+## Caregiver sign-in email mismatch and email readability
+- [ ] Read-only active-caregiver mismatch report, including connected sign-in activity, training evidence and target-email accounts; do not repair any live caregiver
+- [ ] Admin-confirmed silent connected-account email update and safe alternative-account switch with training preservation and append-only access audit; protected roles and conflicting caregiver links fail closed
+- [ ] Exact office-update message on public training sign-in; readable dark/light training email, full fallback link, unique sent time and actual expiry; preview only, no emails
+- [ ] Isolated Test Caregiver-only validation, deployed authorization checks and preserved-data audit; no admin or real-caregiver sign-ins
+
 ## Client List sorting
 - [x] Added ascending/descending/default sorting to all ten data headings with shared dropdown state, directional arrows and 44px phone tap targets; default remains last name/first name ascending and Date Added remains newest-first
 - [x] Verified chronological displayed-date sorting, blanks last in both directions, exact status/progress ranks and oldest-first same-step dates; all status tabs, search and existing filters retained; synthetic desktop/phone taps and dropdown synchronization passed with zero sign-ins, client writes or page errors; 424 isolated regression tests passed

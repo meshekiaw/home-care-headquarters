@@ -19,6 +19,12 @@ function dependencies(overrides: Partial<SignInDependencies> = {}) {
 }
 
 describe("caregiver training sign-in (mock accounts only)", () => {
+  it("reports an office update without creating, connecting or emailing a mismatched account", async () => {
+    const deps = dependencies({ lookup: vi.fn(async () => ({ caregiver_id: caregiverId, user_id: null, office_update: true })) });
+    const result = await handleTrainingSignIn(request(), deps);
+    expect(result).toEqual({ status: 409, body: { code: "office_update", error: "We found your record, but your sign-in needs an update from the office. Please call the office." } });
+    expect(deps.createAccount).not.toHaveBeenCalled(); expect(deps.connect).not.toHaveBeenCalled(); expect(deps.sendLink).not.toHaveBeenCalled();
+  });
   it("normalizes capitalization and extra spaces before matching and sending", async () => {
     const deps = dependencies();
     const result = await handleTrainingSignIn(request({ email: "  Test-Caregiver @ EXAMPLE.invalid  " }), deps);

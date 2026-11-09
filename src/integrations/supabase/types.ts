@@ -923,6 +923,48 @@ export type Database = {
           },
         ]
       }
+      caregiver_email_repairs: {
+        Row: {
+          action: string
+          actor_id: string
+          caregiver_id: string
+          created_at: string
+          expires_at: string
+          old_account_id: string
+          old_email: string
+          request_id: string
+          state: string
+          target_account_id: string
+          target_email: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          caregiver_id: string
+          created_at?: string
+          expires_at?: string
+          old_account_id: string
+          old_email: string
+          request_id: string
+          state?: string
+          target_account_id: string
+          target_email: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          caregiver_id?: string
+          created_at?: string
+          expires_at?: string
+          old_account_id?: string
+          old_email?: string
+          request_id?: string
+          state?: string
+          target_account_id?: string
+          target_email?: string
+        }
+        Relationships: []
+      }
       caregiver_onboarding: {
         Row: {
           archived_at: string | null
@@ -3822,6 +3864,10 @@ export type Database = {
         Args: { p_caregiver_id: string; p_ssn: string }
         Returns: undefined
       }
+      fail_caregiver_email_repair: {
+        Args: { p_actor_id: string; p_detail: string; p_request_id: string }
+        Returns: boolean
+      }
       finish_caregiver_access: {
         Args: {
           p_account_id: string
@@ -3830,6 +3876,10 @@ export type Database = {
           p_email: string
           p_request_id: string
         }
+        Returns: Json
+      }
+      finish_caregiver_email_repair: {
+        Args: { p_actor_id: string; p_request_id: string }
         Returns: Json
       }
       form_618_signatures_complete: {
@@ -3912,6 +3962,18 @@ export type Database = {
       open_training_session: {
         Args: { p_session_number: number }
         Returns: string
+      }
+      prepare_caregiver_email_repair: {
+        Args: {
+          p_action: string
+          p_actor_id: string
+          p_caregiver_id: string
+          p_email: string
+          p_name: string
+          p_old_email: string
+          p_request_id: string
+        }
+        Returns: Json
       }
       record_caregiver_access_event: {
         Args: {

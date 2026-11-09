@@ -1,13 +1,14 @@
 export const NOT_FOUND = "We couldn't find that email. Please call the office so we can update the email we have on file.";
 export const BUSY = "A lot of people are signing in right now. Please wait a few minutes and try again.";
 export const UNAVAILABLE = "We couldn't send your sign-in link right now. Please try again, or call the office if it keeps happening.";
+export const OFFICE_UPDATE = "We found your record, but your sign-in needs an update from the office. Please call the office.";
 
 export function normalizeEmail(value: string): string {
   return value.replace(/\s/g, "").toLowerCase();
 }
 
 export interface SignInDependencies {
-  lookup: (email: string) => Promise<{ caregiver_id: string; user_id: string | null } | null>;
+  lookup: (email: string) => Promise<{ caregiver_id: string; user_id: string | null; office_update?: boolean } | null>;
   createAccount: (email: string) => Promise<string>;
   connect: (caregiverId: string, userId: string, email: string) => Promise<void>;
   sendLink: (email: string, userId: string) => Promise<void>;
@@ -36,6 +37,7 @@ export async function handleTrainingSignIn(req: Request, deps: SignInDependencie
   try {
     let match = await deps.lookup(email);
     if (!match) return fail(400, "not_found", NOT_FOUND);
+    if (match.office_update) return fail(409, "office_update", OFFICE_UPDATE);
     let userId = match.user_id;
     if (!userId) {
       try {
@@ -54,6 +56,7 @@ export async function handleTrainingSignIn(req: Request, deps: SignInDependencie
     await deps.sendLink(email, userId);
     return { status: 200, body: { success: true } };
   } catch (error) {
+    if (error && typeof error === "object" && "message" in error && /Training login needs office review/i.test(String(error.message))) return fail(409, "office_update", OFFICE_UPDATE);
     if (isEmailRateLimit(error)) return fail(429, "email_rate_limit", BUSY);
     return fail(503, "unavailable", UNAVAILABLE);
   }

@@ -17,6 +17,7 @@ export default function CaregiverSignInAccess({ isAdmin, caregiverId, profileEma
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [confirmation, setConfirmation] = useState<CaregiverAccess | null>(null);
+  const [repairAction, setRepairAction] = useState<"update_email" | "switch_account" | null>(null);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   if (!isAdmin) return null;
@@ -29,6 +30,7 @@ export default function CaregiverSignInAccess({ isAdmin, caregiverId, profileEma
     try {
       const { data, error } = await supabase.functions.invoke("caregiver-sign-in-access", { body: {
         caregiver_id: caregiverId, confirmed_email: confirmation.email, confirmed_name: confirmation.caregiver_name, confirmed: true,
+        ...(repairAction ? { action: repairAction, confirmed_account_email: confirmation.connected_account_email } : {}),
       } });
       if (error || data?.success !== true) {
         let message = data?.error;
@@ -38,7 +40,7 @@ export default function CaregiverSignInAccess({ isAdmin, caregiverId, profileEma
         throw new Error(typeof message === "string" ? message : "Access could not be confirmed. Review the current status and log.");
       }
       setConfirmation(null);
-      toast({ title: "Caregiver access ready", description: "All 12 training sessions are assigned. No password was set and no email was sent." });
+      toast({ title: "Caregiver access ready", description: data.summary || "All 12 training sessions are assigned. No password was set and no email was sent.", duration: repairAction ? 15000 : 5000 });
       onSaved();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Access could not be confirmed.";
@@ -60,11 +62,19 @@ export default function CaregiverSignInAccess({ isAdmin, caregiverId, profileEma
       </div>
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" aria-label="Refresh sign-in access" title="Refresh sign-in access" disabled={saving || query.isFetching} onClick={refresh}><RefreshCw className={query.isFetching ? "h-4 w-4 animate-spin" : "h-4 w-4"} /></Button>
-        {access && access.state !== "ready" && <Button variant="outline" disabled={saving || query.isFetching || !profileCurrent || !!access.problem || access.state === "no_email"} onClick={() => { setErrorMessage(""); setConfirmation(access); }}>
+        {access && !access.email_mismatch && access.state !== "ready" && <Button variant="outline" disabled={saving || query.isFetching || !profileCurrent || !!access.problem || access.state === "no_email"} onClick={() => { setErrorMessage(""); setRepairAction(null); setConfirmation(access); }}>
           <KeyRound className="h-4 w-4" />{access.state === "not_set_up" ? "Fix access" : "Give caregiver access"}
         </Button>}
       </div>
     </div>
+    {access?.email_mismatch && <div className="space-y-3 text-sm">
+      <dl className="grid gap-2"><div><dt className="text-muted-foreground">Email on profile</dt><dd className="break-all">{access.email || "No email on file"}</dd></div><div><dt className="text-muted-foreground">Connected sign-in email</dt><dd className="break-all">{access.connected_account_email}</dd></div></dl>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" className="h-auto min-h-11 whitespace-normal break-all text-left" disabled={saving || query.isFetching || !profileCurrent || !access.can_update_email} onClick={() => { setErrorMessage(""); setRepairAction("update_email"); setConfirmation(access); }}><KeyRound className="h-4 w-4 shrink-0" />Update sign-in email to {access.email}</Button>
+        {access.account_email && <Button variant="outline" className="h-auto min-h-11 whitespace-normal text-left" disabled={saving || query.isFetching || !profileCurrent || !access.can_switch_account} onClick={() => { setErrorMessage(""); setRepairAction("switch_account"); setConfirmation(access); }}><ShieldCheck className="h-4 w-4 shrink-0" />Connect her record to that account instead</Button>}
+      </div>
+      {access.account_email && <p className="break-all">Account already using the profile email: {access.account_email}</p>}
+    </div>}
     {query.isError && <p role="alert" className="text-sm text-destructive">Could not check sign-in access. Please refresh.</p>}
     {access?.state === "no_email" && <p className="text-sm text-muted-foreground">Add an email to her profile first.</p>}
     {access && !profileCurrent && <p className="text-sm text-warning">Profile changed. Refresh sign-in access before continuing.</p>}
@@ -83,7 +93,7 @@ export default function CaregiverSignInAccess({ isAdmin, caregiverId, profileEma
     </div>
     <AlertDialog open={!!confirmation} onOpenChange={open => { if (!open && !saving) setConfirmation(null); }}>
       <AlertDialogContent>
-        <AlertDialogHeader><AlertDialogTitle>Confirm caregiver access</AlertDialogTitle><AlertDialogDescription className="break-words">Give {confirmation?.caregiver_name} caregiver access using {confirmation?.email}?</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogHeader><AlertDialogTitle>Confirm caregiver access</AlertDialogTitle><AlertDialogDescription className="break-words">{repairAction === "update_email" ? `Update ${confirmation?.caregiver_name}'s existing sign-in email from ${confirmation?.connected_account_email} to ${confirmation?.email}? No email will be sent. Her account, connection and training will be kept.` : repairAction === "switch_account" ? `Connect ${confirmation?.caregiver_name}'s record to ${confirmation?.email} instead of ${confirmation?.connected_account_email}? Saved video positions and unfinished quiz answers will move before the connection changes. Training completions and hours will be kept. No email will be sent.` : `Give ${confirmation?.caregiver_name} caregiver access using ${confirmation?.email}?`}</AlertDialogDescription></AlertDialogHeader>
         <AlertDialogFooter><AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel><AlertDialogAction disabled={saving} onClick={event => { event.preventDefault(); void submit(); }}>{saving ? "Setting up access…" : "Confirm access"}</AlertDialogAction></AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

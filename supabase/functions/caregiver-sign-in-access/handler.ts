@@ -1,8 +1,9 @@
 export type AccessSnapshot = {
   caregiver_id: string; caregiver_name: string; email: string; account_id: string | null;
   state: string; problem: string | null;
+  email_mismatch?: boolean; connected_account_email?: string | null; can_update_email?: boolean; can_switch_account?: boolean;
 };
-export type AccessInput = { caregiver_id: string; confirmed_email: string; confirmed_name: string; confirmed: true };
+export type AccessInput = { caregiver_id: string; confirmed_email: string; confirmed_name: string; confirmed: true; action?: "update_email" | "switch_account"; confirmed_account_email?: string };
 export interface AccessDependencies {
   authenticate: (authorization: string) => Promise<string | null>;
   isAdmin: (actor: string) => Promise<boolean>;
@@ -12,6 +13,7 @@ export interface AccessDependencies {
   createAccount: (email: string) => Promise<string | null>;
   finish: (actor: string, caregiver: string, email: string, account: string, request: string) => Promise<unknown>;
   requestId: () => string;
+  repair?: (actor: string, input: AccessInput, request: string) => Promise<unknown>;
 }
 
 // Authentication and confirmation precede every privileged lookup or change.
@@ -32,8 +34,16 @@ export async function handleCaregiverAccess(req: Request, deps: AccessDependenci
   if (snapshot.email !== input.confirmed_email || snapshot.caregiver_name !== input.confirmed_name) {
     return fail(409, "The profile changed. Review access and confirm again.");
   }
-  if (snapshot.problem) return fail(409, snapshot.problem);
   const requestId = deps.requestId();
+  if (input.action) {
+    if (!snapshot.email_mismatch || snapshot.connected_account_email !== input.confirmed_account_email) return fail(409, "The connected account changed. Refresh access and confirm again.");
+    if ((input.action === "update_email" && !snapshot.can_update_email) || (input.action === "switch_account" && !snapshot.can_switch_account)) return fail(409, snapshot.problem || "This email repair is not available. Refresh access.");
+    if (!deps.repair) return fail(503, "Email repair is temporarily unavailable.");
+    try { return { status: 200, body: { success: true, ...await deps.repair(actor, input, requestId) as object } }; }
+    catch (error) { return fail(409, error instanceof Error ? error.message : "Email repair did not finish. Review the access log."); }
+  }
+  if (snapshot.email_mismatch) return fail(409, "Use the connected-account email repair and confirm both emails.");
+  if (snapshot.problem) return fail(409, snapshot.problem);
   await deps.record(actor, input.caregiver_id, snapshot.email, requestId, "requested");
   try {
     let account = snapshot.account_id;

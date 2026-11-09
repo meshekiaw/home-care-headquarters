@@ -90,7 +90,7 @@ describe('verified-domain envelope', () => {
   it('all six auth types use the verified From domain without sending', () => {
     const h = harness()
     h.load('supabase/functions/auth-email-hook/index.ts')
-    expect(h.authOptions().from).toBe('Home Care Headquaters <noreply@notify.homecareheadquarters.org>')
+    expect(h.authOptions().from).toBe('Home Care Headquarters <noreply@notify.homecareheadquarters.org>')
     expect(h.authOptions().senderDomain).toBe('notify.homecareheadquarters.org')
     expect(Object.keys(h.authOptions().emails).sort()).toEqual(['email_change', 'invite', 'magiclink', 'reauthentication', 'recovery', 'signup'])
     expect(h.send).not.toHaveBeenCalled()

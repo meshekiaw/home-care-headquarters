@@ -6,6 +6,7 @@ import { InviteEmail } from '../_shared/email-templates/invite.tsx'
 import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
 import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
+import { trainingLinkDetails } from '../_shared/email-templates/training-link-details.ts'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
 
 const corsHeaders = {
@@ -15,7 +16,7 @@ const corsHeaders = {
 }
 
 // Configuration
-const SITE_NAME = "Home Care Headquaters"
+const SITE_NAME = "Home Care Headquarters"
 const SENDER_DOMAIN = "notify.homecareheadquarters.org"
 const ROOT_DOMAIN = "homecareheadquarters.org"
 const FROM_DOMAIN = "homecareheadquarters.org"
@@ -111,7 +112,7 @@ async function handlePreview(req: Request): Promise<Response> {
     })
   }
 
-  const sampleData = SAMPLE_DATA[type] || {}
+  const sampleData = { ...(SAMPLE_DATA[type] || {}), ...trainingLinkDetails() }
   const html = await renderAsync(React.createElement(EmailTemplate, sampleData))
 
   return new Response(html, {
@@ -128,15 +129,11 @@ const handler = createAuthEmailHandler({
   senderDomain: SENDER_DOMAIN,
   sendUrl: Deno.env.get('LOVABLE_SEND_URL'),
   emails: {
-    signup: {
-      subject: 'Confirm your email',
-      render: (data) =>
-        React.createElement(SignupEmail, {
-          siteName: SITE_NAME,
-          siteUrl: SITE_URL,
-          recipient: data.email,
-          confirmationUrl: data.url,
-        }),
+    signup: (data) => {
+      const details = trainingLinkDetails();
+      return { subject: details.subject, element: React.createElement(SignupEmail, {
+        siteName: SITE_NAME, siteUrl: SITE_URL, recipient: data.email, confirmationUrl: data.url, ...details,
+      }) };
     },
     invite: {
       subject: "You've been invited",
@@ -147,13 +144,11 @@ const handler = createAuthEmailHandler({
           confirmationUrl: data.url,
         }),
     },
-    magiclink: {
-      subject: 'Your login link',
-      render: (data) =>
-        React.createElement(MagicLinkEmail, {
-          siteName: SITE_NAME,
-          confirmationUrl: data.url,
-        }),
+    magiclink: (data) => {
+      const details = trainingLinkDetails();
+      return { subject: details.subject, element: React.createElement(MagicLinkEmail, {
+        siteName: SITE_NAME, confirmationUrl: data.url, ...details,
+      }) };
     },
     recovery: {
       subject: 'Reset your password',

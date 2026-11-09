@@ -9,6 +9,7 @@ export type AccessEvent = {
 export type CaregiverAccess = {
   caregiver_id: string; caregiver_name: string; email: string; account_email: string | null;
   state: AccessState; problem: string | null; history?: AccessEvent[];
+  email_mismatch?: boolean; connected_account_email?: string | null; can_update_email?: boolean; can_switch_account?: boolean;
 };
 export function matchesAccessFilter(access: CaregiverAccess | undefined, filter: "all" | AccessState) {
   return filter === "all" || access?.state === filter;

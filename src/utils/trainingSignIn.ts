@@ -8,6 +8,7 @@ export function trainingSignInError(value: unknown): string {
   if (!value || typeof value !== "object") return UNAVAILABLE;
   const error = value as { code?: string; status?: number; message?: string };
   if (error.code === "not_found") return NOT_FOUND;
+  if (error.code === "office_update") return "We found your record, but your sign-in needs an update from the office. Please call the office.";
   if (error.status === 429 || error.code === "email_rate_limit" || /rate.?limit|too many requests/i.test(error.message ?? "")) return BUSY;
   return UNAVAILABLE;
 }

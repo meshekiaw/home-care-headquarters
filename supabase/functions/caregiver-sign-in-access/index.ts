@@ -6,6 +6,7 @@ import { handleCaregiverAccess, type AccessSnapshot } from "./handler.ts";
 const schema = z.object({
   caregiver_id: z.string().uuid(), confirmed_email: z.string().email().max(320),
   confirmed_name: z.string().min(1).max(300), confirmed: z.literal(true),
+  action: z.enum(["update_email", "switch_account"]).optional(), confirmed_account_email: z.string().email().max(320).optional(),
 }).strict();
 
 Deno.serve(async req => {
@@ -47,6 +48,33 @@ Deno.serve(async req => {
         return data;
       },
       requestId: () => crypto.randomUUID(),
+      repair: async (actor, input, requestId) => {
+        const { data: plan, error: preparationError } = await admin.rpc("prepare_caregiver_email_repair", {
+          p_actor_id: actor, p_caregiver_id: input.caregiver_id, p_email: input.confirmed_email,
+          p_name: input.confirmed_name, p_old_email: input.confirmed_account_email, p_action: input.action, p_request_id: requestId,
+        });
+        if (preparationError || !plan) throw new Error(preparationError?.message || "Refresh access and confirm the email repair again.");
+        let authChanged = false;
+        try {
+          // Only the server-resolved caregiver account is updated. Auth Admin
+          // confirms silently; no OTP/resend/password method is called here.
+          const { error: updateError } = await admin.auth.admin.updateUserById(plan.target_account_id, {
+            ...(input.action === "update_email" ? { email: plan.target_email } : {}), email_confirm: true,
+          });
+          if (updateError) throw new Error("The account email could not be updated. Another account may now use it. Refresh access.");
+          authChanged = true;
+          const { data, error: finishError } = await admin.rpc("finish_caregiver_email_repair", { p_actor_id: actor, p_request_id: requestId });
+          if (finishError || !data) throw new Error("Account confirmation succeeded, but access could not be finalized. Review the access log before retrying.");
+          return data;
+        } catch (error) {
+          let detail = error instanceof Error ? error.message : "Email repair did not finish.";
+          // Do not undo a confirmed Auth write blindly: a lost response may
+          // follow a committed finalization. Audit partial success for review.
+          if (authChanged) detail += " The account confirmation may already be applied; the training records were not deleted.";
+          await admin.rpc("fail_caregiver_email_repair", { p_actor_id: actor, p_request_id: requestId, p_detail: detail });
+          throw new Error(detail);
+        }
+      },
     });
     return respond(result.body, result.status);
   } catch {

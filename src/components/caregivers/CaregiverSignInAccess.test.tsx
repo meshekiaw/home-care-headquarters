@@ -12,6 +12,22 @@ const props = { isAdmin: true, caregiverId: access.caregiver_id, profileEmail: a
 beforeEach(() => { vi.clearAllMocks(); mocks.data = [access]; mocks.invoke.mockResolvedValue({ data: { success: true }, error: null }); });
 afterEach(cleanup);
 describe("admin access confirmation (no live accounts or sign-in)", () => {
+  it("confirms an email repair and sends both shown emails only after approval", async () => {
+    mocks.data = [{ ...access, email_mismatch: true, connected_account_email: "old-test@example.invalid", can_update_email: true }];
+    render(<CaregiverSignInAccess {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: `Update sign-in email to ${access.email}` }));
+    expect(mocks.invoke).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm access" }));
+    await waitFor(() => expect(mocks.invoke).toHaveBeenCalledExactlyOnceWith("caregiver-sign-in-access", { body: { caregiver_id: access.caregiver_id, confirmed_email: access.email, confirmed_name: access.caregiver_name, confirmed: true, action: "update_email", confirmed_account_email: "old-test@example.invalid" } }));
+  });
+  it("switches only by separately confirming the existing target account", async () => {
+    mocks.data = [{ ...access, state: "not_set_up", account_email: access.email, email_mismatch: true, connected_account_email: "old-test@example.invalid", can_update_email: false, can_switch_account: true }];
+    render(<CaregiverSignInAccess {...props} />);
+    expect((screen.getByRole("button", { name: `Update sign-in email to ${access.email}` }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Connect her record to that account instead" }));
+    expect(mocks.invoke).not.toHaveBeenCalled(); fireEvent.click(screen.getByRole("button", { name: "Confirm access" }));
+    await waitFor(() => expect(mocks.invoke).toHaveBeenCalledWith("caregiver-sign-in-access", { body: expect.objectContaining({ action: "switch_account", confirmed_account_email: "old-test@example.invalid" }) }));
+  });
   it("makes no change on opening or cancelling confirmation", () => {
     render(<CaregiverSignInAccess {...props} />); fireEvent.click(screen.getByRole("button", { name: "Give caregiver access" }));
     expect(mocks.invoke).not.toHaveBeenCalled(); fireEvent.click(screen.getByRole("button", { name: "Cancel" })); expect(mocks.invoke).not.toHaveBeenCalled();

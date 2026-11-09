@@ -5,6 +5,7 @@
 - Authorization milestones live separately from client planning/compliance dates; trigger-only assessment projections use actual 618 appointments and pipeline completion dates, while admin-only decisions and immutable history preserve assessment lifecycles and avoid pending-renewal regressions.
 
 - Admin caregiver access uses its own authenticated gateway and service-only status/finalization RPCs; append-only access events retain actors and confirmed identities, and role/link/12-session repair commits atomically without changing the public training sign-in or password flows.
+- Connected-email repairs reserve and recheck identities/roles before silent Auth Admin updates; alternate-account switches atomically move resume-state ownership and the caregiver link while preserving caregiver-keyed assignments, historical quiz actors, completion dates, hours and onboarding evidence.
 
 - 618 witness handoffs opt out of shared same-person name reuse; normalized witness-name checks run in the 618 UI and a draft-to-signed database trigger so other forms and historical records remain unchanged.
 - In-service resume uses ownership-checked video RPCs with timestamp-ordered positions and monotonic watch credit, plus per-answer quiz drafts cleared atomically on attempt insertion; keep drafts separate from grading and hour accounting.
@@ -15,6 +16,7 @@
 - Training sign-in requests use the public caregiver-training-sign-in gateway with service-only email lookup and atomic link/role RPCs; confirmed users receive magic links, unconfirmed admin-created users receive confirmation resends, mailbox verification gates sessions, duplicate/conflicting links fail closed, and protected admin/nurse roles remain unchanged.
 - Explicit one-time account maintenance uses Auth Admin APIs without passwords or email calls and the existing atomic caregiver link RPC; temporary privileged endpoints must be secret-authenticated, time-limited, and removed after verification to avoid leaving maintenance access live.
 - Custom authentication emails use the scaffolded managed auth-email-hook unchanged; customize templates without replacing SDK signature verification or dispatch.
+- Training confirmation and magic-link emails share one template and per-send timing formatter; supported managed-SDK email definition callbacks generate matching unique subjects and bodies without replacing verification or sending.
 - App notification sends run synchronously in their existing feature functions through the managed template helper, or the shared direct API adapter for pre-existing composed HTML; retained email audit tables never gate sending, and terminal-event writes deduplicate by event-derived primary key.
 - Notification sender repairs are forward-only through a shared cutoff policy: block historical record resends and stale creation-notice backlogs without rewriting audit rows or moving recurring reminder windows; use the verified sender subdomain in every visible From header.
 

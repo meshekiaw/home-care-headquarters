@@ -42,7 +42,7 @@ describe('connected-email repair in isolated Test Caregiver database',()=>{
   await prepare(); await db.query('UPDATE auth.users SET email=$1,email_confirmed_at=now() WHERE id=$2',[email,old]);
   expect((await finish()).rows[0]?.value).toMatchObject({access:{state:'ready'},moved:{video_positions:0,quiz_drafts:0},retained:{assignments:1,completions:1,quiz_attempts:1}});
   expect((await db.query('SELECT row_to_json(a) AS row FROM lms_assignments a')).rows).toEqual(before);
-  expect((await db.query('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(old);
+  expect((await db.query<{auth_user_id:string}>('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(old);
  });
  it('blocks the update when another account owns the email',async()=>{
   await db.query('INSERT INTO auth.users VALUES($1,$2,now())',[target,email]); expect(await snapshot()).toMatchObject({can_update_email:false,can_switch_account:true,account_email:email}); await expect(prepare()).rejects.toThrow('already used');
@@ -55,7 +55,7 @@ describe('connected-email repair in isolated Test Caregiver database',()=>{
   expect((await db.query('SELECT user_id,watched_seconds,last_position_seconds,percent_complete FROM lms_video_progress')).rows[0]).toEqual({user_id:target,watched_seconds:'96',last_position_seconds:'88',percent_complete:96});
   expect((await db.query('SELECT user_id,answers,attempt_count FROM lms_quiz_drafts')).rows[0]).toEqual({user_id:target,answers:{question:'saved answer'},attempt_count:2});
   expect((await db.query('SELECT * FROM lms_quiz_attempts')).rows).toEqual(attempts); expect((await db.query('SELECT * FROM lms_assignments')).rows).toEqual(assignments);
-  expect((await db.query('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(target);
+  expect((await db.query<{auth_user_id:string}>('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(target);
   expect((await db.query('SELECT role FROM user_roles WHERE user_id=$1',[target])).rows).toEqual([{role:'caregiver'}]);
  });
  it.each(['admin','nurse'])('never repairs a connected %s account',async(role)=>{await db.query('INSERT INTO user_roles VALUES($1,$2)',[old,role]); expect((await snapshot())?.can_update_email).toBe(false); await expect(prepare()).rejects.toThrow('admin or nurse');});
@@ -64,7 +64,7 @@ describe('connected-email repair in isolated Test Caregiver database',()=>{
  it('requires the server admin and freshly confirmed old email',async()=>{await expect(prepare('update_email',old)).rejects.toThrow('Only admins'); await expect(prepare('update_email',actor,'stale@example.invalid')).rejects.toThrow('changed'); await expect(finish(old)).rejects.toThrow('Only admins');});
  it('blocks role/link edits during a reserved Auth email change',async()=>{await prepare(); await expect(db.query("INSERT INTO user_roles VALUES($1,'nurse')",[old])).rejects.toThrow('pending'); await expect(db.query('UPDATE caregivers SET email=\'other@example.invalid\' WHERE id=$1',[caregiver])).rejects.toThrow('pending');});
  it('records actors and outcomes idempotently without editable access history',async()=>{await prepare(); await db.query('UPDATE auth.users SET email=$1 WHERE id=$2',[email,old]); await finish(); await finish(); expect((await db.query("SELECT actor_id,email FROM caregiver_access_events WHERE event='succeeded'")).rows).toEqual([{actor_id:actor,email}]); await expect(db.exec("UPDATE caregiver_access_events SET detail='tamper'")).rejects.toThrow('append-only');});
- it('rejects expired confirmation and unconfirmed account without moving anything',async()=>{await prepare(); await expect(finish()).rejects.toThrow('confirmed account email'); await db.query("UPDATE caregiver_email_repairs SET expires_at=now()-interval '1 second'"); await expect(finish()).rejects.toThrow('expired'); expect((await db.query('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(old);});
- it('gives the public lookup only the office-update flag before any creation or send',async()=>{expect((await db.query('SELECT public.lookup_training_caregiver($1) AS value',[email])).rows[0]?.value).toEqual({office_update:true});});
+ it('rejects expired confirmation and unconfirmed account without moving anything',async()=>{await prepare(); await expect(finish()).rejects.toThrow('confirmed account email'); await db.query("UPDATE caregiver_email_repairs SET expires_at=now()-interval '1 second'"); await expect(finish()).rejects.toThrow('expired'); expect((await db.query<{auth_user_id:string}>('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(old);});
+ it('gives the public lookup only the office-update flag before any creation or send',async()=>{expect((await db.query<{value:unknown}>('SELECT public.lookup_training_caregiver($1) AS value',[email])).rows[0]?.value).toEqual({office_update:true});});
  it('restricts repair operations and pending rows to service access',async()=>{expect((await db.query("SELECT has_function_privilege('authenticated','public.finish_caregiver_email_repair(uuid,uuid)','EXECUTE') AS can_finish, has_table_privilege('authenticated','public.caregiver_email_repairs','SELECT') AS can_read")).rows[0]).toEqual({can_finish:false,can_read:false});});
 });

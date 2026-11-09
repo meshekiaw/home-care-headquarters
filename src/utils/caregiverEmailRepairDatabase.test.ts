@@ -1,0 +1,70 @@
+import { readFileSync } from 'node:fs';
+import { PGlite } from '@electric-sql/pglite';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+const db = new PGlite();
+const actor='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', caregiver='11111111-1111-4111-8111-111111111111', old='22222222-2222-4222-8222-222222222222', target='33333333-3333-4333-8333-333333333333', other='55555555-5555-4555-8555-555555555555', request='44444444-4444-4444-8444-444444444444';
+const email='test-caregiver@example.invalid', oldEmail='old-test@example.invalid';
+const base=readFileSync('drizzle/migrations/0038_admin_caregiver_sign_in_access.sql','utf8');
+const repair=readFileSync('drizzle/migrations/0045_caregiver_connected_email_repairs.sql','utf8');
+const prepare=(action='update_email', who=actor, previous=oldEmail) => db.query('SELECT public.prepare_caregiver_email_repair($1,$2,$3,$4,$5,$6,$7)',[who,caregiver,email,'Test Caregiver',previous,action,request]);
+const finish=(who=actor)=>db.query<{ value: { moved: { video_positions:number; quiz_drafts:number }; access: { state:string }; retained:{ assignments:number; completions:number; quiz_attempts:number } } }>('SELECT public.finish_caregiver_email_repair($1,$2) AS value',[who,request]);
+const snapshot=async()=>(await db.query<{ value: { email_mismatch:boolean; can_update_email:boolean; can_switch_account:boolean; problem:string; account_email:string } }>('SELECT public.caregiver_access_snapshot($1,$2) AS value',[actor,caregiver])).rows[0]?.value;
+beforeAll(async()=>{
+ await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; CREATE SCHEMA auth;
+ CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz);
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+ CREATE TABLE public.user_roles(user_id uuid,role text,UNIQUE(user_id,role));
+ CREATE FUNCTION public.has_role(u uuid,r text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM user_roles WHERE user_id=u AND role=r) $$;
+ CREATE TABLE public.caregivers(id uuid PRIMARY KEY,first_name text,last_name text,email text,status text,auth_user_id uuid UNIQUE);
+ CREATE TABLE public.lms_courses(id uuid PRIMARY KEY,session_number integer,is_active boolean);
+ CREATE FUNCTION public.assign_training_sessions(uuid,text) RETURNS integer LANGUAGE sql AS $$ SELECT 0 $$;
+ CREATE TABLE public.lms_assignments(id uuid PRIMARY KEY,caregiver_id uuid,user_id uuid,status text,completed_at timestamptz,score integer,attempts integer);
+ CREATE TABLE public.lms_video_progress(id uuid PRIMARY KEY,caregiver_id uuid,user_id uuid,watched_seconds numeric,last_position_seconds numeric,percent_complete integer,video_completed_at timestamptz);
+ CREATE TABLE public.lms_quiz_drafts(assignment_id uuid PRIMARY KEY,caregiver_id uuid,user_id uuid,answers jsonb,attempt_count integer);
+ CREATE TABLE public.lms_quiz_attempts(id uuid PRIMARY KEY,caregiver_id uuid,user_id uuid,score integer,passed boolean,attempted_at timestamptz);
+ `); await db.exec(base); await db.exec(repair);
+},15000);
+beforeEach(async()=>{
+ await db.exec('TRUNCATE public.caregiver_email_repairs,public.caregiver_access_events,public.user_roles,public.caregivers,auth.users,public.lms_assignments,public.lms_video_progress,public.lms_quiz_drafts,public.lms_quiz_attempts');
+ await db.query('INSERT INTO auth.users VALUES($1,\'test-actor@example.invalid\',now()),($2,$3,now())',[actor,old,oldEmail]);
+ await db.query('INSERT INTO public.user_roles VALUES($1,\'admin\'),($2,\'caregiver\')',[actor,old]);
+ await db.query('INSERT INTO public.caregivers VALUES($1,\'Test\',\'Caregiver\',$2,\'active\',$3)',[caregiver,email,old]);
+ await db.query("INSERT INTO public.lms_assignments VALUES($1,$2,$3,'completed','2026-01-01',100,2)",[request,caregiver,actor]);
+ await db.query("INSERT INTO public.lms_video_progress VALUES($1,$2,$3,96,88,96,'2026-01-01')",[request,caregiver,old]);
+ await db.query("INSERT INTO public.lms_quiz_drafts VALUES($1,$2,$3,'{\"question\":\"saved answer\"}',2)",[request,caregiver,old]);
+ await db.query("INSERT INTO public.lms_quiz_attempts VALUES($1,$2,$3,100,true,'2026-01-01')",[request,caregiver,old]);
+});
+afterAll(()=>db.close());
+describe('connected-email repair in isolated Test Caregiver database',()=>{
+ it('reports both emails and permits an unused profile email',async()=>{expect(await snapshot()).toMatchObject({email_mismatch:true,can_update_email:true,can_switch_account:false});});
+ it('keeps the existing account, connection, role and every training record after email confirmation',async()=>{
+  const before=(await db.query('SELECT row_to_json(a) AS row FROM lms_assignments a')).rows;
+  await prepare(); await db.query('UPDATE auth.users SET email=$1,email_confirmed_at=now() WHERE id=$2',[email,old]);
+  expect((await finish()).rows[0]?.value).toMatchObject({access:{state:'ready'},moved:{video_positions:0,quiz_drafts:0},retained:{assignments:1,completions:1,quiz_attempts:1}});
+  expect((await db.query('SELECT row_to_json(a) AS row FROM lms_assignments a')).rows).toEqual(before);
+  expect((await db.query('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(old);
+ });
+ it('blocks the update when another account owns the email',async()=>{
+  await db.query('INSERT INTO auth.users VALUES($1,$2,now())',[target,email]); expect(await snapshot()).toMatchObject({can_update_email:false,can_switch_account:true,account_email:email}); await expect(prepare()).rejects.toThrow('already used');
+ });
+ it('moves resume ownership before switching but retains assignment and quiz attempt history unchanged',async()=>{
+  await db.query('INSERT INTO auth.users VALUES($1,$2,now())',[target,email]);
+  const attempts=(await db.query('SELECT * FROM lms_quiz_attempts')).rows, assignments=(await db.query('SELECT * FROM lms_assignments')).rows;
+  await prepare('switch_account'); const result=(await finish()).rows[0]?.value;
+  expect(result).toMatchObject({moved:{video_positions:1,quiz_drafts:1},retained:{assignments:1,completions:1,quiz_attempts:1}});
+  expect((await db.query('SELECT user_id,watched_seconds,last_position_seconds,percent_complete FROM lms_video_progress')).rows[0]).toEqual({user_id:target,watched_seconds:'96',last_position_seconds:'88',percent_complete:96});
+  expect((await db.query('SELECT user_id,answers,attempt_count FROM lms_quiz_drafts')).rows[0]).toEqual({user_id:target,answers:{question:'saved answer'},attempt_count:2});
+  expect((await db.query('SELECT * FROM lms_quiz_attempts')).rows).toEqual(attempts); expect((await db.query('SELECT * FROM lms_assignments')).rows).toEqual(assignments);
+  expect((await db.query('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(target);
+  expect((await db.query('SELECT role FROM user_roles WHERE user_id=$1',[target])).rows).toEqual([{role:'caregiver'}]);
+ });
+ it.each(['admin','nurse'])('never repairs a connected %s account',async(role)=>{await db.query('INSERT INTO user_roles VALUES($1,$2)',[old,role]); expect((await snapshot())?.can_update_email).toBe(false); await expect(prepare()).rejects.toThrow('admin or nurse');});
+ it.each(['admin','nurse'])('never switches to an existing %s account',async(role)=>{await db.query('INSERT INTO auth.users VALUES($1,$2,now())',[target,email]); await db.query('INSERT INTO user_roles VALUES($1,$2)',[target,role]); expect((await snapshot())?.can_switch_account).toBe(false); await expect(prepare('switch_account')).rejects.toThrow();});
+ it('identifies and refuses an account linked to another caregiver',async()=>{await db.query('INSERT INTO auth.users VALUES($1,$2,now())',[target,email]); await db.query("INSERT INTO caregivers VALUES($1,'Other','Test Caregiver','other@example.invalid','inactive',$2)",[other,target]); await expect(prepare('switch_account')).rejects.toThrow('Other Test Caregiver');});
+ it('requires the server admin and freshly confirmed old email',async()=>{await expect(prepare('update_email',old)).rejects.toThrow('Only admins'); await expect(prepare('update_email',actor,'stale@example.invalid')).rejects.toThrow('changed'); await expect(finish(old)).rejects.toThrow('Only admins');});
+ it('blocks role/link edits during a reserved Auth email change',async()=>{await prepare(); await expect(db.query("INSERT INTO user_roles VALUES($1,'nurse')",[old])).rejects.toThrow('pending'); await expect(db.query('UPDATE caregivers SET email=\'other@example.invalid\' WHERE id=$1',[caregiver])).rejects.toThrow('pending');});
+ it('records actors and outcomes idempotently without editable access history',async()=>{await prepare(); await db.query('UPDATE auth.users SET email=$1 WHERE id=$2',[email,old]); await finish(); await finish(); expect((await db.query("SELECT actor_id,email FROM caregiver_access_events WHERE event='succeeded'")).rows).toEqual([{actor_id:actor,email}]); await expect(db.exec("UPDATE caregiver_access_events SET detail='tamper'")).rejects.toThrow('append-only');});
+ it('rejects expired confirmation and unconfirmed account without moving anything',async()=>{await prepare(); await expect(finish()).rejects.toThrow('confirmed account email'); await db.query("UPDATE caregiver_email_repairs SET expires_at=now()-interval '1 second'"); await expect(finish()).rejects.toThrow('expired'); expect((await db.query('SELECT auth_user_id FROM caregivers')).rows[0]?.auth_user_id).toBe(old);});
+ it('gives the public lookup only the office-update flag before any creation or send',async()=>{expect((await db.query('SELECT public.lookup_training_caregiver($1) AS value',[email])).rows[0]?.value).toEqual({office_update:true});});
+ it('restricts repair operations and pending rows to service access',async()=>{expect((await db.query("SELECT has_function_privilege('authenticated','public.finish_caregiver_email_repair(uuid,uuid)','EXECUTE') AS can_finish, has_table_privilege('authenticated','public.caregiver_email_repairs','SELECT') AS can_read")).rows[0]).toEqual({can_finish:false,can_read:false});});
+});

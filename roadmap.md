@@ -1,10 +1,11 @@
 # Roadmap
 
 ## Caregiver sign-in email mismatch and email readability
-- [ ] Read-only active-caregiver mismatch report, including connected sign-in activity, training evidence and target-email accounts; do not repair any live caregiver
-- [ ] Admin-confirmed silent connected-account email update and safe alternative-account switch with training preservation and append-only access audit; protected roles and conflicting caregiver links fail closed
-- [ ] Exact office-update message on public training sign-in; readable dark/light training email, full fallback link, unique sent time and actual expiry; preview only, no emails
-- [ ] Isolated Test Caregiver-only validation, deployed authorization checks and preserved-data audit; no admin or real-caregiver sign-ins
+- [x] Reported all eight active email mismatches before implementation; all eight had no recorded sign-in/training evidence or target-email account; no live repairs
+- [x] Added confirmed admin/server-checked silent email update and alternate-account switch; resume positions/drafts move atomically before the link switches, historical assignments/attempt actors/completions/hours and onboarding remain unchanged; access log reports moved/retained counts
+- [x] Deployed exact public office-update message and managed auth templates; blue/white bold 74px button, plain full link, Chicago second-level sent times and owner-reported 3600-second/one-hour expiry; no-send preview at /training-sign-in-email-preview.html
+- [x] 446 isolated tests passed; synthetic Test Caregiver confirmation/cancel/update/switch/history and phone/public message checks passed, email light/dark/phone preview passed; deployed unsigned repair returns 401; build OK, no sign-ins/emails/live repair records/events, caregiver fingerprint unchanged (174). Concurrent production use changed training/auth fingerprints between reads; do not claim those full-table fingerprints stayed unchanged.
+- [ ] Actual signed-in admin repair and real Gmail/dark-mode inbox rendering remain untested: admin sign-in and test-email sends are prohibited; office will perform repairs
 
 ## Client List sorting
 - [x] Added ascending/descending/default sorting to all ten data headings with shared dropdown state, directional arrows and 44px phone tap targets; default remains last name/first name ascending and Date Added remains newest-first

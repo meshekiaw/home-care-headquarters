@@ -38,6 +38,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useInServiceCompletions } from "@/hooks/useInServiceCompliance";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCaregiverSignInAccess } from "@/hooks/useCaregiverSignInAccess";
+import { useQuizResetStatus } from "@/hooks/useQuizResetStatus";
+import { caregiversNeedingReset } from "@/utils/quizReset";
 import { ACCESS_LABELS, matchesAccessFilter, type AccessState } from "@/utils/caregiverSignInAccess";
 import {
   IN_SERVICE_STATUS_LABEL,
@@ -123,6 +125,14 @@ export default function Caregivers() {
     if (v === "all") next.delete("onboarding"); else next.set("onboarding", v);
     setSearchParams(next, { replace: true });
   };
+  const quizReset = useQuizResetStatus(isAdmin);
+  const needsQuizReset = useMemo(() => caregiversNeedingReset(quizReset.data ?? []), [quizReset.data]);
+  const quizFilter: "all" | "needs_reset" = isAdmin && searchParams.get("quiz") === "needs_reset" ? "needs_reset" : "all";
+  const setQuizFilter = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (v === "needs_reset") next.set("quiz", v); else next.delete("quiz");
+    setSearchParams(next, { replace: true });
+  };
   const onboardingRoster = useOnboardingRoster();
   const onboardingFor = (c: { id: string; onboarding_required?: boolean | null }) =>
     onboardingRosterSummary(c.onboarding_required === true, onboardingRoster.data?.get(c.id) ?? []);
@@ -136,6 +146,7 @@ export default function Caregivers() {
       if (!matchesSearch) return false;
       if (isAdmin && !matchesAccessFilter(accessById.get(caregiver.id), accessFilter)) return false;
       if (onboardingFilter !== "all" && onboardingFor(caregiver).status !== onboardingFilter) return false;
+      if (quizFilter === "needs_reset" && !needsQuizReset.has(caregiver.id)) return false;
       if (inServiceFilter === "all") return true;
       return forCaregiver(caregiver.id, (caregiver as any).hire_date).status === inServiceFilter;
     });
@@ -159,7 +170,7 @@ export default function Caregivers() {
       return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver, onboardingFilter, onboardingRoster.data, isAdmin, accessById, accessFilter]);
+  }, [caregivers, searchQuery, inServiceFilter, sortBy, forCaregiver, onboardingFilter, onboardingRoster.data, isAdmin, accessById, accessFilter, quizFilter, needsQuizReset]);
 
   const allSelected =
     filteredCaregivers.length > 0 && filteredCaregivers.every((c) => selectedIds.includes(c.id));
@@ -318,6 +329,18 @@ export default function Caregivers() {
                   </SelectContent>
                 </Select>
               </div>
+              {isAdmin && <div className="w-56">
+                <label htmlFor="caregiver-quiz-filter" className="text-xs text-muted-foreground">Session quizzes</label>
+                <Select value={quizFilter} onValueChange={setQuizFilter} disabled={quizReset.isLoading || quizReset.isError}>
+                  <SelectTrigger id="caregiver-quiz-filter"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All quiz statuses</SelectItem>
+                    <SelectItem value="needs_reset">Needs quiz reset ({needsQuizReset.size})</SelectItem>
+                  </SelectContent>
+                </Select>
+                {quizReset.isLoading && <p role="status" className="text-xs text-muted-foreground mt-1">Checking quizzes…</p>}
+                {quizReset.isError && <Button variant="link" size="sm" className="text-destructive" onClick={() => void quizReset.refetch()}>Retry quiz check</Button>}
+              </div>}
               <div className="w-56">
                 <label className="text-xs text-muted-foreground">Sort by</label>
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>

@@ -2669,6 +2669,64 @@ export type Database = {
           },
         ]
       }
+      lms_quiz_resets: {
+        Row: {
+          assignment_id: string
+          attempts_before: number
+          caregiver_id: string
+          course_id: string
+          created_at: string
+          failed_attempts_before: number
+          id: string
+          reset_by: string
+          reset_by_name: string
+        }
+        Insert: {
+          assignment_id: string
+          attempts_before: number
+          caregiver_id: string
+          course_id: string
+          created_at?: string
+          failed_attempts_before: number
+          id?: string
+          reset_by: string
+          reset_by_name: string
+        }
+        Update: {
+          assignment_id?: string
+          attempts_before?: number
+          caregiver_id?: string
+          course_id?: string
+          created_at?: string
+          failed_attempts_before?: number
+          id?: string
+          reset_by?: string
+          reset_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lms_quiz_resets_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "lms_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_quiz_resets_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lms_quiz_resets_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "lms_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lms_session_videos: {
         Row: {
           course_id: string
@@ -3785,6 +3843,23 @@ export type Database = {
         Args: { p_caregiver_id: string }
         Returns: Json
       }
+      admin_quiz_reset_status: {
+        Args: { p_caregiver_id?: string }
+        Returns: {
+          assignment_id: string
+          assignment_status: string
+          attempts_since_reset: number
+          caregiver_id: string
+          course_id: string
+          failed_since_reset: number
+          last_reset_at: string
+          max_attempts: number
+          needs_reset: boolean
+          session_number: number
+          session_title: string
+          total_attempts: number
+        }[]
+      }
       archive_caregiver_document: {
         Args: { p_actor_id: string; p_document_id: string }
         Returns: boolean
@@ -4060,6 +4135,26 @@ export type Database = {
         Returns: Json
       }
       reset_nurse_visit_form: { Args: { p_form_id: string }; Returns: Json }
+      reset_training_quiz: {
+        Args: { p_assignment_id: string }
+        Returns: {
+          assignment_id: string
+          attempts_before: number
+          caregiver_id: string
+          course_id: string
+          created_at: string
+          failed_attempts_before: number
+          id: string
+          reset_by: string
+          reset_by_name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lms_quiz_resets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       review_caregiver_onboarding: {
         Args: {
           p_action: string
@@ -4148,6 +4243,24 @@ export type Database = {
       }
       submit_onboarding_application: { Args: never; Returns: boolean }
       submit_onboarding_policy_signoffs: { Args: never; Returns: boolean }
+      training_quiz_attempt_state: {
+        Args: { p_assignment_id: string }
+        Returns: {
+          attempts_since_reset: number
+          failed_since_reset: number
+          last_reset_at: string
+          total_attempts: number
+        }[]
+      }
+      training_quiz_needs_reset: {
+        Args: {
+          p_attempts_since: number
+          p_failed_since: number
+          p_max_attempts: number
+          p_status: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "caregiver" | "nurse"

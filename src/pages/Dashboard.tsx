@@ -17,6 +17,27 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useOnboardingRoster } from "@/hooks/useOnboardingRoster";
 import { onboardingRosterSummary } from "@/utils/caregiverOnboarding";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useQuizResetStatus } from "@/hooks/useQuizResetStatus";
+import { caregiversNeedingReset } from "@/utils/quizReset";
+
+function QuizResetQueue() {
+  const { isAdmin } = useUserRole();
+  const status = useQuizResetStatus(isAdmin);
+  if (!isAdmin) return null;
+  const count = caregiversNeedingReset(status.data ?? []).size;
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-lg font-semibold">In-service quizzes</CardTitle></CardHeader>
+      <CardContent>
+        <Link to="/caregivers?quiz=needs_reset" className="block rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
+          <p className="text-sm text-muted-foreground">Needs quiz reset</p>
+          <p className={`text-2xl font-bold ${count > 0 ? "text-destructive" : ""}`}>{status.isLoading ? "..." : status.isError ? "—" : count}</p>
+        </Link>
+      </CardContent>
+    </Card>
+  );
+}
 
 function OnboardingQueue() {
   const roster = useOnboardingRoster();
@@ -241,7 +262,10 @@ export default function Dashboard() {
           />
         </div>
 
-        <OnboardingQueue />
+        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+          <OnboardingQueue />
+          <QuizResetQueue />
+        </div>
 
         {/* Needs Action Now */}
         <NeedsActionNow />

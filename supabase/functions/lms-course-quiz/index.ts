@@ -98,17 +98,18 @@ Deno.serve(async (req) => {
 
       // Attempt limit (when configured for this session): a failed attempt may be
       // retaken only while attempts remain. Passing attempts are never blocked.
+      // An admin quiz reset starts a fresh set of attempts; earlier attempts stay in history.
       const maxAttempts = course?.max_attempts ?? null;
-      const { count: priorCount } = await admin
-        .from("lms_quiz_attempts")
-        .select("id", { count: "exact", head: true })
-        .eq("assignment_id", assignment_id);
-      const priorAttempts = priorCount ?? 0;
-      if (maxAttempts && priorAttempts >= maxAttempts && assignment.status !== "completed") {
+      const { data: stateRows, error: stateErr } = await admin.rpc("training_quiz_attempt_state", { p_assignment_id: assignment_id });
+      if (stateErr) return json({ error: stateErr.message }, 500);
+      const state = (Array.isArray(stateRows) ? stateRows[0] : stateRows) as { attempts_since_reset?: number; total_attempts?: number } | null;
+      const priorAttempts = state?.total_attempts ?? 0;
+      const attemptsSinceReset = state?.attempts_since_reset ?? 0;
+      if (maxAttempts && attemptsSinceReset >= maxAttempts && assignment.status !== "completed") {
         return json(
           {
             error: `You have used all ${maxAttempts} attempts for this session. Please contact your administrator.`,
-            attempts_used: priorAttempts,
+            attempts_used: attemptsSinceReset,
             max_attempts: maxAttempts,
           },
           403,
@@ -171,7 +172,7 @@ Deno.serve(async (req) => {
         }).eq("id", assignment_id);
       }
 
-      const attemptsRemaining = maxAttempts ? Math.max(0, maxAttempts - attemptNumber) : null;
+      const attemptsRemaining = maxAttempts ? Math.max(0, maxAttempts - (attemptsSinceReset + 1)) : null;
       return json({ score, passed, passingScore, attemptNumber, maxAttempts, attemptsRemaining, results });
     }
 

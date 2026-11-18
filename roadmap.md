@@ -1,5 +1,12 @@
 # Roadmap
 
+## Admin quiz reset
+- [x] Reported today's behavior: two failed attempts lock the session (max 2) with "contact your administrator"; video progress stays, no rewatch; 9 sessions / 8 caregivers currently locked
+- [x] Admin-only server-checked reset with exact confirmation; blank retake, video/attempts/scores/completions/hours unchanged; append-only reset log; attempts count from latest reset (2 fresh attempts, unlimited resets)
+- [x] In-Service tab failed counts, Reset quiz, Before reset marks and log; Caregivers "Needs quiz reset" filter and dashboard count
+- [x] 459 isolated tests passed; unsigned live calls refused; zero live resets
+- [ ] Signed-in admin reset untested: admin sign-in is prohibited
+
 ## Caregiver sign-in email mismatch and email readability
 - [x] Reported all eight active email mismatches before implementation; all eight had no recorded sign-in/training evidence or target-email account; no live repairs
 - [x] Added confirmed admin/server-checked silent email update and alternate-account switch; resume positions/drafts move atomically before the link switches, historical assignments/attempt actors/completions/hours and onboarding remain unchanged; access log reports moved/retained counts

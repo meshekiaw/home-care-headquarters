@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { friendlyError } from "@/lib/friendlyError";
 import { downloadCSV } from "@/utils/csvExport";
+import { isBeforeReset } from "@/utils/quizReset";
 
 interface Row {
   id: string;
@@ -36,6 +37,7 @@ interface Attempt {
   passing_score: number;
   passed: boolean;
   attempted_at: string;
+  before_reset?: boolean;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -120,16 +122,20 @@ export default function SessionCompletionTab() {
     if (expanded === row.id) { setExpanded(null); return; }
     setExpanded(row.id);
     if (attempts[row.id]) return;
-    const { data, error } = await supabase
-      .from("lms_quiz_attempts")
-      .select("id, attempt_number, score, passing_score, passed, attempted_at")
-      .eq("assignment_id", row.id)
-      .order("attempt_number", { ascending: true });
-    if (error) {
-      toast({ title: "Error loading attempts", description: friendlyError(error), variant: "destructive" });
+    const [{ data, error }, resets] = await Promise.all([
+      supabase
+        .from("lms_quiz_attempts")
+        .select("id, attempt_number, score, passing_score, passed, attempted_at")
+        .eq("assignment_id", row.id)
+        .order("attempt_number", { ascending: true }),
+      supabase.from("lms_quiz_resets").select("assignment_id, created_at").eq("assignment_id", row.id),
+    ]);
+    if (error || resets.error) {
+      toast({ title: "Error loading attempts", description: friendlyError(error ?? resets.error), variant: "destructive" });
       return;
     }
-    setAttempts((p) => ({ ...p, [row.id]: (data as Attempt[]) || [] }));
+    const resetRows = resets.data ?? [];
+    setAttempts((p) => ({ ...p, [row.id]: ((data as Attempt[]) || []).map((a) => ({ ...a, before_reset: isBeforeReset({ assignment_id: row.id, attempted_at: a.attempted_at }, resetRows) })) }));
   };
 
   const exportCsv = () => {
@@ -265,6 +271,7 @@ export default function SessionCompletionTab() {
                                   <span className={a.passed ? "text-success" : "text-destructive"}>
                                     {a.passed ? "Passed" : "Did not pass"}
                                   </span>
+                                  {a.before_reset && <Badge variant="outline" className="text-xs">Before reset</Badge>}
                                 </li>
                               ))}
                             </ul>

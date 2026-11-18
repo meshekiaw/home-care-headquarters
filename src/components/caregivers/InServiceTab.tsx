@@ -19,6 +19,8 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { friendlyError } from "@/lib/friendlyError";
+import { useUserRole } from "@/hooks/useUserRole";
+import QuizResetSection from "@/components/caregivers/QuizResetSection";
 import { useInServiceCompletions, useInServiceSessionList } from "@/hooks/useInServiceCompliance";
 import {
   IN_SERVICE_STATUS_LABEL,
@@ -38,6 +40,7 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
   const { toast } = useToast();
   const { forCaregiver, loading, refetch } = useInServiceCompletions();
   const sessions = useInServiceSessionList();
+  const { isAdmin } = useUserRole();
   const [draftDate, setDraftDate] = useState(hireDate ?? "");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -210,6 +213,8 @@ export default function InServiceTab({ caregiverId, caregiverName, hireDate, onS
           </CardContent>
         </Card>
       )}
+
+      {isAdmin && <QuizResetSection caregiverId={caregiverId} caregiverName={caregiverName} />}
 
       <AlertDialog open={confirmOpen} onOpenChange={(o) => !o && !saving && setConfirmOpen(false)}>
         <AlertDialogContent>
